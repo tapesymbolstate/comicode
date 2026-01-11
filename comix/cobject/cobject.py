@@ -8,7 +8,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 if TYPE_CHECKING:
-    pass
+    from comix.style.style import Style
 
 
 class CObject:
@@ -26,6 +26,7 @@ class CObject:
         opacity: float = 1.0,
         z_index: int = 0,
         name: str | None = None,
+        style: Style | None = None,
     ) -> None:
         self.position: NDArray[np.float64] = np.array(position, dtype=np.float64)
         self.scale = scale
@@ -33,6 +34,7 @@ class CObject:
         self.opacity = opacity
         self.z_index = z_index
         self.name = name or self.__class__.__name__
+        self._style: Style | None = style
 
         self.submobjects: list[CObject] = []
         self.parent: CObject | None = None
@@ -145,6 +147,66 @@ class CObject:
         self._needs_update = True
         return self
 
+    # === Style ===
+
+    def set_style(self, style: Style) -> Self:
+        """Set the style for this object.
+
+        Args:
+            style: The Style object to apply.
+
+        Returns:
+            Self for method chaining.
+        """
+        self._style = style
+        self._needs_update = True
+        return self
+
+    def get_style(self) -> Style | None:
+        """Get the directly applied style (not inherited)."""
+        return self._style
+
+    def get_effective_style(self) -> Style:
+        """Get the effective style, considering inheritance from parent.
+
+        The style cascade is: self._style > parent._style > default
+
+        Returns:
+            The effective Style object for this element.
+        """
+        from comix.style.style import Style
+
+        # Start with default style
+        effective = Style()
+
+        # Apply parent's style if available
+        if self.parent is not None:
+            parent_style = self.parent.get_effective_style()
+            effective = effective.merge_with(parent_style)
+
+        # Apply own style if set
+        if self._style is not None:
+            effective = effective.merge_with(self._style)
+
+        return effective
+
+    def apply_style(self, style: Style) -> Self:
+        """Apply style properties to this object.
+
+        This is a convenience method that copies properties from the Style
+        to object-specific attributes. Subclasses should override this to
+        apply style properties to their specific attributes.
+
+        Args:
+            style: The Style object to apply.
+
+        Returns:
+            Self for method chaining.
+        """
+        self._style = style
+        self._needs_update = True
+        return self
+
     # === Hierarchy ===
 
     def add(self, *cobjects: CObject) -> Self:
@@ -237,7 +299,7 @@ class CObject:
 
     def get_render_data(self) -> dict:
         """Get data for rendering."""
-        return {
+        data = {
             "type": self.__class__.__name__,
             "points": self._get_transformed_points().tolist(),
             "position": self.position.tolist(),
@@ -247,6 +309,13 @@ class CObject:
             "z_index": self.z_index,
             "name": self.name,
         }
+
+        # Include effective style if any style is set
+        if self._style is not None:
+            style = self.get_effective_style()
+            data["style"] = style.to_dict()
+
+        return data
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(name={self.name!r}, position={self.position.tolist()})"

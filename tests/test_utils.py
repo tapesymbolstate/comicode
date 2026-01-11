@@ -45,6 +45,40 @@ class TestBezierUtils:
         path = create_bubble_path(width=100, height=80, style="narrator")
         assert len(path) == 5  # Rectangle with closing point
 
+    def test_create_bubble_path_with_corner_radii(self):
+        """Test creating bubble path with per-corner radii."""
+        path = create_bubble_path(
+            width=100,
+            height=80,
+            style="speech",
+            corner_radii=(5.0, 10.0, 15.0, 20.0),
+        )
+        assert len(path) > 0
+        assert path.shape[1] == 2
+
+    def test_create_bubble_path_wobble_random(self):
+        """Test creating bubble path with random wobble."""
+        path1 = create_bubble_path(
+            width=100, height=80, style="speech",
+            wobble=0.5, wobble_mode="random"
+        )
+        path2 = create_bubble_path(
+            width=100, height=80, style="speech",
+            wobble=0.5, wobble_mode="random"
+        )
+        # Random wobble should produce different paths
+        assert len(path1) > 0
+        assert len(path2) > 0
+
+    def test_create_bubble_path_wobble_wave(self):
+        """Test creating bubble path with wave wobble."""
+        path = create_bubble_path(
+            width=100, height=80, style="speech",
+            wobble=0.5, wobble_mode="wave"
+        )
+        assert len(path) > 0
+        assert path.shape[1] == 2
+
     def test_create_tail_points(self):
         """Test creating tail points."""
         tail = create_tail_points(

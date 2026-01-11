@@ -9,6 +9,7 @@ dependencies = [
     "svgwrite>=1.4.0",
     "pydantic>=2.0.0",
     "click>=8.0.0",
+    "fonttools>=4.50.0",
 ]
 
 [project.optional-dependencies]

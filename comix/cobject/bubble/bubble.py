@@ -11,7 +11,7 @@ from comix.cobject.cobject import CObject
 from comix.utils.bezier import create_bubble_path, create_tail_points
 
 if TYPE_CHECKING:
-    pass
+    from comix.style.style import Style
 
 
 class Bubble(CObject):
@@ -29,11 +29,12 @@ class Bubble(CObject):
     def __init__(
         self,
         text: str = "",
-        style: str = "speech",
+        bubble_type: str = "speech",
         width: float | None = None,
         height: float | None = None,
         padding: tuple[float, float, float, float] = (15.0, 20.0, 15.0, 20.0),
         corner_radius: float = 20.0,
+        corner_radii: tuple[float, float, float, float] | None = None,
         tail_direction: str = "bottom-left",
         tail_length: float = 30.0,
         tail_width: float = 20.0,
@@ -48,13 +49,14 @@ class Bubble(CObject):
         text_align: str = "center",
         line_height: float = 1.4,
         wobble: float = 0.0,
+        wobble_mode: str = "random",
         emphasis: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
 
         self.text = text
-        self.style = style
+        self.bubble_type = bubble_type
 
         self._auto_width = width is None
         self._auto_height = height is None
@@ -62,6 +64,7 @@ class Bubble(CObject):
         self._height = height or 60.0
         self.padding = padding
         self.corner_radius = corner_radius
+        self.corner_radii = corner_radii
 
         self.tail_direction = tail_direction
         self.tail_length = tail_length
@@ -80,6 +83,7 @@ class Bubble(CObject):
         self.line_height = line_height
 
         self.wobble = wobble
+        self.wobble_mode = wobble_mode
         self.emphasis = emphasis
 
         self._calculate_size()
@@ -118,9 +122,11 @@ class Bubble(CObject):
         self._points = create_bubble_path(
             width=self._width,
             height=self._height,
-            style=self.style,
+            style=self.bubble_type,
             corner_radius=self.corner_radius,
+            corner_radii=self.corner_radii,
             wobble=self.wobble,
+            wobble_mode=self.wobble_mode,
         )
 
         tail_points = create_tail_points(
@@ -182,6 +188,41 @@ class Bubble(CObject):
         self.generate_points()
         return self
 
+    def apply_style(self, style: Style) -> Self:
+        """Apply style properties to this bubble.
+
+        Copies relevant properties from the Style object to this bubble's
+        attributes for border, fill, and font properties.
+
+        Args:
+            style: The Style object to apply.
+
+        Returns:
+            Self for method chaining.
+        """
+        super().apply_style(style)
+
+        # Apply border properties
+        self.border_color = style.border_color
+        self.border_width = style.border_width
+        self.border_style = style.border_style
+
+        # Apply fill properties
+        self.fill_color = style.fill_color
+
+        # Apply font properties
+        self.font_family = style.font_family
+        self.font_size = style.font_size
+        self.font_color = style.font_color
+        self.text_align = style.text_align
+        self.line_height = style.line_height
+
+        # Recalculate size and regenerate points since font size may have changed
+        self._calculate_size()
+        self.generate_points()
+
+        return self
+
     def get_render_data(self) -> dict:
         """Get data for rendering."""
         data = super().get_render_data()
@@ -195,12 +236,13 @@ class Bubble(CObject):
 
         data.update(
             {
-                "bubble_type": self.style,
+                "bubble_type": self.bubble_type,
                 "text": self.text,
                 "width": self._width,
                 "height": self._height,
                 "padding": self.padding,
                 "corner_radius": self.corner_radius,
+                "corner_radii": self.corner_radii,
                 "tail_direction": self.tail_direction,
                 "tail_length": self.tail_length,
                 "tail_width": self.tail_width,
@@ -216,6 +258,7 @@ class Bubble(CObject):
                 "text_align": self.text_align,
                 "line_height": self.line_height,
                 "wobble": self.wobble,
+                "wobble_mode": self.wobble_mode,
                 "emphasis": self.emphasis,
             }
         )
@@ -226,7 +269,7 @@ class SpeechBubble(Bubble):
     """Standard speech bubble for dialogue."""
 
     def __init__(self, text: str = "", **kwargs) -> None:
-        kwargs.setdefault("style", Bubble.SPEECH)
+        kwargs.setdefault("bubble_type", Bubble.SPEECH)
         super().__init__(text=text, **kwargs)
 
 
@@ -234,7 +277,7 @@ class ThoughtBubble(Bubble):
     """Cloud-shaped thought bubble."""
 
     def __init__(self, text: str = "", **kwargs) -> None:
-        kwargs.setdefault("style", Bubble.THOUGHT)
+        kwargs.setdefault("bubble_type", Bubble.THOUGHT)
         kwargs.setdefault("corner_radius", 999)
         kwargs.setdefault("border_style", "solid")
         super().__init__(text=text, **kwargs)
@@ -244,7 +287,7 @@ class ShoutBubble(Bubble):
     """Spiky emphasis bubble for shouting."""
 
     def __init__(self, text: str = "", **kwargs) -> None:
-        kwargs.setdefault("style", Bubble.SHOUT)
+        kwargs.setdefault("bubble_type", Bubble.SHOUT)
         kwargs.setdefault("border_width", 3.0)
         kwargs.setdefault("font_size", 20.0)
         super().__init__(text=text, **kwargs)
@@ -254,7 +297,7 @@ class WhisperBubble(Bubble):
     """Dashed bubble for whispering."""
 
     def __init__(self, text: str = "", **kwargs) -> None:
-        kwargs.setdefault("style", Bubble.WHISPER)
+        kwargs.setdefault("bubble_type", Bubble.WHISPER)
         kwargs.setdefault("border_style", "dashed")
         kwargs.setdefault("font_size", 14.0)
         super().__init__(text=text, **kwargs)
@@ -264,7 +307,7 @@ class NarratorBubble(Bubble):
     """Rectangular box for narration."""
 
     def __init__(self, text: str = "", **kwargs) -> None:
-        kwargs.setdefault("style", Bubble.NARRATOR)
+        kwargs.setdefault("bubble_type", Bubble.NARRATOR)
         kwargs.setdefault("corner_radius", 0.0)
         kwargs.setdefault("tail_length", 0.0)
         super().__init__(text=text, **kwargs)

@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 import numpy as np
 
 from comix.cobject.cobject import CObject
+
+if TYPE_CHECKING:
+    from comix.style.style import Style
 
 
 class Text(CObject):
@@ -97,6 +100,33 @@ class Text(CObject):
     def set_color(self, color: str) -> Self:
         """Set the text color."""
         self.color = color
+        return self
+
+    def apply_style(self, style: Style) -> Self:
+        """Apply style properties to this text element.
+
+        Copies relevant font and text properties from the Style object.
+
+        Args:
+            style: The Style object to apply.
+
+        Returns:
+            Self for method chaining.
+        """
+        super().apply_style(style)
+
+        # Apply font properties
+        self.font_family = style.font_family
+        self.font_size = style.font_size
+        self.font_weight = style.font_weight
+        self.font_style = style.font_style
+        self.color = style.font_color
+        self.align = style.text_align
+        self.line_height = style.line_height
+
+        # Recalculate bounds since font properties changed
+        self._calculate_bounds()
+
         return self
 
     def get_render_data(self) -> dict:

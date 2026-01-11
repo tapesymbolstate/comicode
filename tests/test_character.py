@@ -87,7 +87,7 @@ class TestCharacter:
         char = Character().move_to((100, 100))
         bubble = char.say("Hello!")
         assert bubble.text == "Hello!"
-        assert bubble.style == "speech"
+        assert bubble.bubble_type == "speech"
         assert bubble.tail_target is char
 
     def test_think(self):
@@ -95,14 +95,14 @@ class TestCharacter:
         char = Character().move_to((100, 100))
         bubble = char.think("Hmm...")
         assert bubble.text == "Hmm..."
-        assert bubble.style == "thought"
+        assert bubble.bubble_type == "thought"
 
     def test_shout(self):
         """Test shout method creates shout bubble."""
         char = Character().move_to((100, 100))
         bubble = char.shout("HEY!")
         assert bubble.text == "HEY!"
-        assert bubble.style == "shout"
+        assert bubble.bubble_type == "shout"
 
 
 class TestStickman:

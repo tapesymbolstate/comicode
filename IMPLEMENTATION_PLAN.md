@@ -18,14 +18,33 @@ All Phase 1 items have been implemented and tested (92 tests passing):
 - [x] Utility modules (bezier curves, geometry transforms)
 - [x] Style system with presets (manga, webtoon, comic, minimal)
 
-## Next: Phase 2 - Styling Enhancements
+## Completed: Phase 2 - Styling Enhancements
 
-- [ ] Font management with fonttools
-- [ ] Custom bubble shapes (wobble, emphasis, custom corners)
-- [ ] Enhanced style inheritance
-- [ ] Theme system for consistent styling
+All Phase 2 items have been implemented and tested (180 tests passing):
 
-## Future: Phase 3 - Layout Engine
+- [x] Font management with fonttools
+  - FontInfo, FontMetrics dataclasses
+  - FontRegistry for font discovery and management
+  - System font detection (macOS, Linux, Windows)
+  - Font fallback chains
+  - Text width/height estimation
+- [x] Custom bubble shapes
+  - Per-corner radius customization (corner_radii parameter)
+  - Enhanced wobble with modes ("random", "wave")
+  - Emphasis effect (shadow + thicker border)
+- [x] Enhanced style inheritance
+  - Style attached to CObject base class
+  - get_effective_style() for cascade resolution
+  - apply_style() method on Bubble and Text classes
+  - Parent-to-child style inheritance
+- [x] Theme system for consistent styling
+  - ColorPalette for coordinated colors
+  - Theme class with element-specific styles
+  - ThemeRegistry for theme management
+  - Built-in themes (manga, webtoon, comic, minimal)
+  - Global theme functions (get_theme, set_default_theme, etc.)
+
+## Next: Phase 3 - Layout Engine
 
 - [ ] FlowLayout for automatic positioning
 - [ ] Auto bubble positioning relative to characters
@@ -44,5 +63,23 @@ All Phase 1 items have been implemented and tested (92 tests passing):
 - Using Manim-inspired architecture with method chaining
 - NumPy for coordinate calculations
 - SVG as primary output format
-- All tests passing (92/92)
+- fonttools for font metrics
+- All tests passing (180/180)
 - Python 3.13 required
+
+## API Changes (Phase 2)
+
+### Bubble class
+- Renamed `style` parameter to `bubble_type` to avoid conflict with Style object
+- Added `corner_radii: tuple[float, float, float, float] | None` for per-corner radius
+- Added `wobble_mode: str` ("random" or "wave")
+- `emphasis: bool` now renders shadow + thicker border
+
+### CObject base class
+- Added `style: Style | None` parameter to constructor
+- Added `set_style()`, `get_style()`, `get_effective_style()`, `apply_style()` methods
+- Style included in `get_render_data()` when set
+
+### New modules
+- `comix/style/font.py` - Font management system
+- `comix/style/theme.py` - Theme system

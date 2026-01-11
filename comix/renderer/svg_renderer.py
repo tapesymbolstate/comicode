@@ -125,6 +125,7 @@ class SVGRenderer:
         pos = data.get("position", [0, 0])
         points = data.get("points", [])
         tail_points = data.get("tail_points", [])
+        emphasis = data.get("emphasis", False)
 
         if points:
             translated_points = [
@@ -137,11 +138,29 @@ class SVGRenderer:
             elif data.get("border_style") == "dotted":
                 stroke_dasharray = "2,2"
 
+            # Render emphasis shadow/glow if enabled
+            if emphasis:
+                shadow_offset = 3
+                shadow_points = [
+                    (p[0] + shadow_offset, p[1] + shadow_offset) for p in translated_points
+                ]
+                shadow_path = Polygon(
+                    points=shadow_points,
+                    fill="#00000033",
+                    stroke="none",
+                )
+                group.add(shadow_path)
+
+            border_width = data.get("border_width", 2)
+            if emphasis:
+                # Thicker border for emphasis
+                border_width = max(border_width * 1.5, border_width + 1)
+
             bubble_path = Polygon(
                 points=translated_points,
                 fill=data.get("fill_color", "#FFFFFF"),
                 stroke=data.get("border_color", "#000000"),
-                stroke_width=data.get("border_width", 2),
+                stroke_width=border_width,
             )
             if stroke_dasharray:
                 bubble_path["stroke-dasharray"] = stroke_dasharray
@@ -152,11 +171,29 @@ class SVGRenderer:
             translated_tail = [
                 (p[0] + pos[0], p[1] + pos[1]) for p in tail_points
             ]
+
+            # Add shadow for tail if emphasis is enabled
+            if emphasis:
+                shadow_offset = 3
+                shadow_tail_points = [
+                    (p[0] + shadow_offset, p[1] + shadow_offset) for p in translated_tail
+                ]
+                shadow_tail = Polygon(
+                    points=shadow_tail_points,
+                    fill="#00000033",
+                    stroke="none",
+                )
+                group.add(shadow_tail)
+
+            border_width = data.get("border_width", 2)
+            if emphasis:
+                border_width = max(border_width * 1.5, border_width + 1)
+
             tail = Polygon(
                 points=translated_tail,
                 fill=data.get("fill_color", "#FFFFFF"),
                 stroke=data.get("border_color", "#000000"),
-                stroke_width=data.get("border_width", 2),
+                stroke_width=border_width,
             )
             group.add(tail)
 

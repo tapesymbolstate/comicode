@@ -127,3 +127,14 @@ class TestPanel:
         assert data["background_color"] == "#FFFFFF"
         assert "border" in data
         assert data["border"]["color"] == "#000000"
+
+    def test_background_description(self):
+        """Test background_description attribute for AI generation."""
+        panel = Panel()
+        assert panel.background_description is None
+
+        panel.background_description = "A rainy cityscape at night"
+        assert panel.background_description == "A rainy cityscape at night"
+
+        data = panel.get_render_data()
+        assert data["background_description"] == "A rainy cityscape at night"

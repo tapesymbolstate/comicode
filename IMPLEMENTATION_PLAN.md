@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete
 
-All 4 phases have been implemented with **621 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **627 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -29,6 +29,8 @@ All 4 phases have been implemented with **621 tests passing**, mypy clean, and r
 - **CLI Help**: Improved help text with default values and DPI information
 - **CLI Command Tests**: Comprehensive test coverage for all CLI commands (info, render, preview, serve) using Click CliRunner (38 tests)
 - **SVG Renderer Tests**: Added render_to_string() tests and comprehensive effect rendering tests (18 new tests)
+- **Character.whisper()**: Added whisper() method to Character class for creating WhisperBubble (completes the bubble convenience methods: say, think, shout, whisper)
+- **BackgroundDirective Rendering**: Parser now properly handles background directives - sets color, image path, or description for AI generation
 
 ### Technical Stack
 

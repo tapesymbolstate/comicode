@@ -447,6 +447,54 @@ class TestToPage:
         assert len(narrator_bubbles) == 1
         assert narrator_bubbles[0].text == "Once upon a time..."
 
+    def test_to_page_handles_background_color(self):
+        """Test that color backgrounds are applied to panels."""
+        markup = """
+        # panel 1
+        [background: #ff5500]
+        """
+        parser = MarkupParser(markup)
+        page = parser.to_page()
+
+        panel = page._panels[0]
+        assert panel.background_color == "#ff5500"
+
+    def test_to_page_handles_background_named_color(self):
+        """Test that named color backgrounds are applied to panels."""
+        markup = """
+        # panel 1
+        [background: blue]
+        """
+        parser = MarkupParser(markup)
+        page = parser.to_page()
+
+        panel = page._panels[0]
+        assert panel.background_color == "blue"
+
+    def test_to_page_handles_background_image(self):
+        """Test that image path backgrounds are applied to panels."""
+        markup = """
+        # panel 1
+        [background: /path/to/image.png]
+        """
+        parser = MarkupParser(markup)
+        page = parser.to_page()
+
+        panel = page._panels[0]
+        assert panel.background_image == "/path/to/image.png"
+
+    def test_to_page_handles_background_description(self):
+        """Test that text descriptions are stored for AI generation."""
+        markup = """
+        # panel 1
+        [background: A sunny beach with palm trees]
+        """
+        parser = MarkupParser(markup)
+        page = parser.to_page()
+
+        panel = page._panels[0]
+        assert panel.background_description == "A sunny beach with palm trees"
+
 
 class TestParseMarkupFunction:
     """Tests for the top-level parse_markup function."""

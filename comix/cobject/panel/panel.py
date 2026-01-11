@@ -43,6 +43,7 @@ class Panel(CObject):
         self.background_color = background_color
         self.padding = padding
         self.background_image: str | None = None
+        self.background_description: str | None = None  # For AI generation
 
         self._content: list[CObject] = []
         self.generate_points()
@@ -123,6 +124,7 @@ class Panel(CObject):
                 },
                 "background_color": self.background_color,
                 "background_image": self.background_image,
+                "background_description": self.background_description,
                 "padding": self.padding,
                 "content": [obj.get_render_data() for obj in self._content],
             }

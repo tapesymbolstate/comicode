@@ -397,9 +397,23 @@ class MarkupParser:
                     panel.add(narrator)
 
                 elif isinstance(action, BackgroundDirective):
-                    # Background is stored in panel but not directly rendered
-                    # Could be used for AI image generation or placeholder
-                    pass
+                    # Set background based on the description content
+                    desc = action.description.strip()
+                    # Check if it's a color (hex or named)
+                    if desc.startswith("#") or desc.lower() in {
+                        "white", "black", "red", "green", "blue", "yellow",
+                        "orange", "purple", "pink", "gray", "grey", "brown",
+                        "cyan", "magenta", "transparent", "none",
+                    }:
+                        panel.set_background(color=desc)
+                    # Check if it's an image path
+                    elif any(desc.lower().endswith(ext) for ext in (
+                        ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"
+                    )):
+                        panel.set_background(image=desc)
+                    else:
+                        # Store description for potential AI generation
+                        panel.background_description = desc
 
         return page
 

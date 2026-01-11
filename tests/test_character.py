@@ -103,6 +103,14 @@ class TestCharacter:
         assert bubble.text == "HEY!"
         assert bubble.bubble_type == "shout"
 
+    def test_whisper(self):
+        """Test whisper method creates whisper bubble."""
+        char = Character().move_to((100, 100))
+        bubble = char.whisper("psst...")
+        assert bubble.text == "psst..."
+        assert bubble.bubble_type == "whisper"
+        assert bubble.tail_target is char
+
 
 class TestStickman:
     """Tests for Stickman class."""

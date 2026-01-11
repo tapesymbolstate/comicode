@@ -174,6 +174,14 @@ class Character(CObject):
         bubble.attach_to(self)
         return bubble
 
+    def whisper(self, text: str, **bubble_kwargs: Any) -> Bubble:
+        """Create a whisper bubble attached to this character."""
+        from comix.cobject.bubble.bubble import WhisperBubble
+
+        bubble = WhisperBubble(text, **bubble_kwargs)
+        bubble.attach_to(self)
+        return bubble
+
     def generate_points(self) -> None:
         """Generate character outline. Override in subclasses."""
         half_h = self.character_height / 2

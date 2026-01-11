@@ -1,6 +1,5 @@
 """Tests for Style class."""
 
-import pytest
 
 from comix.style.style import (
     Style,

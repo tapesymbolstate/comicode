@@ -76,7 +76,6 @@ def _apply_wobble(
     """
     if mode == "wave":
         # Sine wave wobble - creates a rhythmic oscillation
-        num_points = len(points)
         wave_freq = 3.0  # Number of wave cycles
         wave_amp = wobble * 3.0
 

@@ -65,9 +65,9 @@ All Phase 3 items have been implemented and tested (220 tests passing):
   - Preferred anchor order customization
 - [x] Page integration with set_flow_layout() method
 
-## In Progress: Phase 4 - Extensions
+## Completed: Phase 4 - Extensions
 
-Completed:
+All Phase 4 items have been implemented and tested (451 tests passing):
 - [x] Cairo renderer for PNG/PDF output (250 tests passing)
   - Full CairoRenderer class with PNG and PDF support
   - Quality settings (low=72 DPI, medium=150 DPI, high=300 DPI)
@@ -106,7 +106,7 @@ Completed:
   - Placeholder rendering when no image data available
   - 43 comprehensive tests for image module
 
-- [x] Web preview with hot reload (417 tests passing)
+- [x] Web preview with hot reload
   - PreviewServer class with HTTP server and file watching
   - ScriptLoader for dynamic script reloading
   - HTML wrapper with auto-refresh JavaScript using long-polling
@@ -115,9 +115,17 @@ Completed:
   - Fallback to polling when watchdog is not available
   - Auto port selection when port is busy
   - 27 comprehensive tests for preview module
-
-Remaining:
-- [ ] Constraint-based layouts (advanced)
+- [x] Constraint-based layouts (451 tests passing)
+  - ConstraintLayout class for declarative positioning
+  - ConstraintValue with arithmetic operations (+, -, *, /)
+  - ElementRef for referencing container and element edges
+  - Support for left, right, top, bottom, width, height, center_x, center_y constraints
+  - Cross-element references (position relative to other elements)
+  - Proportional constraints (e.g., width = container_width * 0.5)
+  - Iterative constraint solver with dependency resolution
+  - Priority levels (REQUIRED, HIGH, MEDIUM, LOW)
+  - Method chaining API
+  - 34 comprehensive tests for constraint system
 
 ## Technical Notes
 
@@ -127,7 +135,7 @@ Remaining:
 - fonttools for font metrics
 - pycairo for PNG/PDF rendering
 - watchdog for file watching (optional)
-- All tests passing (417/417)
+- All tests passing (451/451)
 - Python 3.13 required
 
 ## API Changes (Phase 3)
@@ -350,3 +358,41 @@ narrator: "text"                     # Narrator box
 
 ### New module
 - `comix/preview/server.py` - Web preview server implementation
+
+### Constraint Layout (new)
+
+#### ConstraintLayout class
+- `ConstraintLayout(width, height, offset_x, offset_y)` - Initialize constraint layout
+- `add(element, name, left, right, top, bottom, width, height, center_x, center_y, priority)` - Add element with constraints
+- `constrain(element, property_name, value, priority)` - Add constraint to existing element
+- `ref(element)` - Get ElementRef for building constraints
+- `solve()` - Solve constraints and return positions
+- `apply()` - Solve and apply positions to elements
+- `get_position(element)` - Get resolved position for element
+- `calculate_positions(num_cells)` - GridLayout/FlowLayout compatibility
+
+#### Container edge properties
+- `layout.left`, `layout.right`, `layout.top`, `layout.bottom` - Container edges
+- `layout.center_x`, `layout.center_y` - Container center
+- `layout.container_width`, `layout.container_height` - Container dimensions
+
+#### ConstraintValue arithmetic
+- Supports `+`, `-`, `*`, `/` operations
+- Example: `layout.container_width * 0.5 - 20`
+
+#### ElementRef class
+- Properties: `left`, `right`, `top`, `bottom`, `center_x`, `center_y`, `width`, `height`
+- Use with `layout.ref(element)` for cross-element constraints
+
+#### ConstraintPriority enum
+- `REQUIRED` - Must be satisfied
+- `HIGH` - Strong preference
+- `MEDIUM` - Normal preference
+- `LOW` - Weak preference
+
+#### Exports
+- `ConstraintLayout`, `ConstraintPriority` exported from main `comix` package
+- Also available from `comix.layout` module
+
+### New module
+- `comix/layout/constraints.py` - Constraint-based layout system

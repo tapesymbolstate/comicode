@@ -1,7 +1,6 @@
 """Tests for Character classes."""
 
 import numpy as np
-import pytest
 
 from comix.cobject.character.character import (
     Character,

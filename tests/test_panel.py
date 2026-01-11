@@ -1,7 +1,6 @@
 """Tests for Panel class."""
 
 import numpy as np
-import pytest
 
 from comix.cobject.panel.panel import Panel, Border
 from comix.cobject.cobject import CObject

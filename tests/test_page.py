@@ -1,6 +1,5 @@
 """Tests for Page class."""
 
-import pytest
 import tempfile
 from pathlib import Path
 

@@ -1,6 +1,5 @@
 """Tests for SVG Renderer."""
 
-import pytest
 import tempfile
 from pathlib import Path
 

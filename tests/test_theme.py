@@ -1,6 +1,5 @@
 """Tests for Theme system."""
 
-import pytest
 
 from comix.style.theme import (
     ColorPalette,
@@ -13,7 +12,6 @@ from comix.style.theme import (
     get_theme_registry,
     get_theme,
     get_default_theme,
-    set_default_theme,
     register_theme,
 )
 from comix.style.style import Style

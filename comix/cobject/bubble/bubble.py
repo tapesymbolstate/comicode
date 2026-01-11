@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Self
 
 import numpy as np
-from numpy.typing import NDArray
 
 from comix.cobject.cobject import CObject
 from comix.utils.bezier import create_bubble_path, create_tail_points
@@ -296,9 +295,6 @@ class Bubble(CObject):
 
         if avoid_bubbles is None:
             avoid_bubbles = []
-
-        # Store original position to restore if needed
-        original_pos = self.position.copy()
 
         for anchor in preferred_anchors:
             # Try this anchor position

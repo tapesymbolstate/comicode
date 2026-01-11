@@ -23,6 +23,7 @@ from comix.effect.effect import (
     FocusLines,
     ImpactEffect,
 )
+from comix.layout.constraints import ConstraintLayout, ConstraintPriority
 from comix.layout.flow import FlowLayout
 from comix.layout.grid import GridLayout
 from comix.page.page import Page, SinglePanel, Strip
@@ -71,6 +72,8 @@ __all__ = [
     "FocusLines",
     "ImpactEffect",
     # Layout
+    "ConstraintLayout",
+    "ConstraintPriority",
     "FlowLayout",
     "GridLayout",
     # Page

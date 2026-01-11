@@ -1,7 +1,5 @@
 """Tests for Bubble classes."""
 
-import numpy as np
-import pytest
 
 from comix.cobject.bubble.bubble import (
     Bubble,
@@ -170,7 +168,6 @@ class TestBubbleStyle:
     def test_apply_style_recalculates_size(self) -> None:
         """Test that applying style recalculates bubble size."""
         bubble = Bubble(text="Test text")
-        original_width = bubble.bubble_width
         original_height = bubble.bubble_height
 
         # Apply style with much larger font

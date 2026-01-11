@@ -1,7 +1,6 @@
 """Tests for CObject base class."""
 
 import numpy as np
-import pytest
 
 from comix.cobject.cobject import CObject
 from comix.style.style import Style, MANGA_STYLE

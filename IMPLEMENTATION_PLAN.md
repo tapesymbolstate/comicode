@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete
 
-All 4 phases have been implemented with **565 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **603 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -27,6 +27,7 @@ All 4 phases have been implemented with **565 tests passing**, mypy clean, and r
 - **CJK Text Support**: Proper width estimation for Korean/Japanese/Chinese characters
 - **Expanded Test Coverage**: Dedicated test suites for Text/StyledText/SFX, Rectangle/Circle/Line, and Parser (ParseError, expressions, facing directions)
 - **CLI Help**: Improved help text with default values and DPI information
+- **CLI Command Tests**: Comprehensive test coverage for all CLI commands (info, render, preview, serve) using Click CliRunner (38 tests)
 
 ### Technical Stack
 

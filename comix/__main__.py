@@ -12,9 +12,21 @@ def main() -> None:
 
 @main.command()
 @click.argument("script", type=click.Path(exists=True))
-@click.option("-o", "--output", default="output.svg", help="Output file path")
-@click.option("-f", "--format", type=click.Choice(["svg", "png", "pdf"]), default="svg")
-@click.option("-q", "--quality", type=click.Choice(["low", "medium", "high"]), default="medium")
+@click.option("-o", "--output", default="output.svg", help="Output file path (default: output.svg)")
+@click.option(
+    "-f",
+    "--format",
+    type=click.Choice(["svg", "png", "pdf"]),
+    default="svg",
+    help="Output format (default: svg)",
+)
+@click.option(
+    "-q",
+    "--quality",
+    type=click.Choice(["low", "medium", "high"]),
+    default="medium",
+    help="Render quality: low=72dpi, medium=150dpi, high=300dpi (default: medium)",
+)
 def render(script: str, output: str, format: str, quality: str) -> None:
     """Render a comic script to an output file."""
     import importlib.util
@@ -94,8 +106,8 @@ def preview(script: str) -> None:
 
 @main.command()
 @click.argument("script", type=click.Path(exists=True))
-@click.option("-p", "--port", default=8000, help="Port to run the server on")
-@click.option("-H", "--host", default="localhost", help="Host to bind to")
+@click.option("-p", "--port", default=8000, help="Port to run the server on (default: 8000)")
+@click.option("-H", "--host", default="localhost", help="Host to bind to (default: localhost)")
 @click.option("--no-browser", is_flag=True, help="Don't open browser automatically")
 def serve(script: str, port: int, host: str, no_browser: bool) -> None:
     """Start a live preview server with hot reload.

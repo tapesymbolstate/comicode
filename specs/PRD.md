@@ -104,54 +104,39 @@ comix/
 ├── constants.py             # 상수 (폰트, 색상, 크기)
 │
 ├── page/                    # Scene에 대응
-│   ├── page.py              # Page 클래스 (여러 패널)
-│   ├── strip.py             # Strip 클래스 (한 줄)
-│   └── page_writer.py       # 출력 담당
+│   ├── __init__.py
+│   └── page.py              # Page, SinglePanel, Strip 클래스
 │
 ├── cobject/                 # Mobject에 대응 (Comix Object)
 │   ├── cobject.py           # 기본 클래스
 │   │
 │   ├── panel/               # 패널 관련
-│   │   ├── panel.py         # Panel 클래스
-│   │   ├── gutter.py        # 패널 사이 간격
-│   │   └── border.py        # 테두리 스타일
+│   │   ├── __init__.py
+│   │   └── panel.py         # Panel, Border 클래스
 │   │
 │   ├── bubble/              # 말풍선 관련
-│   │   ├── bubble.py        # 기본 Bubble 클래스
-│   │   ├── speech.py        # 일반 말풍선
-│   │   ├── thought.py       # 생각 풍선 (구름)
-│   │   ├── shout.py         # 외침 풍선 (뾰족)
-│   │   ├── whisper.py       # 속삭임 (점선)
-│   │   └── narrator.py      # 나레이션 박스
+│   │   ├── __init__.py
+│   │   └── bubble.py        # Bubble, SpeechBubble, ThoughtBubble, ShoutBubble, WhisperBubble, NarratorBubble
 │   │
 │   ├── text/                # 텍스트 관련
-│   │   ├── text.py          # 기본 Text 클래스
-│   │   ├── styled_text.py   # 스타일링된 텍스트
-│   │   ├── sfx.py           # 효과음 (의성어/의태어)
-│   │   └── font.py          # 폰트 관리
+│   │   ├── __init__.py
+│   │   └── text.py          # Text, StyledText, SFX 클래스
 │   │
 │   ├── character/           # 캐릭터 관련
-│   │   ├── character.py     # 기본 Character 클래스
-│   │   ├── stickman.py      # 스틱맨
-│   │   ├── simple_face.py   # 단순 얼굴
-│   │   ├── expression.py    # 표정 정의
-│   │   └── pose.py          # 포즈 정의
+│   │   ├── __init__.py
+│   │   └── character.py     # Character, Stickman, SimpleFace, Expression, Pose 클래스
 │   │
 │   ├── shapes/              # 기본 도형
-│   │   ├── rectangle.py
-│   │   ├── circle.py
-│   │   └── line.py
+│   │   ├── __init__.py
+│   │   └── shapes.py        # Rectangle, Circle, Line 클래스
 │   │
 │   └── image/               # 외부 이미지
 │       ├── image.py         # 이미지 삽입
 │       └── ai_image.py      # AI 생성 이미지 (확장)
 │
 ├── effect/                  # Animation에 대응 (웹툰용)
-│   ├── effect.py            # 기본 Effect 클래스
-│   ├── appear.py            # 등장 효과
-│   ├── shake.py             # 흔들림
-│   ├── zoom.py              # 줌 인/아웃
-│   └── motion_line.py       # 속도선
+│   ├── __init__.py
+│   └── effect.py            # Effect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, AppearEffect, ImpactEffect
 │
 ├── layout/                  # 레이아웃 시스템
 │   ├── grid.py              # 그리드 레이아웃
@@ -159,30 +144,28 @@ comix/
 │   └── constraints.py       # 제약 조건
 │
 ├── style/                   # 스타일 시스템
-│   ├── style.py             # Style 클래스
-│   ├── presets/             # 프리셋
-│   │   ├── manga.py         # 일본 만화 스타일
-│   │   ├── comic.py         # 미국 코믹 스타일
-│   │   ├── webtoon.py       # 한국 웹툰 스타일
-│   │   └── minimal.py       # 미니멀 스타일
-│   └── theme.py             # 테마 관리
+│   ├── __init__.py
+│   ├── style.py             # Style 클래스 및 프리셋 (MANGA_STYLE, WEBTOON_STYLE, COMIC_STYLE, MINIMAL_STYLE)
+│   ├── font.py              # FontInfo, FontMetrics, FontRegistry, 폰트 유틸리티
+│   └── theme.py             # Theme, ColorPalette, ThemeRegistry
 │
 ├── renderer/                # 렌더링 백엔드
-│   ├── renderer.py          # 기본 Renderer
+│   ├── __init__.py
 │   ├── svg_renderer.py      # SVG 출력
-│   ├── cairo_renderer.py    # PNG/PDF 출력
-│   └── web_renderer.py      # HTML/웹 출력
+│   └── cairo_renderer.py    # PNG/PDF 출력 (선택적, pycairo 필요)
 │
 ├── parser/                  # 마크업 파서 (선택적)
-│   ├── parser.py
-│   └── markup.py            # 간단한 마크업 → 코드 변환
+│   ├── __init__.py
+│   └── parser.py            # MarkupParser, parse_markup 함수
+│
+├── preview/                 # 미리보기 서버 (선택적, watchdog 필요)
+│   ├── __init__.py
+│   └── server.py            # PreviewServer
 │
 └── utils/
-    ├── color.py             # 색상 유틸
+    ├── __init__.py
     ├── geometry.py          # 기하학 연산
-    ├── bezier.py            # 베지어 곡선 (말풍선용)
-    ├── typography.py        # 타이포그래피 유틸
-    └── positioning.py       # 위치 계산
+    └── bezier.py            # 베지어 곡선 (말풍선용)
 ```
 
 ---
@@ -392,7 +375,7 @@ class Bubble(CObject):
     def __init__(
         self,
         text: str = "",
-        style: str = SPEECH,
+        bubble_type: str = SPEECH,
         
         # 말풍선 모양
         width: float | None = None,      # None이면 자동
@@ -429,7 +412,7 @@ class Bubble(CObject):
         super().__init__(**kwargs)
         
         self.text = text
-        self.style = style
+        self.bubble_type = bubble_type
         
         # 치수
         self._auto_width = width is None
@@ -515,7 +498,7 @@ class Bubble(CObject):
         self._points = create_bubble_path(
             width=self.width,
             height=self.height,
-            style=self.style,
+            style=self.bubble_type,
             corner_radius=self.corner_radius,
             tail_direction=self.tail_direction,
             tail_length=self.tail_length,
@@ -529,14 +512,14 @@ class Bubble(CObject):
 class SpeechBubble(Bubble):
     """일반 대사 말풍선"""
     def __init__(self, text: str = "", **kwargs):
-        super().__init__(text=text, style=Bubble.SPEECH, **kwargs)
+        super().__init__(text=text, bubble_type=Bubble.SPEECH, **kwargs)
 
 
 class ThoughtBubble(Bubble):
     """생각 풍선 (구름 모양)"""
     def __init__(self, text: str = "", **kwargs):
         kwargs.setdefault("corner_radius", 999)  # 둥글게
-        super().__init__(text=text, style=Bubble.THOUGHT, **kwargs)
+        super().__init__(text=text, bubble_type=Bubble.THOUGHT, **kwargs)
 
 
 class ShoutBubble(Bubble):
@@ -544,14 +527,14 @@ class ShoutBubble(Bubble):
     def __init__(self, text: str = "", **kwargs):
         kwargs.setdefault("border_width", 3)
         kwargs.setdefault("font_size", 20)
-        super().__init__(text=text, style=Bubble.SHOUT, **kwargs)
+        super().__init__(text=text, bubble_type=Bubble.SHOUT, **kwargs)
 
 
 class WhisperBubble(Bubble):
     """속삭임 풍선 (점선)"""
     def __init__(self, text: str = "", **kwargs):
         kwargs.setdefault("font_size", 14)
-        super().__init__(text=text, style=Bubble.WHISPER, **kwargs)
+        super().__init__(text=text, bubble_type=Bubble.WHISPER, **kwargs)
 ```
 
 ### 3.4 Character 클래스
@@ -929,13 +912,13 @@ comic.render("my_comic.png")
 ### 4.2 세밀한 제어
 
 ```python
-from comix import Page, Panel, Bubble, Font, Style
+from comix import Page, Panel, Bubble, Style
 from comix.cobject.text import SFX
 
 # 커스텀 말풍선
 bubble = Bubble(
     text="이건 비밀인데...",
-    style=Bubble.WHISPER,
+    bubble_type=Bubble.WHISPER,
     
     width=200,
     padding=(20, 25, 20, 25),

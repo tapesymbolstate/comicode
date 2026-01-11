@@ -147,8 +147,13 @@ class Page:
         if format == "svg":
             from comix.renderer.svg_renderer import SVGRenderer
 
-            renderer = SVGRenderer(self)
-            return renderer.render(output_path)
+            svg_renderer = SVGRenderer(self)
+            return svg_renderer.render(output_path)
+        elif format in ("png", "pdf"):
+            from comix.renderer.cairo_renderer import CairoRenderer
+
+            cairo_renderer = CairoRenderer(self)
+            return cairo_renderer.render(output_path, format=format, quality=quality)
         else:
             raise NotImplementedError(f"Format '{format}' not yet implemented")
 

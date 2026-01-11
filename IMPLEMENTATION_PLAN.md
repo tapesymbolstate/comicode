@@ -65,22 +65,31 @@ All Phase 3 items have been implemented and tested (220 tests passing):
   - Preferred anchor order customization
 - [x] Page integration with set_flow_layout() method
 
-## Next: Phase 4 - Extensions
+## In Progress: Phase 4 - Extensions
 
+Completed:
+- [x] Cairo renderer for PNG/PDF output (250 tests passing)
+  - Full CairoRenderer class with PNG and PDF support
+  - Quality settings (low=72 DPI, medium=150 DPI, high=300 DPI)
+  - Renders all element types: Panel, Bubble, Text, Character, Shapes
+  - Page.render() integration with format="png" and format="pdf"
+  - 30 comprehensive tests for Cairo rendering
+
+Remaining:
 - [ ] AI image integration (OpenAI/Replicate)
 - [ ] Markup parser for DSL-based comic creation
 - [ ] Web preview with hot reload
 - [ ] Effect system for webtoons (shake, zoom, motion lines)
-- [ ] Cairo renderer for PNG/PDF output
 - [ ] Constraint-based layouts (advanced)
 
 ## Technical Notes
 
 - Using Manim-inspired architecture with method chaining
 - NumPy for coordinate calculations
-- SVG as primary output format
+- SVG as primary output format, PNG/PDF via Cairo
 - fonttools for font metrics
-- All tests passing (220/220)
+- pycairo for PNG/PDF rendering
+- All tests passing (250/250)
 - Python 3.13 required
 
 ## API Changes (Phase 3)
@@ -123,3 +132,22 @@ All Phase 3 items have been implemented and tested (220 tests passing):
 - `comix/style/font.py` - Font management system
 - `comix/style/theme.py` - Theme system
 - `comix/layout/flow.py` - FlowLayout system
+
+## API Changes (Phase 4)
+
+### CairoRenderer class (new)
+- `CairoRenderer(page: Page)` - Initialize with a Page
+- `render(output_path, format, quality)` - Render to PNG or PDF
+  - `format`: "png" or "pdf" (auto-detected from extension)
+  - `quality`: "low" (72 DPI), "medium" (150 DPI), "high" (300 DPI)
+
+### Page class
+- `render(output_path, format, quality)` now supports "png" and "pdf" formats
+- Quality parameter passed through to CairoRenderer
+
+### Dependencies
+- Optional `cairo` extras: `uv sync --extra cairo`
+- Requires pycairo>=1.26.0, Pillow>=10.0.0
+
+### New module
+- `comix/renderer/cairo_renderer.py` - Cairo-based PNG/PDF rendering

@@ -14,6 +14,7 @@ from svgwrite.shapes import Polygon, Polyline, Rect
 from svgwrite.text import Text as SVGText
 
 if TYPE_CHECKING:
+    from comix.effect.effect import Effect
     from comix.page.page import Page
 
 
@@ -47,6 +48,15 @@ class SVGRenderer:
             )
         )
 
+        # Render effects with negative z_index (behind objects)
+        background_effects = sorted(
+            [e for e in self.page._effects if e.z_index < 0],
+            key=lambda e: e.z_index,
+        )
+        for effect in background_effects:
+            self._render_effect(effect)
+
+        # Render cobjects
         sorted_objects = sorted(
             self.page._cobjects, key=lambda obj: obj.z_index
         )
@@ -54,10 +64,86 @@ class SVGRenderer:
         for cobject in sorted_objects:
             self._render_cobject(cobject)
 
+        # Render effects with positive z_index (in front of objects)
+        foreground_effects = sorted(
+            [e for e in self.page._effects if e.z_index >= 0],
+            key=lambda e: e.z_index,
+        )
+        for effect in foreground_effects:
+            self._render_effect(effect)
+
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         self._dwg.save()
 
         return output_path
+
+    def _render_effect(self, effect: Effect) -> None:
+        """Render an effect to the SVG."""
+        data = effect.get_render_data()
+        group = self._dwg.g(opacity=data.get("opacity", 1.0))
+
+        for element in data.get("elements", []):
+            self._render_effect_element(element, group)
+
+        self._dwg.add(group)
+
+    def _render_effect_element(self, element: dict, group: Group) -> None:
+        """Render a single effect element."""
+        element_type = element.get("element_type", "")
+        points = element.get("points", [])
+        stroke_color = element.get("stroke_color", "#000000")
+        stroke_width = element.get("stroke_width", 2.0)
+        fill_color = element.get("fill_color")
+        opacity = element.get("opacity", 1.0)
+        stroke_dasharray = element.get("stroke_dasharray")
+
+        if element_type == "line" and len(points) >= 2:
+            line = SVGLine(
+                start=points[0],
+                end=points[1],
+                stroke=stroke_color if stroke_color != "none" else "none",
+                stroke_width=stroke_width,
+                opacity=opacity,
+            )
+            if stroke_dasharray:
+                line["stroke-dasharray"] = stroke_dasharray
+            group.add(line)
+
+        elif element_type == "polyline" and len(points) >= 2:
+            polyline = Polyline(
+                points=points,
+                stroke=stroke_color if stroke_color != "none" else "none",
+                stroke_width=stroke_width,
+                fill="none",
+                opacity=opacity,
+            )
+            if stroke_dasharray:
+                polyline["stroke-dasharray"] = stroke_dasharray
+            group.add(polyline)
+
+        elif element_type == "polygon" and len(points) >= 3:
+            polygon = Polygon(
+                points=points,
+                stroke=stroke_color if stroke_color != "none" else "none",
+                stroke_width=stroke_width,
+                fill=fill_color if fill_color else "none",
+                opacity=opacity,
+            )
+            if stroke_dasharray:
+                polygon["stroke-dasharray"] = stroke_dasharray
+            group.add(polygon)
+
+        elif element_type == "circle" and len(points) >= 1:
+            radius = element.get("radius", 10)
+            circle = SVGCircle(
+                center=points[0],
+                r=radius,
+                stroke=stroke_color if stroke_color != "none" else "none",
+                stroke_width=stroke_width,
+                fill=fill_color if fill_color else "none",
+                opacity=opacity,
+            )
+            group.add(circle)
 
     def _render_cobject(self, cobject: Any, parent_group: Group | None = None) -> None:
         """Render a CObject and its children."""

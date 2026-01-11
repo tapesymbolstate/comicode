@@ -12,6 +12,7 @@ except ImportError:
     cairo = None  # type: ignore[assignment]
 
 if TYPE_CHECKING:
+    from comix.effect.effect import Effect
     from comix.page.page import Page
 
 
@@ -113,12 +114,28 @@ class CairoRenderer:
         ctx.rectangle(0, 0, self.page.width, self.page.height)
         ctx.fill()
 
+        # Render effects with negative z_index (behind objects)
+        background_effects = sorted(
+            [e for e in self.page._effects if e.z_index < 0],
+            key=lambda e: e.z_index,
+        )
+        for effect in background_effects:
+            self._render_effect(effect)
+
         # Sort objects by z-index
         sorted_objects = sorted(self.page._cobjects, key=lambda obj: obj.z_index)
 
         # Render each object
         for cobject in sorted_objects:
             self._render_cobject(cobject)
+
+        # Render effects with positive z_index (in front of objects)
+        foreground_effects = sorted(
+            [e for e in self.page._effects if e.z_index >= 0],
+            key=lambda e: e.z_index,
+        )
+        for effect in foreground_effects:
+            self._render_effect(effect)
 
     def _render_cobject(self, cobject: Any) -> None:
         """Render a CObject and its children."""
@@ -621,3 +638,99 @@ class CairoRenderer:
         if color:
             self._set_color(color)
             ctx.show_text(text)
+
+    def _render_effect(self, effect: Effect) -> None:
+        """Render an effect."""
+        ctx = self._ctx
+        assert ctx is not None
+
+        data = effect.get_render_data()
+        effect_opacity = data.get("opacity", 1.0)
+
+        ctx.save()
+
+        # Apply global opacity via push_group if needed
+        if effect_opacity < 1.0:
+            ctx.push_group()
+
+        for element in data.get("elements", []):
+            self._render_effect_element(element)
+
+        if effect_opacity < 1.0:
+            ctx.pop_group_to_source()
+            ctx.paint_with_alpha(effect_opacity)
+
+        ctx.restore()
+
+    def _render_effect_element(self, element: dict) -> None:
+        """Render a single effect element."""
+        ctx = self._ctx
+        assert ctx is not None
+
+        element_type = element.get("element_type", "")
+        points = element.get("points", [])
+        stroke_color = element.get("stroke_color", "#000000")
+        stroke_width = element.get("stroke_width", 2.0)
+        fill_color = element.get("fill_color")
+        opacity = element.get("opacity", 1.0)
+        stroke_dasharray = element.get("stroke_dasharray")
+
+        ctx.save()
+
+        # Set dash pattern if specified
+        if stroke_dasharray:
+            dashes = [float(x) for x in stroke_dasharray.split(",")]
+            ctx.set_dash(dashes)
+
+        if element_type == "line" and len(points) >= 2:
+            ctx.move_to(points[0][0], points[0][1])
+            ctx.line_to(points[1][0], points[1][1])
+
+            if stroke_color != "none":
+                self._set_color(stroke_color, opacity)
+                ctx.set_line_width(stroke_width)
+                ctx.stroke()
+
+        elif element_type == "polyline" and len(points) >= 2:
+            ctx.move_to(points[0][0], points[0][1])
+            for p in points[1:]:
+                ctx.line_to(p[0], p[1])
+
+            if stroke_color != "none":
+                self._set_color(stroke_color, opacity)
+                ctx.set_line_width(stroke_width)
+                ctx.stroke()
+
+        elif element_type == "polygon" and len(points) >= 3:
+            ctx.move_to(points[0][0], points[0][1])
+            for p in points[1:]:
+                ctx.line_to(p[0], p[1])
+            ctx.close_path()
+
+            if fill_color:
+                self._set_color(fill_color, opacity)
+                ctx.fill_preserve()
+
+            if stroke_color != "none":
+                self._set_color(stroke_color, opacity)
+                ctx.set_line_width(stroke_width)
+                ctx.stroke()
+            else:
+                ctx.new_path()
+
+        elif element_type == "circle" and len(points) >= 1:
+            radius = element.get("radius", 10)
+            ctx.arc(points[0][0], points[0][1], radius, 0, 2 * math.pi)
+
+            if fill_color:
+                self._set_color(fill_color, opacity)
+                ctx.fill_preserve()
+
+            if stroke_color != "none":
+                self._set_color(stroke_color, opacity)
+                ctx.set_line_width(stroke_width)
+                ctx.stroke()
+            else:
+                ctx.new_path()
+
+        ctx.restore()

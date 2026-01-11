@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 from comix.cobject.cobject import CObject
 from comix.cobject.panel.panel import Panel
 from comix.layout.flow import FlowLayout
 from comix.layout.grid import GridLayout
+
+if TYPE_CHECKING:
+    from comix.effect.effect import Effect
 
 
 class Page:
@@ -34,6 +37,7 @@ class Page:
 
         self._panels: list[Panel] = []
         self._cobjects: list[CObject] = []
+        self._effects: list[Effect] = []
         self._layout: GridLayout | FlowLayout | None = None
 
     def add(self, *cobjects: CObject) -> Self:
@@ -52,6 +56,40 @@ class Page:
             if obj in self._cobjects:
                 self._cobjects.remove(obj)
         return self
+
+    def add_effect(self, *effects: Effect) -> Self:
+        """Add effects to the page.
+
+        Args:
+            *effects: Effects to add.
+
+        Returns:
+            Self for method chaining.
+        """
+        from comix.effect.effect import Effect
+
+        for effect in effects:
+            if isinstance(effect, Effect) and effect not in self._effects:
+                self._effects.append(effect)
+        return self
+
+    def remove_effect(self, *effects: Effect) -> Self:
+        """Remove effects from the page.
+
+        Args:
+            *effects: Effects to remove.
+
+        Returns:
+            Self for method chaining.
+        """
+        for effect in effects:
+            if effect in self._effects:
+                self._effects.remove(effect)
+        return self
+
+    def get_effects(self) -> list[Effect]:
+        """Get all effects on the page."""
+        return list(self._effects)
 
     def set_layout(self, rows: int, cols: int) -> Self:
         """Set grid layout for panels."""
@@ -182,6 +220,7 @@ class Page:
             "margin": self.margin,
             "gutter": self.gutter,
             "cobjects": [obj.get_render_data() for obj in self._cobjects],
+            "effects": [effect.get_render_data() for effect in self._effects],
         }
 
 

@@ -13,6 +13,14 @@ from comix.cobject.bubble.bubble import (
 )
 from comix.cobject.text.text import Text, StyledText, SFX
 from comix.cobject.character.character import Character, Stickman, SimpleFace
+from comix.effect.effect import (
+    Effect,
+    ShakeEffect,
+    ZoomEffect,
+    MotionLines,
+    FocusLines,
+    ImpactEffect,
+)
 from comix.layout.flow import FlowLayout
 from comix.layout.grid import GridLayout
 from comix.page.page import Page, SinglePanel, Strip
@@ -33,6 +41,12 @@ __all__ = [
     "Character",
     "Stickman",
     "SimpleFace",
+    "Effect",
+    "ShakeEffect",
+    "ZoomEffect",
+    "MotionLines",
+    "FocusLines",
+    "ImpactEffect",
     "FlowLayout",
     "GridLayout",
     "Page",

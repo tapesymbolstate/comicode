@@ -74,12 +74,21 @@ Completed:
   - Renders all element types: Panel, Bubble, Text, Character, Shapes
   - Page.render() integration with format="png" and format="pdf"
   - 30 comprehensive tests for Cairo rendering
+- [x] Effect system for webtoons (305 tests passing)
+  - Effect base class with position, intensity, color, opacity, z_index
+  - ShakeEffect: visual tremor with ghost copies and motion blur lines
+  - ZoomEffect: radial speed lines for emphasis
+  - MotionLines: parallel speed lines for movement direction
+  - FocusLines: manga-style dramatic focus lines with optional fill
+  - ImpactEffect: burst patterns for collisions and impacts
+  - Page.add_effect() and Page.remove_effect() methods
+  - SVG and Cairo renderer integration
+  - 55 comprehensive tests for Effect system
 
 Remaining:
 - [ ] AI image integration (OpenAI/Replicate)
 - [ ] Markup parser for DSL-based comic creation
 - [ ] Web preview with hot reload
-- [ ] Effect system for webtoons (shake, zoom, motion lines)
 - [ ] Constraint-based layouts (advanced)
 
 ## Technical Notes
@@ -89,7 +98,7 @@ Remaining:
 - SVG as primary output format, PNG/PDF via Cairo
 - fonttools for font metrics
 - pycairo for PNG/PDF rendering
-- All tests passing (250/250)
+- All tests passing (305/305)
 - Python 3.13 required
 
 ## API Changes (Phase 3)
@@ -151,3 +160,50 @@ Remaining:
 
 ### New module
 - `comix/renderer/cairo_renderer.py` - Cairo-based PNG/PDF rendering
+
+### Effect system (new)
+
+#### Effect base class
+- `Effect(target, position, z_index, intensity, color, opacity, seed)` - Base class for effects
+- `set_position(position)` - Set effect position
+- `set_target(target)` - Set target CObject
+- `set_intensity(intensity)` - Set effect intensity (0-1)
+- `set_color(color)` - Set effect color
+- `set_opacity(opacity)` - Set effect opacity
+- `get_elements()` - Get generated EffectElements
+- `get_render_data()` - Get render data for renderers
+
+#### ShakeEffect
+- `ShakeEffect(target, position, shake_distance, num_copies, direction)` - Visual tremor effect
+- `direction`: "horizontal", "vertical", or "both"
+- Generates ghost copies and motion blur lines
+
+#### ZoomEffect
+- `ZoomEffect(target, position, num_lines, inner_radius, outer_radius)` - Radial zoom/emphasis
+- Generates radial speed lines converging on target
+
+#### MotionLines
+- `MotionLines(target, position, direction, num_lines, line_length, spread, taper)` - Speed lines
+- `set_direction(radians)` or `set_direction_degrees(degrees)` - Set motion direction
+- Generates parallel lines indicating movement
+
+#### FocusLines
+- `FocusLines(target, position, num_lines, inner_gap, outer_radius, fill_background)` - Dramatic focus
+- `set_fill_background(fill, color)` - Enable alternating fill pattern
+- Manga-style converging lines
+
+#### ImpactEffect
+- `ImpactEffect(target, position, num_spikes, inner_radius, outer_radius, fill_center)` - Impact burst
+- Star burst pattern with debris lines
+
+#### Page class additions
+- `add_effect(*effects)` - Add effects to page
+- `remove_effect(*effects)` - Remove effects from page
+- `get_effects()` - Get all effects on page
+
+#### Exports
+- All effect classes exported from main `comix` package
+- Also available from `comix.effect` module
+
+### New module
+- `comix/effect/effect.py` - Effect system implementation

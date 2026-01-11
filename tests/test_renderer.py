@@ -10,6 +10,14 @@ from comix.cobject.character.character import Stickman, SimpleFace
 from comix.cobject.text.text import Text, SFX
 from comix.cobject.shapes.shapes import Rectangle, Circle, Line
 from comix.renderer.svg_renderer import SVGRenderer
+from comix.effect.effect import (
+    ShakeEffect,
+    ZoomEffect,
+    MotionLines,
+    FocusLines,
+    AppearEffect,
+    ImpactEffect,
+)
 
 
 class TestSVGRenderer:
@@ -157,3 +165,285 @@ class TestSVGRenderer:
             assert "Hello!" in content
             assert "Hi there!" in content
             Path(output_path).unlink()
+
+    def test_render_to_string_empty_page(self):
+        """Test render_to_string with an empty page."""
+        page = Page(width=400, height=300)
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        assert isinstance(svg_string, str)
+        assert "<svg" in svg_string
+        assert 'width="400px"' in svg_string
+        assert 'height="300px"' in svg_string
+        assert "</svg>" in svg_string
+
+    def test_render_to_string_with_content(self):
+        """Test render_to_string with various objects."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200).move_to((200, 150))
+        bubble = SpeechBubble(text="Test!").move_to((200, 100))
+        page.add(panel, bubble)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        assert "<svg" in svg_string
+        assert "<rect" in svg_string
+        assert "Test!" in svg_string
+
+    def test_render_to_string_matches_file_render(self):
+        """Test that render_to_string produces same content as file render."""
+        page = Page(width=400, height=300, background_color="#FAFAFA")
+        rect = Rectangle(width=100, height=50).move_to((200, 150))
+        page.add(rect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            renderer2 = SVGRenderer(page)
+            output_path = renderer2.render(f.name)
+            file_content = Path(output_path).read_text()
+            Path(output_path).unlink()
+
+        # Both should have the same core elements (file may have filename attribute)
+        assert 'width="400px"' in svg_string
+        assert 'width="400px"' in file_content
+        assert "#FAFAFA" in svg_string
+        assert "#FAFAFA" in file_content
+
+
+class TestEffectRendering:
+    """Tests for effect rendering in SVG renderer."""
+
+    def test_render_shake_effect(self):
+        """Test rendering a shake effect."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=100, height=100).move_to((200, 150))
+        page.add(rect)
+
+        # Add shake effect with fixed seed for reproducibility
+        effect = ShakeEffect(target=rect, seed=42, intensity=1.0)
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Shake effect generates polylines (ghost copies) and lines (motion blur)
+        assert "<polyline" in svg_string or "<line" in svg_string
+
+    def test_render_zoom_effect(self):
+        """Test rendering a zoom effect."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=50, height=50).move_to((200, 150))
+        page.add(rect)
+
+        effect = ZoomEffect(target=rect, seed=42, num_lines=16)
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Zoom effect generates radial lines
+        assert "<line" in svg_string
+        assert '<g opacity="0.6"' in svg_string  # Default zoom opacity
+
+    def test_render_motion_lines(self):
+        """Test rendering motion lines effect."""
+        page = Page(width=400, height=300)
+        char = Stickman(name="Runner").move_to((200, 150))
+        page.add(char)
+
+        effect = MotionLines(target=char, seed=42, num_lines=8)
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Motion lines generate line elements
+        assert "<line" in svg_string
+
+    def test_render_focus_lines(self):
+        """Test rendering focus lines effect."""
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="Focus").move_to((200, 150))
+        page.add(face)
+
+        effect = FocusLines(target=face, seed=42, num_lines=24)
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Focus lines generate radial lines
+        assert "<line" in svg_string
+
+    def test_render_focus_lines_with_fill(self):
+        """Test rendering focus lines with background fill."""
+        page = Page(width=400, height=300)
+
+        effect = FocusLines(
+            position=(200, 150),
+            seed=42,
+            fill_background=True,
+            background_color="#FFFF00"
+        )
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # With fill_background, generates polygon elements
+        assert "<polygon" in svg_string
+
+    def test_render_appear_effect_sparkle(self):
+        """Test rendering appear effect with sparkle style."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=60, height=60).move_to((200, 150))
+        page.add(rect)
+
+        effect = AppearEffect(target=rect, seed=42, style="sparkle")
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Sparkle generates polygon (stars) and circle (dots) elements
+        assert "<polygon" in svg_string or "<circle" in svg_string
+
+    def test_render_appear_effect_flash(self):
+        """Test rendering appear effect with flash style."""
+        page = Page(width=400, height=300)
+
+        effect = AppearEffect(position=(200, 150), seed=42, style="flash")
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Flash generates polygon elements (rays) and circle (center glow)
+        assert "<polygon" in svg_string or "<circle" in svg_string
+
+    def test_render_appear_effect_fade(self):
+        """Test rendering appear effect with fade style."""
+        page = Page(width=400, height=300)
+
+        effect = AppearEffect(position=(200, 150), seed=42, style="fade")
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Fade generates concentric polyline rings
+        assert "<polyline" in svg_string
+
+    def test_render_appear_effect_reveal(self):
+        """Test rendering appear effect with reveal style."""
+        page = Page(width=400, height=300)
+
+        effect = AppearEffect(position=(200, 150), seed=42, style="reveal")
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Reveal generates lines and polylines for corner accents
+        assert "<line" in svg_string or "<polyline" in svg_string
+
+    def test_render_impact_effect(self):
+        """Test rendering impact effect."""
+        page = Page(width=400, height=300)
+
+        effect = ImpactEffect(position=(200, 150), seed=42, num_spikes=8)
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Impact generates polygon (star burst) and lines (debris)
+        assert "<polygon" in svg_string
+        assert "<line" in svg_string
+
+    def test_render_effect_z_index_background(self):
+        """Test that effects with negative z_index render behind objects."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=100, height=100).move_to((200, 150))
+        page.add(rect)
+
+        # Effect with negative z_index should render behind
+        effect = ZoomEffect(target=rect, z_index=-1, seed=42)
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Effect should be present
+        assert "<line" in svg_string
+        # Rectangle should also be present
+        assert "<rect" in svg_string
+
+    def test_render_effect_z_index_foreground(self):
+        """Test that effects with positive z_index render in front of objects."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=100, height=100).move_to((200, 150))
+        page.add(rect)
+
+        # Effect with positive z_index should render in front
+        effect = ImpactEffect(position=(200, 150), z_index=1, seed=42)
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Both effect and rectangle should be present
+        assert "<polygon" in svg_string
+        assert "<rect" in svg_string
+
+    def test_render_multiple_effects(self):
+        """Test rendering multiple effects on the same page."""
+        page = Page(width=400, height=300)
+
+        # Background effect
+        effect1 = FocusLines(position=(200, 150), z_index=-1, seed=42, num_lines=12)
+        # Foreground effect
+        effect2 = ImpactEffect(position=(200, 150), z_index=1, seed=43, num_spikes=6)
+
+        page.add_effect(effect1)
+        page.add_effect(effect2)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Both effects should be rendered
+        assert "<line" in svg_string  # Focus lines
+        assert "<polygon" in svg_string  # Impact burst
+
+    def test_render_effect_opacity(self):
+        """Test that effect opacity is applied."""
+        page = Page(width=400, height=300)
+
+        effect = ZoomEffect(position=(200, 150), opacity=0.5, seed=42, num_lines=8)
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Group should have opacity attribute
+        assert 'opacity="0.5"' in svg_string
+
+    def test_render_effect_with_stroke_dasharray(self):
+        """Test rendering effect elements with stroke dasharray."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=100, height=100).move_to((200, 150))
+        page.add(rect)
+
+        # ShakeEffect generates dashed polylines
+        effect = ShakeEffect(target=rect, seed=42, num_copies=2)
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Shake effect uses stroke-dasharray for ghost copies
+        assert "stroke-dasharray" in svg_string

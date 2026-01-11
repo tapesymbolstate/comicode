@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete
 
-All 4 phases have been implemented with **603 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **621 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -28,6 +28,7 @@ All 4 phases have been implemented with **603 tests passing**, mypy clean, and r
 - **Expanded Test Coverage**: Dedicated test suites for Text/StyledText/SFX, Rectangle/Circle/Line, and Parser (ParseError, expressions, facing directions)
 - **CLI Help**: Improved help text with default values and DPI information
 - **CLI Command Tests**: Comprehensive test coverage for all CLI commands (info, render, preview, serve) using Click CliRunner (38 tests)
+- **SVG Renderer Tests**: Added render_to_string() tests and comprehensive effect rendering tests (18 new tests)
 
 ### Technical Stack
 

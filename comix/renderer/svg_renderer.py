@@ -166,6 +166,8 @@ class SVGRenderer:
             self._render_circle(data, group)
         elif obj_type == "Line":
             self._render_line(data, group)
+        elif obj_type in ("Image", "AIImage"):
+            self._render_image(data, group)
         else:
             self._render_generic(data, group)
 
@@ -503,6 +505,70 @@ class SVGRenderer:
             line["stroke-dasharray"] = "2,2"
 
         group.add(line)
+
+    def _render_image(self, data: dict, group: Group) -> None:
+        """Render an image element."""
+        pos = data.get("position", [0, 0])
+        width = data.get("image_width", 100)
+        height = data.get("image_height", 100)
+        data_uri = data.get("data_uri")
+        source = data.get("source")
+        preserve_aspect = data.get("preserve_aspect_ratio", True)
+
+        # Calculate position (centered on position)
+        x = pos[0] - width / 2
+        y = pos[1] - height / 2
+
+        # Determine image href
+        href = None
+        if data_uri:
+            href = data_uri
+        elif source:
+            # Use source directly (file path or URL)
+            href = source
+
+        if href:
+            # Map fit mode to SVG preserveAspectRatio
+            fit = data.get("fit", "contain")
+            if preserve_aspect:
+                if fit == "contain":
+                    aspect_ratio = "xMidYMid meet"
+                elif fit == "cover":
+                    aspect_ratio = "xMidYMid slice"
+                else:
+                    aspect_ratio = "xMidYMid meet"
+            else:
+                aspect_ratio = "none"
+
+            image = self._dwg.image(
+                href=href,
+                insert=(x, y),
+                size=(width, height),
+            )
+            image["preserveAspectRatio"] = aspect_ratio
+            group.add(image)
+        else:
+            # No image data - render placeholder rectangle
+            placeholder = Rect(
+                insert=(x, y),
+                size=(width, height),
+                fill="#EEEEEE",
+                stroke="#CCCCCC",
+                stroke_width=1,
+            )
+            group.add(placeholder)
+
+            # Add placeholder text
+            text = SVGText(
+                "No image",
+                insert=(pos[0], pos[1]),
+                text_anchor="middle",
+                dominant_baseline="central",
+                font_family="sans-serif",
+                font_size=12,
+                fill="#999999",
+            )
+            group.add(text)
 
     def _render_generic(self, data: dict, group: Group) -> None:
         """Render a generic CObject using its points."""

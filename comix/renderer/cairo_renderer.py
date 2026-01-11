@@ -173,6 +173,8 @@ class CairoRenderer:
             self._render_circle(data)
         elif obj_type == "Line":
             self._render_line(data)
+        elif obj_type in ("Image", "AIImage"):
+            self._render_image(data)
         else:
             self._render_generic(data)
 
@@ -488,6 +490,132 @@ class CairoRenderer:
         ctx.set_line_width(data.get("stroke_width", 2))
         self._set_dash_style(data.get("stroke_style", "solid"))
         ctx.stroke()
+
+    def _render_image(self, data: dict) -> None:
+        """Render an image element."""
+        ctx = self._ctx
+        assert ctx is not None
+
+        pos = data.get("position", [0, 0])
+        width = data.get("image_width", 100)
+        height = data.get("image_height", 100)
+        base64_data = data.get("base64_data")
+
+        # Calculate position (centered on position)
+        x = pos[0] - width / 2
+        y = pos[1] - height / 2
+
+        if base64_data:
+            try:
+                import base64
+                import io
+
+                try:
+                    from PIL import Image as PILImage
+                except ImportError:
+                    # Pillow not available, render placeholder
+                    self._render_image_placeholder(x, y, width, height, "PIL not available")
+                    return
+
+                # Decode base64 to image
+                image_data = base64.b64decode(base64_data)
+                pil_image = PILImage.open(io.BytesIO(image_data))
+
+                # Handle aspect ratio
+                fit = data.get("fit", "contain")
+                preserve_aspect = data.get("preserve_aspect_ratio", True)
+
+                if preserve_aspect and fit in ("contain", "cover"):
+                    # Calculate scaled dimensions
+                    orig_w, orig_h = pil_image.size
+                    scale_w = width / orig_w
+                    scale_h = height / orig_h
+
+                    if fit == "contain":
+                        scale = min(scale_w, scale_h)
+                    else:  # cover
+                        scale = max(scale_w, scale_h)
+
+                    new_w = int(orig_w * scale)
+                    new_h = int(orig_h * scale)
+
+                    # Center within bounds
+                    offset_x = (width - new_w) / 2
+                    offset_y = (height - new_h) / 2
+
+                    # Resize image
+                    pil_image = pil_image.resize(
+                        (new_w, new_h), PILImage.Resampling.LANCZOS
+                    )
+                    draw_x = x + offset_x
+                    draw_y = y + offset_y
+                    draw_w = new_w
+                    draw_h = new_h
+                else:
+                    # Fill mode - resize to exact dimensions
+                    pil_image = pil_image.resize(
+                        (int(width), int(height)), PILImage.Resampling.LANCZOS
+                    )
+                    draw_x = x
+                    draw_y = y
+                    draw_w = width
+                    draw_h = height
+
+                # Convert to RGBA if needed
+                if pil_image.mode != "RGBA":
+                    pil_image = pil_image.convert("RGBA")
+
+                # Create Cairo surface from PIL image
+                img_width, img_height = pil_image.size
+                img_data = pil_image.tobytes("raw", "BGRa")
+
+                surface = cairo.ImageSurface.create_for_data(
+                    bytearray(img_data),
+                    cairo.FORMAT_ARGB32,
+                    img_width,
+                    img_height,
+                )
+
+                # Draw image
+                ctx.save()
+                ctx.translate(draw_x, draw_y)
+                ctx.set_source_surface(surface, 0, 0)
+                ctx.rectangle(0, 0, draw_w, draw_h)
+                ctx.fill()
+                ctx.restore()
+
+            except Exception as e:
+                # On error, render placeholder with error message
+                self._render_image_placeholder(x, y, width, height, f"Error: {str(e)[:20]}")
+        else:
+            # No image data - render placeholder
+            self._render_image_placeholder(x, y, width, height, "No image")
+
+    def _render_image_placeholder(
+        self, x: float, y: float, width: float, height: float, text: str
+    ) -> None:
+        """Render a placeholder rectangle for images without data."""
+        ctx = self._ctx
+        assert ctx is not None
+
+        # Draw placeholder rectangle
+        ctx.rectangle(x, y, width, height)
+        self._set_color("#EEEEEE")
+        ctx.fill_preserve()
+        self._set_color("#CCCCCC")
+        ctx.set_line_width(1)
+        ctx.stroke()
+
+        # Draw placeholder text
+        self._draw_text(
+            text,
+            x + width / 2,
+            y + height / 2,
+            font_family="sans-serif",
+            font_size=12,
+            color="#999999",
+            align="center",
+        )
 
     def _render_generic(self, data: dict) -> None:
         """Render a generic CObject using its points."""

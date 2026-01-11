@@ -13,6 +13,8 @@ from comix.cobject.bubble.bubble import (
 )
 from comix.cobject.text.text import Text, StyledText, SFX
 from comix.cobject.character.character import Character, Stickman, SimpleFace
+from comix.cobject.image.image import Image
+from comix.cobject.image.ai_image import AIImage, AIProvider, AIImageError
 from comix.effect.effect import (
     Effect,
     ShakeEffect,
@@ -46,6 +48,11 @@ __all__ = [
     "Character",
     "Stickman",
     "SimpleFace",
+    # Images
+    "Image",
+    "AIImage",
+    "AIProvider",
+    "AIImageError",
     # Effects
     "Effect",
     "ShakeEffect",

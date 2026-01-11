@@ -96,9 +96,17 @@ Completed:
   - Multiple bubble types: speech, thought, shout, whisper
   - Automatic Page object generation with panels, characters, and bubbles
   - 42 comprehensive tests for parser
+- [x] AI image integration (OpenAI/Replicate) (390 tests passing)
+  - Image base class for displaying images from files, URLs, or base64 data
+  - AIImage class for AI-generated images via OpenAI DALL-E or Replicate
+  - Supports async generation with generate_async() and sync with generate()
+  - Multiple fit modes: contain, cover, fill, none
+  - Aspect ratio preservation
+  - SVG and Cairo renderer support for Image/AIImage
+  - Placeholder rendering when no image data available
+  - 43 comprehensive tests for image module
 
 Remaining:
-- [ ] AI image integration (OpenAI/Replicate)
 - [ ] Web preview with hot reload
 - [ ] Constraint-based layouts (advanced)
 
@@ -109,7 +117,7 @@ Remaining:
 - SVG as primary output format, PNG/PDF via Cairo
 - fonttools for font metrics
 - pycairo for PNG/PDF rendering
-- All tests passing (347/347)
+- All tests passing (390/390)
 - Python 3.13 required
 
 ## API Changes (Phase 3)
@@ -261,3 +269,40 @@ narrator: "text"                     # Narrator box
 
 ### New module
 - `comix/parser/parser.py` - Markup parser implementation
+
+### Image system (new)
+
+#### Image class
+- `Image(source, width, height, preserve_aspect_ratio, fit)` - Display images in comics
+- `set_source(source)` - Set image source (file path, URL, or data URI)
+- `set_size(width, height)` - Set display dimensions
+- `set_fit(fit)` - Set fit mode ("contain", "cover", "fill", "none")
+- `load_from_file(path)` - Load image from file with auto MIME detection
+- `set_base64_data(data, mime_type)` - Set image from base64 data
+- `get_base64_data()` - Get base64-encoded image data
+- `get_data_uri()` - Get complete data URI
+
+#### AIImage class
+- `AIImage(prompt, provider, model, width, height, quality, style, negative_prompt, seed)` - AI-generated images
+- `set_prompt(prompt)` - Set generation prompt
+- `set_provider(provider)` - Set AI provider (AIProvider.OPENAI or AIProvider.REPLICATE)
+- `set_model(model)` - Set specific model
+- `generate()` - Synchronous image generation
+- `generate_async()` - Asynchronous image generation
+- `get_generation_metadata()` - Get metadata about the generation
+
+#### AIProvider enum
+- `AIProvider.OPENAI` - OpenAI DALL-E provider
+- `AIProvider.REPLICATE` - Replicate API provider
+
+#### Dependencies
+- Optional `ai` extras: `uv sync --extra ai`
+- Requires openai>=1.0.0, replicate>=0.5.0
+
+#### Exports
+- `Image`, `AIImage`, `AIProvider`, `AIImageError` exported from main `comix` package
+- Also available from `comix.cobject.image` module
+
+### New module
+- `comix/cobject/image/image.py` - Image CObject implementation
+- `comix/cobject/image/ai_image.py` - AIImage with OpenAI/Replicate support

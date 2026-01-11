@@ -26,6 +26,7 @@ All 4 phases have been implemented with **550 tests passing**, mypy clean, and r
 - **Preview Server**: Hot reload web preview with file watching
 - **CJK Text Support**: Proper width estimation for Korean/Japanese/Chinese characters
 - **Expanded Test Coverage**: Dedicated test suites for Text/StyledText/SFX, Rectangle/Circle/Line, and Parser (ParseError, expressions, facing directions)
+- **CLI Help**: Improved help text with default values and DPI information
 
 ### Technical Stack
 

@@ -6,6 +6,11 @@ from comix.utils.geometry import (
     rotate_points,
     translate_points,
     scale_points,
+    distance,
+    midpoint,
+    bounding_box,
+    normalize_angle,
+    angle_between,
 )
 
 __all__ = [
@@ -15,4 +20,9 @@ __all__ = [
     "rotate_points",
     "translate_points",
     "scale_points",
+    "distance",
+    "midpoint",
+    "bounding_box",
+    "normalize_angle",
+    "angle_between",
 ]

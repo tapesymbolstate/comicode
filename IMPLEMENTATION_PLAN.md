@@ -423,3 +423,36 @@ All classes were already implemented but not exported from the main package. Now
 ```python
 from comix import Rectangle, Circle, Line, Style, Theme, MANGA_STYLE, MANGA_THEME
 ```
+
+### Geometry Utilities (new exports)
+- `distance` - Calculate distance between two points
+- `midpoint` - Calculate midpoint between two points
+- `bounding_box` - Calculate bounding box of points
+- `normalize_angle` - Normalize angle to [-π, π] range
+- `angle_between` - Calculate angle from one point to another
+
+### Font System (new exports)
+- `FontInfo` - Font information dataclass
+- `FontMetrics` - Font metrics for text measurement
+- `FontRegistry` - Registry for font discovery and management
+- `get_font_registry()` - Access the global font registry
+- `estimate_text_width()` - Estimate text width for given font
+- `estimate_text_height()` - Estimate text height for given font
+
+### Renderer Classes (new exports)
+- `SVGRenderer` - SVG output renderer (always available)
+- `CairoRenderer` - PNG/PDF output renderer (optional, requires pycairo)
+
+### Constraint Layout Utilities (new exports)
+- `ConstraintValue` - Constraint value with arithmetic operations (+, -, *, /)
+- `ElementRef` - Reference to element edges for cross-element constraints
+
+Users can now import these utilities directly:
+```python
+from comix import (
+    distance, midpoint, bounding_box,
+    FontRegistry, estimate_text_width,
+    SVGRenderer, CairoRenderer,
+    ConstraintValue, ElementRef,
+)
+```

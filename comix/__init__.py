@@ -24,17 +24,31 @@ from comix.effect.effect import (
     FocusLines,
     ImpactEffect,
 )
-from comix.layout.constraints import ConstraintLayout, ConstraintPriority
+from comix.layout.constraints import (
+    ConstraintLayout,
+    ConstraintPriority,
+    ConstraintValue,
+    ElementRef,
+)
 from comix.layout.flow import FlowLayout
 from comix.layout.grid import GridLayout
 from comix.page.page import Page, SinglePanel, Strip
 from comix.parser import parse_markup, MarkupParser, ParseError
+from comix.renderer.svg_renderer import SVGRenderer
 from comix.style.style import (
     Style,
     MANGA_STYLE,
     WEBTOON_STYLE,
     COMIC_STYLE,
     MINIMAL_STYLE,
+)
+from comix.style.font import (
+    FontInfo,
+    FontMetrics,
+    FontRegistry,
+    get_font_registry,
+    estimate_text_width,
+    estimate_text_height,
 )
 from comix.style.theme import (
     Theme,
@@ -50,10 +64,27 @@ from comix.style.theme import (
     register_theme,
     get_theme_registry,
 )
+from comix.utils.geometry import (
+    distance,
+    midpoint,
+    bounding_box,
+    normalize_angle,
+    angle_between,
+)
+
+# Optional Cairo renderer (requires pycairo)
+try:
+    from comix.renderer.cairo_renderer import CairoRenderer
+
+    _CAIRO_AVAILABLE = True
+except ImportError:
+    _CAIRO_AVAILABLE = False
+    CairoRenderer = None  # type: ignore[misc, assignment]
 
 # Optional preview module (requires watchdog)
 try:
     from comix.preview import PreviewServer, PreviewError, serve as preview_serve
+
     _PREVIEW_AVAILABLE = True
 except ImportError:
     _PREVIEW_AVAILABLE = False
@@ -100,6 +131,8 @@ __all__ = [
     # Layout
     "ConstraintLayout",
     "ConstraintPriority",
+    "ConstraintValue",
+    "ElementRef",
     "FlowLayout",
     "GridLayout",
     # Page
@@ -110,12 +143,22 @@ __all__ = [
     "parse_markup",
     "MarkupParser",
     "ParseError",
+    # Renderers
+    "SVGRenderer",
+    "CairoRenderer",
     # Style
     "Style",
     "MANGA_STYLE",
     "WEBTOON_STYLE",
     "COMIC_STYLE",
     "MINIMAL_STYLE",
+    # Font utilities
+    "FontInfo",
+    "FontMetrics",
+    "FontRegistry",
+    "get_font_registry",
+    "estimate_text_width",
+    "estimate_text_height",
     # Theme
     "Theme",
     "ColorPalette",
@@ -129,6 +172,12 @@ __all__ = [
     "set_default_theme",
     "register_theme",
     "get_theme_registry",
+    # Geometry utilities
+    "distance",
+    "midpoint",
+    "bounding_box",
+    "normalize_angle",
+    "angle_between",
     # Preview (optional)
     "PreviewServer",
     "PreviewError",

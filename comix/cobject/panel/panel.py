@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Self
+from typing import Any, Self
 
 import numpy as np
 
@@ -34,7 +34,7 @@ class Panel(CObject):
         border: Border | None = None,
         background_color: str = "#FFFFFF",
         padding: float = 10.0,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.width = width
@@ -108,7 +108,7 @@ class Panel(CObject):
         half_h = self.height / 2 - self.padding
         return (-half_w, -half_h, half_w, half_h)
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = super().get_render_data()
         data.update(

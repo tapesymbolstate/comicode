@@ -28,8 +28,8 @@ try:
     WATCHDOG_AVAILABLE = True
 except ImportError:
     WATCHDOG_AVAILABLE = False
-    Observer = None  # Placeholder when watchdog not installed
-    FileSystemEventHandler = object  # Placeholder when watchdog not installed
+    Observer = None  # type: ignore[assignment]  # Placeholder when watchdog not installed
+    FileSystemEventHandler = object  # type: ignore[misc, assignment]  # Placeholder when watchdog not installed
 
 
 class PreviewError(Exception):

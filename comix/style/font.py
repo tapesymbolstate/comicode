@@ -13,7 +13,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import ClassVar
 
-from fontTools.ttLib import TTFont
+from fontTools.ttLib import TTFont  # type: ignore[import-untyped]
 
 
 @dataclass

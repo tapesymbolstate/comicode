@@ -6,7 +6,7 @@ import asyncio
 import base64
 import os
 from enum import Enum
-from typing import Self
+from typing import Any, Self
 
 from comix.cobject.image.image import Image
 
@@ -71,7 +71,7 @@ class AIImage(Image):
         style: str | None = None,  # "vivid" or "natural" (OpenAI)
         negative_prompt: str | None = None,  # For Replicate models
         seed: int | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """Initialize an AIImage.
 
@@ -109,7 +109,7 @@ class AIImage(Image):
 
         # Generation state
         self._generated = False
-        self._generation_metadata: dict = {}
+        self._generation_metadata: dict[str, Any] = {}
 
     @property
     def is_generated(self) -> bool:
@@ -190,7 +190,7 @@ class AIImage(Image):
     async def _generate_openai(self) -> None:
         """Generate image using OpenAI DALL-E."""
         try:
-            from openai import AsyncOpenAI
+            from openai import AsyncOpenAI  # type: ignore[import-not-found]
         except ImportError as e:
             raise AIProviderNotAvailableError(
                 "OpenAI package not installed. Install with: pip install openai"
@@ -209,7 +209,7 @@ class AIImage(Image):
         size = self._get_openai_size()
 
         try:
-            kwargs: dict = {
+            kwargs: dict[str, Any] = {
                 "model": self.model,
                 "prompt": self.prompt,
                 "size": size,
@@ -247,7 +247,7 @@ class AIImage(Image):
     async def _generate_replicate(self) -> None:
         """Generate image using Replicate."""
         try:
-            import replicate
+            import replicate  # type: ignore[import-not-found]
         except ImportError as e:
             raise AIProviderNotAvailableError(
                 "Replicate package not installed. Install with: pip install replicate"
@@ -261,7 +261,7 @@ class AIImage(Image):
 
         try:
             # Build input parameters
-            input_params: dict = {
+            input_params: dict[str, Any] = {
                 "prompt": self.prompt,
                 "width": int(self.width),
                 "height": int(self.height),
@@ -315,9 +315,9 @@ class AIImage(Image):
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
 
-            def fetch():
+            def fetch() -> bytes:
                 with urllib.request.urlopen(url, context=ctx) as response:
-                    return response.read()
+                    return response.read()  # type: ignore[no-any-return]
 
             data = await asyncio.to_thread(fetch)
             self.set_base64_data(base64.b64encode(data).decode("utf-8"), "image/png")
@@ -337,7 +337,7 @@ class AIImage(Image):
         else:
             return "1024x1024"  # Square
 
-    def get_generation_metadata(self) -> dict:
+    def get_generation_metadata(self) -> dict[str, Any]:
         """Get metadata about the generation.
 
         Returns:
@@ -345,7 +345,7 @@ class AIImage(Image):
         """
         return self._generation_metadata.copy()
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = super().get_render_data()
         data.update(

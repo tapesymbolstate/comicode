@@ -37,7 +37,8 @@ def create_bubble_path(
     # Calculate effective corner radii
     max_radius = min(half_w, half_h)
     if corner_radii is not None:
-        radii = tuple(min(r, max_radius) for r in corner_radii)
+        r0, r1, r2, r3 = corner_radii
+        radii = (min(r0, max_radius), min(r1, max_radius), min(r2, max_radius), min(r3, max_radius))
     else:
         r = min(corner_radius, max_radius)
         radii = (r, r, r, r)

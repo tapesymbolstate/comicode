@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import numpy as np
 
@@ -50,7 +50,7 @@ class Bubble(CObject):
         wobble: float = 0.0,
         wobble_mode: str = "random",
         emphasis: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -364,7 +364,7 @@ class Bubble(CObject):
 
         return self
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = super().get_render_data()
 
@@ -409,7 +409,7 @@ class Bubble(CObject):
 class SpeechBubble(Bubble):
     """Standard speech bubble for dialogue."""
 
-    def __init__(self, text: str = "", **kwargs) -> None:
+    def __init__(self, text: str = "", **kwargs: Any) -> None:
         kwargs.setdefault("bubble_type", Bubble.SPEECH)
         super().__init__(text=text, **kwargs)
 
@@ -417,7 +417,7 @@ class SpeechBubble(Bubble):
 class ThoughtBubble(Bubble):
     """Cloud-shaped thought bubble."""
 
-    def __init__(self, text: str = "", **kwargs) -> None:
+    def __init__(self, text: str = "", **kwargs: Any) -> None:
         kwargs.setdefault("bubble_type", Bubble.THOUGHT)
         kwargs.setdefault("corner_radius", 999)
         kwargs.setdefault("border_style", "solid")
@@ -427,7 +427,7 @@ class ThoughtBubble(Bubble):
 class ShoutBubble(Bubble):
     """Spiky emphasis bubble for shouting."""
 
-    def __init__(self, text: str = "", **kwargs) -> None:
+    def __init__(self, text: str = "", **kwargs: Any) -> None:
         kwargs.setdefault("bubble_type", Bubble.SHOUT)
         kwargs.setdefault("border_width", 3.0)
         kwargs.setdefault("font_size", 20.0)
@@ -437,7 +437,7 @@ class ShoutBubble(Bubble):
 class WhisperBubble(Bubble):
     """Dashed bubble for whispering."""
 
-    def __init__(self, text: str = "", **kwargs) -> None:
+    def __init__(self, text: str = "", **kwargs: Any) -> None:
         kwargs.setdefault("bubble_type", Bubble.WHISPER)
         kwargs.setdefault("border_style", "dashed")
         kwargs.setdefault("font_size", 14.0)
@@ -447,7 +447,7 @@ class WhisperBubble(Bubble):
 class NarratorBubble(Bubble):
     """Rectangular box for narration."""
 
-    def __init__(self, text: str = "", **kwargs) -> None:
+    def __init__(self, text: str = "", **kwargs: Any) -> None:
         kwargs.setdefault("bubble_type", Bubble.NARRATOR)
         kwargs.setdefault("corner_radius", 0.0)
         kwargs.setdefault("tail_length", 0.0)

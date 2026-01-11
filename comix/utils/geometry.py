@@ -55,7 +55,7 @@ def rotate_points(
     rotation_matrix = np.array([[cos_a, -sin_a], [sin_a, cos_a]])
     rotated = centered @ rotation_matrix.T
 
-    return rotated + np.array(center)
+    return rotated + np.array(center)  # type: ignore[no-any-return]
 
 
 def translate_points(
@@ -97,7 +97,7 @@ def scale_points(
     centered = points - np.array(center)
     scaled = centered * np.array(scale)
 
-    return scaled + np.array(center)
+    return scaled + np.array(center)  # type: ignore[no-any-return]
 
 
 def distance(p1: tuple[float, float], p2: tuple[float, float]) -> float:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import base64
 from pathlib import Path
-from typing import Self
+from typing import Any, Self
 
 import numpy as np
 
@@ -29,7 +29,7 @@ class Image(CObject):
         height: float = 100.0,
         preserve_aspect_ratio: bool = True,
         fit: str = "contain",  # "contain", "cover", "fill", "none"
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """Initialize an Image.
 
@@ -212,7 +212,7 @@ class Image(CObject):
             return f"data:{self._mime_type};base64,{data}"
         return None
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = super().get_render_data()
         data.update(

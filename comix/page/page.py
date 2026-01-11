@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
 from comix.cobject.cobject import CObject
 from comix.cobject.panel.panel import Panel
@@ -51,7 +51,7 @@ class Page:
     def remove(self, *cobjects: CObject) -> Self:
         """Remove CObjects from the page."""
         for obj in cobjects:
-            if obj in self._panels:
+            if isinstance(obj, Panel) and obj in self._panels:
                 self._panels.remove(obj)
             if obj in self._cobjects:
                 self._cobjects.remove(obj)
@@ -142,9 +142,9 @@ class Page:
         if self._layout and self._panels:
             # Use calculate_positions_for_objects for FlowLayout to respect panel sizes
             if isinstance(self._layout, FlowLayout):
-                # Cast panels to CObject list for type checker
+                # Cast panels to CObject list for FlowLayout
                 positions = self._layout.calculate_positions_for_objects(
-                    list(self._panels)  # type: ignore[arg-type]
+                    list(self._panels)
                 )
             else:
                 positions = self._layout.calculate_positions(len(self._panels))
@@ -191,7 +191,7 @@ class Page:
             from comix.renderer.cairo_renderer import CairoRenderer
 
             cairo_renderer = CairoRenderer(self)
-            return cairo_renderer.render(output_path, format=format, quality=quality)
+            return cairo_renderer.render(output_path, format=format, quality=quality)  # type: ignore[arg-type]
         else:
             raise NotImplementedError(f"Format '{format}' not yet implemented")
 
@@ -211,7 +211,7 @@ class Page:
             all_objects.extend(obj.get_family())
         return all_objects
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         return {
             "width": self.width,
@@ -227,7 +227,7 @@ class Page:
 class SinglePanel(Page):
     """Single panel comic."""
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._main_panel = Panel(
             width=self.width - 2 * self.margin,
@@ -249,7 +249,7 @@ class Strip(Page):
         self,
         panels: int = 4,
         direction: str = "horizontal",
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         if direction == "horizontal":
             kwargs.setdefault("width", 1200.0)

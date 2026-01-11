@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import numpy as np
 
@@ -101,7 +101,7 @@ class Character(CObject):
         expression: str | Expression = "neutral",
         pose: str | Pose = "standing",
         facing: str = "right",
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(name=name, **kwargs)
 
@@ -150,7 +150,7 @@ class Character(CObject):
         self._needs_update = True
         return self
 
-    def say(self, text: str, **bubble_kwargs) -> Bubble:
+    def say(self, text: str, **bubble_kwargs: Any) -> Bubble:
         """Create a speech bubble attached to this character."""
         from comix.cobject.bubble.bubble import SpeechBubble
 
@@ -158,7 +158,7 @@ class Character(CObject):
         bubble.attach_to(self)
         return bubble
 
-    def think(self, text: str, **bubble_kwargs) -> Bubble:
+    def think(self, text: str, **bubble_kwargs: Any) -> Bubble:
         """Create a thought bubble attached to this character."""
         from comix.cobject.bubble.bubble import ThoughtBubble
 
@@ -166,7 +166,7 @@ class Character(CObject):
         bubble.attach_to(self)
         return bubble
 
-    def shout(self, text: str, **bubble_kwargs) -> Bubble:
+    def shout(self, text: str, **bubble_kwargs: Any) -> Bubble:
         """Create a shout bubble attached to this character."""
         from comix.cobject.bubble.bubble import ShoutBubble
 
@@ -189,7 +189,7 @@ class Character(CObject):
             dtype=np.float64,
         )
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = super().get_render_data()
         data.update(
@@ -222,7 +222,7 @@ class Character(CObject):
 class Stickman(Character):
     """Simple stick figure character."""
 
-    def __init__(self, name: str = "Stickman", **kwargs) -> None:
+    def __init__(self, name: str = "Stickman", **kwargs: Any) -> None:
         kwargs.setdefault("style", "stickman")
         super().__init__(name=name, **kwargs)
 
@@ -284,7 +284,7 @@ class Stickman(Character):
 class SimpleFace(Character):
     """Simple emoji-style face character."""
 
-    def __init__(self, name: str = "Face", **kwargs) -> None:
+    def __init__(self, name: str = "Face", **kwargs: Any) -> None:
         kwargs.setdefault("style", "simple")
         kwargs.setdefault("height", 60.0)
         super().__init__(name=name, **kwargs)
@@ -299,7 +299,7 @@ class SimpleFace(Character):
 
         self._points = np.array(points, dtype=np.float64)
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = super().get_render_data()
         data["face_radius"] = self.character_height / 2

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Self
+from typing import Any, Self
 
 import numpy as np
 
@@ -20,7 +20,7 @@ class Rectangle(CObject):
         stroke_color: str = "#000000",
         stroke_width: float = 2.0,
         corner_radius: float = 0.0,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -56,7 +56,7 @@ class Rectangle(CObject):
         self.generate_points()
         return self
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = super().get_render_data()
         data.update(
@@ -82,7 +82,7 @@ class Circle(CObject):
         stroke_color: str = "#000000",
         stroke_width: float = 2.0,
         num_points: int = 32,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -107,7 +107,7 @@ class Circle(CObject):
         self.generate_points()
         return self
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = super().get_render_data()
         data.update(
@@ -131,7 +131,7 @@ class Line(CObject):
         stroke_color: str = "#000000",
         stroke_width: float = 2.0,
         stroke_style: str = "solid",
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -156,7 +156,7 @@ class Line(CObject):
         self.generate_points()
         return self
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = super().get_render_data()
         data.update(

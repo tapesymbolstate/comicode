@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -42,7 +43,7 @@ class GridLayout:
         self.offset_x = offset_x
         self.offset_y = offset_y
 
-    def calculate_positions(self, num_cells: int | None = None) -> list[dict]:
+    def calculate_positions(self, num_cells: int | None = None) -> list[dict[str, Any]]:
         """Calculate positions for all cells in the grid.
 
         Args:
@@ -91,7 +92,7 @@ class GridLayout:
 
         return positions
 
-    def get_cell(self, row: int, col: int) -> dict:
+    def get_cell(self, row: int, col: int) -> dict[str, Any]:
         """Get position data for a specific cell."""
         total_gutter_width = (self.cols - 1) * self.gutter
         total_gutter_height = (self.rows - 1) * self.gutter

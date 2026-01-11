@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import numpy as np
 
@@ -26,7 +26,7 @@ class Text(CObject):
         align: str = "left",
         line_height: float = 1.4,
         max_width: float | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -129,7 +129,7 @@ class Text(CObject):
 
         return self
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = super().get_render_data()
         data.update(
@@ -160,7 +160,7 @@ class StyledText(Text):
         padding: tuple[float, float, float, float] = (0, 0, 0, 0),
         border_color: str | None = None,
         border_width: float = 0,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(text=text, **kwargs)
 
@@ -169,7 +169,7 @@ class StyledText(Text):
         self.border_color = border_color
         self.border_width = border_width
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = super().get_render_data()
         data.update(
@@ -195,7 +195,7 @@ class SFX(Text):
         shadow: bool = False,
         shadow_color: str = "#00000033",
         shadow_offset: tuple[float, float] = (2.0, 2.0),
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         kwargs.setdefault("font_size", 32.0)
         kwargs.setdefault("font_weight", "bold")
@@ -208,7 +208,7 @@ class SFX(Text):
         self.shadow_color = shadow_color
         self.shadow_offset = shadow_offset
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = super().get_render_data()
         data.update(

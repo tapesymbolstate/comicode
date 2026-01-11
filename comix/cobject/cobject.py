@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import numpy as np
 from numpy.typing import NDArray
@@ -297,7 +297,7 @@ class CObject:
         """Generate the points for this object. Override in subclasses."""
         pass
 
-    def get_render_data(self) -> dict:
+    def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = {
             "type": self.__class__.__name__,

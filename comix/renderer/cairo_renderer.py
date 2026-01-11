@@ -35,7 +35,7 @@ class CairoRenderer:
             )
         self.page = page
         self._surface: cairo.Surface | None = None
-        self._ctx: cairo.Context | None = None
+        self._ctx: cairo.Context | None = None  # type: ignore[type-arg]
         self._dpi: int = self.DPI_MEDIUM
 
     def render(
@@ -188,7 +188,7 @@ class CairoRenderer:
 
         ctx.restore()
 
-    def _render_panel(self, data: dict) -> None:
+    def _render_panel(self, data: dict[str, Any]) -> None:
         """Render a panel."""
         ctx = self._ctx
         assert ctx is not None
@@ -215,7 +215,7 @@ class CairoRenderer:
         self._set_dash_style(border.get("style", "solid"))
         ctx.stroke()
 
-    def _render_bubble(self, data: dict) -> None:
+    def _render_bubble(self, data: dict[str, Any]) -> None:
         """Render a speech bubble."""
         ctx = self._ctx
         assert ctx is not None
@@ -293,7 +293,7 @@ class CairoRenderer:
                 align="center",
             )
 
-    def _render_text(self, data: dict) -> None:
+    def _render_text(self, data: dict[str, Any]) -> None:
         """Render text element."""
         ctx = self._ctx
         assert ctx is not None
@@ -332,7 +332,7 @@ class CairoRenderer:
             align=data.get("align", "center"),
         )
 
-    def _render_character(self, data: dict) -> None:
+    def _render_character(self, data: dict[str, Any]) -> None:
         """Render a character."""
         pos = data.get("position", [0, 0])
         style = data.get("style", "stickman")
@@ -344,7 +344,7 @@ class CairoRenderer:
         else:
             self._render_generic(data)
 
-    def _render_stickman(self, data: dict, pos: list) -> None:
+    def _render_stickman(self, data: dict[str, Any], pos: list[float]) -> None:
         """Render a stickman character."""
         ctx = self._ctx
         assert ctx is not None
@@ -378,7 +378,7 @@ class CairoRenderer:
                     ctx.set_line_width(stroke_width)
                     ctx.stroke()
 
-    def _render_simple_face(self, data: dict, pos: list) -> None:
+    def _render_simple_face(self, data: dict[str, Any], pos: list[float]) -> None:
         """Render a simple face character."""
         ctx = self._ctx
         assert ctx is not None
@@ -431,7 +431,7 @@ class CairoRenderer:
             ctx.line_to(pos[0] + radius * 0.3, mouth_y)
             ctx.stroke()
 
-    def _render_rectangle(self, data: dict) -> None:
+    def _render_rectangle(self, data: dict[str, Any]) -> None:
         """Render a rectangle."""
         ctx = self._ctx
         assert ctx is not None
@@ -455,7 +455,7 @@ class CairoRenderer:
         ctx.set_line_width(data.get("stroke_width", 2))
         ctx.stroke()
 
-    def _render_circle(self, data: dict) -> None:
+    def _render_circle(self, data: dict[str, Any]) -> None:
         """Render a circle."""
         ctx = self._ctx
         assert ctx is not None
@@ -474,7 +474,7 @@ class CairoRenderer:
         ctx.set_line_width(data.get("stroke_width", 2))
         ctx.stroke()
 
-    def _render_line(self, data: dict) -> None:
+    def _render_line(self, data: dict[str, Any]) -> None:
         """Render a line."""
         ctx = self._ctx
         assert ctx is not None
@@ -491,7 +491,7 @@ class CairoRenderer:
         self._set_dash_style(data.get("stroke_style", "solid"))
         ctx.stroke()
 
-    def _render_image(self, data: dict) -> None:
+    def _render_image(self, data: dict[str, Any]) -> None:
         """Render an image element."""
         ctx = self._ctx
         assert ctx is not None
@@ -544,7 +544,7 @@ class CairoRenderer:
                     offset_y = (height - new_h) / 2
 
                     # Resize image
-                    pil_image = pil_image.resize(
+                    pil_image = pil_image.resize(  # type: ignore[assignment]
                         (new_w, new_h), PILImage.Resampling.LANCZOS
                     )
                     draw_x = x + offset_x
@@ -553,7 +553,7 @@ class CairoRenderer:
                     draw_h = new_h
                 else:
                     # Fill mode - resize to exact dimensions
-                    pil_image = pil_image.resize(
+                    pil_image = pil_image.resize(  # type: ignore[assignment]
                         (int(width), int(height)), PILImage.Resampling.LANCZOS
                     )
                     draw_x = x
@@ -563,7 +563,7 @@ class CairoRenderer:
 
                 # Convert to RGBA if needed
                 if pil_image.mode != "RGBA":
-                    pil_image = pil_image.convert("RGBA")
+                    pil_image = pil_image.convert("RGBA")  # type: ignore[assignment]
 
                 # Create Cairo surface from PIL image
                 img_width, img_height = pil_image.size
@@ -617,7 +617,7 @@ class CairoRenderer:
             align="center",
         )
 
-    def _render_generic(self, data: dict) -> None:
+    def _render_generic(self, data: dict[str, Any]) -> None:
         """Render a generic CObject using its points."""
         ctx = self._ctx
         assert ctx is not None
@@ -790,7 +790,7 @@ class CairoRenderer:
 
         ctx.restore()
 
-    def _render_effect_element(self, element: dict) -> None:
+    def _render_effect_element(self, element: dict[str, Any]) -> None:
         """Render a single effect element."""
         ctx = self._ctx
         assert ctx is not None

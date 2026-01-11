@@ -5,13 +5,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import svgwrite
+import svgwrite  # type: ignore[import-untyped]
 from svgwrite import Drawing
-from svgwrite.container import Group
-from svgwrite.shapes import Circle as SVGCircle
+from svgwrite.container import Group  # type: ignore[import-untyped]
+from svgwrite.shapes import Circle as SVGCircle  # type: ignore[import-untyped]
 from svgwrite.shapes import Line as SVGLine
 from svgwrite.shapes import Polygon, Polyline, Rect
-from svgwrite.text import Text as SVGText
+from svgwrite.text import Text as SVGText  # type: ignore[import-untyped]
 
 if TYPE_CHECKING:
     from comix.effect.effect import Effect
@@ -81,6 +81,7 @@ class SVGRenderer:
         self._prepare_drawing(output_path)
 
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        assert self._dwg is not None
         self._dwg.save()
 
         return output_path
@@ -93,10 +94,12 @@ class SVGRenderer:
         """
         self._prepare_drawing()
 
-        return self._dwg.tostring()
+        assert self._dwg is not None
+        return self._dwg.tostring()  # type: ignore[no-any-return]
 
     def _render_effect(self, effect: Effect) -> None:
         """Render an effect to the SVG."""
+        assert self._dwg is not None
         data = effect.get_render_data()
         group = self._dwg.g(opacity=data.get("opacity", 1.0))
 
@@ -105,7 +108,7 @@ class SVGRenderer:
 
         self._dwg.add(group)
 
-    def _render_effect_element(self, element: dict, group: Group) -> None:
+    def _render_effect_element(self, element: dict[str, Any], group: Group) -> None:
         """Render a single effect element."""
         element_type = element.get("element_type", "")
         points = element.get("points", [])
@@ -165,6 +168,7 @@ class SVGRenderer:
 
     def _render_cobject(self, cobject: Any, parent_group: Group | None = None) -> None:
         """Render a CObject and its children."""
+        assert self._dwg is not None
         data = cobject.get_render_data()
         obj_type = data.get("type", "")
 
@@ -197,7 +201,7 @@ class SVGRenderer:
         else:
             self._dwg.add(group)
 
-    def _render_panel(self, data: dict, group: Group) -> None:
+    def _render_panel(self, data: dict[str, Any], group: Group) -> None:
         """Render a panel."""
         pos = data.get("position", [0, 0])
         width = data.get("width", 100)
@@ -226,7 +230,7 @@ class SVGRenderer:
 
         group.add(rect)
 
-    def _render_bubble(self, data: dict, group: Group) -> None:
+    def _render_bubble(self, data: dict[str, Any], group: Group) -> None:
         """Render a speech bubble."""
         pos = data.get("position", [0, 0])
         points = data.get("points", [])
@@ -316,7 +320,7 @@ class SVGRenderer:
             )
             group.add(text_elem)
 
-    def _render_text(self, data: dict, group: Group) -> None:
+    def _render_text(self, data: dict[str, Any], group: Group) -> None:
         """Render text element."""
         pos = data.get("position", [0, 0])
         text = data.get("text", "")
@@ -359,7 +363,7 @@ class SVGRenderer:
         )
         group.add(text_elem)
 
-    def _render_character(self, data: dict, group: Group) -> None:
+    def _render_character(self, data: dict[str, Any], group: Group) -> None:
         """Render a character."""
         pos = data.get("position", [0, 0])
         points = data.get("points", [])
@@ -373,7 +377,7 @@ class SVGRenderer:
             self._render_generic(data, group)
 
     def _render_stickman(
-        self, data: dict, group: Group, pos: list, points: list
+        self, data: dict[str, Any], group: Group, pos: list[float], points: list[list[float]]
     ) -> None:
         """Render a stickman character."""
         color = data.get("color", "#000000")
@@ -409,7 +413,7 @@ class SVGRenderer:
                     )
                     group.add(line)
 
-    def _render_simple_face(self, data: dict, group: Group, pos: list) -> None:
+    def _render_simple_face(self, data: dict[str, Any], group: Group, pos: list[float]) -> None:
         """Render a simple face character."""
         radius = data.get("face_radius", 30)
         color = data.get("color", "#000000")
@@ -468,7 +472,7 @@ class SVGRenderer:
             )
             group.add(mouth)
 
-    def _render_rectangle(self, data: dict, group: Group) -> None:
+    def _render_rectangle(self, data: dict[str, Any], group: Group) -> None:
         """Render a rectangle."""
         pos = data.get("position", [0, 0])
         width = data.get("rect_width", 100)
@@ -491,7 +495,7 @@ class SVGRenderer:
 
         group.add(rect)
 
-    def _render_circle(self, data: dict, group: Group) -> None:
+    def _render_circle(self, data: dict[str, Any], group: Group) -> None:
         """Render a circle."""
         pos = data.get("position", [0, 0])
 
@@ -504,7 +508,7 @@ class SVGRenderer:
         )
         group.add(circle)
 
-    def _render_line(self, data: dict, group: Group) -> None:
+    def _render_line(self, data: dict[str, Any], group: Group) -> None:
         """Render a line."""
         pos = data.get("position", [0, 0])
         start = data.get("start", [0, 0])
@@ -524,7 +528,7 @@ class SVGRenderer:
 
         group.add(line)
 
-    def _render_image(self, data: dict, group: Group) -> None:
+    def _render_image(self, data: dict[str, Any], group: Group) -> None:
         """Render an image element."""
         pos = data.get("position", [0, 0])
         width = data.get("image_width", 100)
@@ -558,6 +562,7 @@ class SVGRenderer:
             else:
                 aspect_ratio = "none"
 
+            assert self._dwg is not None
             image = self._dwg.image(
                 href=href,
                 insert=(x, y),
@@ -588,7 +593,7 @@ class SVGRenderer:
             )
             group.add(text)
 
-    def _render_generic(self, data: dict, group: Group) -> None:
+    def _render_generic(self, data: dict[str, Any], group: Group) -> None:
         """Render a generic CObject using its points."""
         pos = data.get("position", [0, 0])
         points = data.get("points", [])

@@ -37,7 +37,7 @@ except ImportError:
     _PREVIEW_AVAILABLE = False
     PreviewServer = None  # type: ignore[misc, assignment]
     PreviewError = None  # type: ignore[misc, assignment]
-    preview_serve = None  # type: ignore[misc, assignment]
+    preview_serve = None  # type: ignore[assignment]
 
 __all__ = [
     # Core objects

@@ -1,7 +1,7 @@
 """Comix - Code-based comic creation framework inspired by Manim."""
 
 from comix.cobject.cobject import CObject
-from comix.cobject.panel.panel import Panel
+from comix.cobject.panel.panel import Panel, Border
 from comix.cobject.bubble.bubble import (
     Bubble,
     SpeechBubble,
@@ -12,7 +12,13 @@ from comix.cobject.bubble.bubble import (
     auto_position_bubbles,
 )
 from comix.cobject.text.text import Text, StyledText, SFX
-from comix.cobject.character.character import Character, Stickman, SimpleFace
+from comix.cobject.character.character import (
+    Character,
+    Stickman,
+    SimpleFace,
+    Expression,
+    Pose,
+)
 from comix.cobject.shapes.shapes import Rectangle, Circle, Line
 from comix.cobject.image.image import Image
 from comix.cobject.image.ai_image import AIImage, AIProvider, AIImageError
@@ -101,6 +107,7 @@ __all__ = [
     # Core objects
     "CObject",
     "Panel",
+    "Border",
     # Bubbles
     "Bubble",
     "SpeechBubble",
@@ -117,6 +124,8 @@ __all__ = [
     "Character",
     "Stickman",
     "SimpleFace",
+    "Expression",
+    "Pose",
     # Shapes
     "Rectangle",
     "Circle",

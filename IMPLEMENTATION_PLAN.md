@@ -403,6 +403,13 @@ narrator: "text"                     # Narrator box
 
 Added missing exports to main `comix` package for better usability:
 
+### Panel Classes (new exports)
+- `Border` - Border style dataclass for panels (color, width, style, radius)
+
+### Character Classes (new exports)
+- `Expression` - Character expression definition with presets (neutral, happy, sad, angry, surprised, confused)
+- `Pose` - Character pose definition with presets (standing, sitting, walking, running, pointing, waving)
+
 ### Shape Classes (new exports)
 - `Rectangle` - Rectangle shape with configurable size, fill, stroke, corner radius
 - `Circle` - Circle shape with configurable radius, fill, stroke
@@ -421,7 +428,11 @@ Added missing exports to main `comix` package for better usability:
 
 All classes were already implemented but not exported from the main package. Now users can import directly:
 ```python
-from comix import Rectangle, Circle, Line, Style, Theme, MANGA_STYLE, MANGA_THEME
+from comix import (
+    Border, Expression, Pose,
+    Rectangle, Circle, Line,
+    Style, Theme, MANGA_STYLE, MANGA_THEME,
+)
 ```
 
 ### Geometry Utilities (new exports)

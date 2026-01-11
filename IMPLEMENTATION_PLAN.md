@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete
 
-All 4 phases have been implemented with **469 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **538 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -25,6 +25,7 @@ All 4 phases have been implemented with **469 tests passing**, mypy clean, and r
 - **AI Images**: OpenAI DALL-E and Replicate integration
 - **Preview Server**: Hot reload web preview with file watching
 - **CJK Text Support**: Proper width estimation for Korean/Japanese/Chinese characters
+- **Expanded Test Coverage**: Dedicated test suites for Text/StyledText/SFX and Rectangle/Circle/Line classes
 
 ### Technical Stack
 

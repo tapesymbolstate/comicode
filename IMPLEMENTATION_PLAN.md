@@ -135,9 +135,10 @@ All Phase 4 items have been implemented and tested (451 tests passing):
 - fonttools for font metrics
 - pycairo for PNG/PDF rendering
 - watchdog for file watching (optional)
-- All tests passing (451/451)
+- All tests passing (451/451) with no deprecation warnings
 - Mypy type checking passing (0 errors)
 - Python 3.13 required
+- Uses asyncio.run() for async-to-sync bridging (Python 3.7+ compatible)
 
 ## API Changes (Phase 3)
 

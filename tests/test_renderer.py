@@ -447,3 +447,143 @@ class TestEffectRendering:
 
         # Shake effect uses stroke-dasharray for ghost copies
         assert "stroke-dasharray" in svg_string
+
+
+class TestPanelBackgroundImage:
+    """Tests for panel background image rendering."""
+
+    def test_panel_with_background_image_file(self, tmp_path):
+        """Test rendering panel with a background image from file."""
+        # Create a simple test PNG image (1x1 red pixel)
+        import base64
+
+        # Minimal valid PNG (1x1 red pixel)
+        png_data = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx"
+            "0gAAAABJRU5ErkJggg=="
+        )
+        image_path = tmp_path / "test_bg.png"
+        image_path.write_bytes(png_data)
+
+        # Create panel with background image
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.move_to((200, 150))
+        panel.set_background(image=str(image_path))
+        page.add(panel)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should contain an image element with data URI
+        assert "<image" in svg_string
+        assert "data:image/png;base64" in svg_string
+
+    def test_panel_with_background_image_nonexistent(self):
+        """Test rendering panel with nonexistent background image falls back to path."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.move_to((200, 150))
+        panel.set_background(image="/nonexistent/path/image.png")
+        page.add(panel)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should still attempt to render with the path
+        assert "<image" in svg_string
+        assert "/nonexistent/path/image.png" in svg_string
+
+    def test_panel_with_background_image_and_rounded_corners(self, tmp_path):
+        """Test panel background image with rounded corners creates clip path."""
+        import base64
+
+        png_data = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx"
+            "0gAAAABJRU5ErkJggg=="
+        )
+        image_path = tmp_path / "test_bg_round.png"
+        image_path.write_bytes(png_data)
+
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.set_border(radius=20)  # Set radius through set_border method
+        panel.move_to((200, 150))
+        panel.set_background(image=str(image_path))
+        page.add(panel)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should have clip path for rounded corners
+        assert "<clipPath" in svg_string
+        assert "clip-path" in svg_string
+        assert "<image" in svg_string
+
+    def test_panel_background_color_renders_before_image(self, tmp_path):
+        """Test that background color is rendered before background image."""
+        import base64
+
+        png_data = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx"
+            "0gAAAABJRU5ErkJggg=="
+        )
+        image_path = tmp_path / "test_bg.png"
+        image_path.write_bytes(png_data)
+
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200, background_color="#FF0000")
+        panel.move_to((200, 150))
+        panel.set_background(image=str(image_path))
+        page.add(panel)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Both rect (background color) and image should be present
+        assert "<rect" in svg_string
+        assert "<image" in svg_string
+        assert "#FF0000" in svg_string
+
+    def test_panel_without_background_image(self):
+        """Test that panel without background image doesn't have image element."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.move_to((200, 150))
+        page.add(panel)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should have rect but not image
+        assert "<rect" in svg_string
+        # Count image elements - there should be none for a simple panel
+        # (unless other content has images)
+        image_count = svg_string.count("<image")
+        assert image_count == 0
+
+    def test_parser_background_image_renders(self, tmp_path):
+        """Test that parser-created panels with background image render correctly."""
+        import base64
+        from comix.parser.parser import parse_markup
+
+        png_data = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx"
+            "0gAAAABJRU5ErkJggg=="
+        )
+        image_path = tmp_path / "bg.png"
+        image_path.write_bytes(png_data)
+
+        markup = f"""
+[page 1x1]
+# panel 1
+[background: {image_path}]
+character(center): "Test"
+"""
+        page = parse_markup(markup)
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should contain the background image
+        assert "<image" in svg_string
+        assert "data:image/png;base64" in svg_string

@@ -211,6 +211,7 @@ class SVGRenderer:
         x = pos[0] - width / 2
         y = pos[1] - height / 2
 
+        # Draw background color first
         rect = Rect(
             insert=(x, y),
             size=(width, height),
@@ -229,6 +230,95 @@ class SVGRenderer:
             rect["stroke-dasharray"] = "2,2"
 
         group.add(rect)
+
+        # Render background image if present
+        background_image = data.get("background_image")
+        if background_image:
+            self._render_panel_background_image(
+                background_image, x, y, width, height, border.get("radius", 0), group
+            )
+
+    def _render_panel_background_image(
+        self,
+        image_path: str,
+        x: float,
+        y: float,
+        width: float,
+        height: float,
+        radius: float,
+        group: Group,
+    ) -> None:
+        """Render a background image for a panel.
+
+        Args:
+            image_path: Path to the image file.
+            x: Left edge of the panel.
+            y: Top edge of the panel.
+            width: Panel width.
+            height: Panel height.
+            radius: Corner radius for clipping.
+            group: SVG group to add the image to.
+        """
+        import base64
+        from pathlib import Path
+
+        assert self._dwg is not None
+
+        # Try to load and encode the image
+        href = None
+        path = Path(image_path)
+        if path.exists():
+            # Load and encode as data URI for portability
+            suffix = path.suffix.lower()
+            mime_types = {
+                ".png": "image/png",
+                ".jpg": "image/jpeg",
+                ".jpeg": "image/jpeg",
+                ".gif": "image/gif",
+                ".webp": "image/webp",
+                ".svg": "image/svg+xml",
+            }
+            mime_type = mime_types.get(suffix, "image/png")
+
+            try:
+                with open(path, "rb") as f:
+                    data = base64.b64encode(f.read()).decode("utf-8")
+                href = f"data:{mime_type};base64,{data}"
+            except OSError:
+                # Fall back to file path reference
+                href = str(path.absolute())
+        else:
+            # Use path directly (might be URL or relative path)
+            href = image_path
+
+        if href:
+            # Create clip path for rounded corners if needed
+            if radius > 0:
+                clip_id = f"panel-clip-{id(group)}"
+                clip_path = self._dwg.defs.add(self._dwg.clipPath(id=clip_id))
+                clip_rect = Rect(insert=(x, y), size=(width, height))
+                clip_rect["rx"] = radius
+                clip_rect["ry"] = radius
+                clip_path.add(clip_rect)
+
+                # Create image with clip path
+                image = self._dwg.image(
+                    href=href,
+                    insert=(x, y),
+                    size=(width, height),
+                )
+                image["preserveAspectRatio"] = "xMidYMid slice"  # Cover behavior
+                image["clip-path"] = f"url(#{clip_id})"
+                group.add(image)
+            else:
+                # Simple image without clipping
+                image = self._dwg.image(
+                    href=href,
+                    insert=(x, y),
+                    size=(width, height),
+                )
+                image["preserveAspectRatio"] = "xMidYMid slice"  # Cover behavior
+                group.add(image)
 
     def _render_bubble(self, data: dict[str, Any], group: Group) -> None:
         """Render a speech bubble."""

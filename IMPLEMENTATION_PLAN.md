@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete
 
-All 4 phases have been implemented with **627 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **633 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -32,6 +32,7 @@ All 4 phases have been implemented with **627 tests passing**, mypy clean, and r
 - **Character.whisper()**: Added whisper() method to Character class for creating WhisperBubble (completes the bubble convenience methods: say, think, shout, whisper)
 - **BackgroundDirective Rendering**: Parser now properly handles background directives - sets color, image path, or description for AI generation
 - **PRD Documentation Sync**: Updated specs/PRD.md to match actual implementation (bubble_type parameter, consolidated module structure, removed non-existent imports, added NarratorBubble class definition)
+- **Panel Background Image Rendering**: SVG and Cairo renderers now properly render `background_image` set on panels (via `panel.set_background(image="path.png")` or parser `[background: image.png]`). Supports rounded corner clipping for panels with border radius (6 new tests)
 
 ### Technical Stack
 

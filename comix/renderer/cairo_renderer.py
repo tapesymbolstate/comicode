@@ -205,15 +205,108 @@ class CairoRenderer:
         # Draw rounded rectangle path
         self._rounded_rect_path(x, y, width, height, radius)
 
-        # Fill background
+        # Fill background color
         self._set_color(data.get("background_color", "#FFFFFF"))
         ctx.fill_preserve()
+
+        # Render background image if present
+        background_image = data.get("background_image")
+        if background_image:
+            self._render_panel_background_image(
+                background_image, x, y, width, height, radius
+            )
 
         # Stroke border
         self._set_color(border.get("color", "#000000"))
         ctx.set_line_width(border.get("width", 2))
         self._set_dash_style(border.get("style", "solid"))
         ctx.stroke()
+
+    def _render_panel_background_image(
+        self,
+        image_path: str,
+        x: float,
+        y: float,
+        width: float,
+        height: float,
+        radius: float,
+    ) -> None:
+        """Render a background image for a panel.
+
+        Args:
+            image_path: Path to the image file.
+            x: Left edge of the panel.
+            y: Top edge of the panel.
+            width: Panel width.
+            height: Panel height.
+            radius: Corner radius for clipping.
+        """
+        ctx = self._ctx
+        assert ctx is not None
+
+        from pathlib import Path
+
+        path = Path(image_path)
+        if not path.exists():
+            return  # Skip if file doesn't exist
+
+        try:
+            from PIL import Image as PILImage
+        except ImportError:
+            return  # Pillow not available
+
+        try:
+            pil_image = PILImage.open(path)
+
+            # Calculate scaling to cover the panel (similar to CSS background-size: cover)
+            orig_w, orig_h = pil_image.size
+            scale_w = width / orig_w
+            scale_h = height / orig_h
+            scale = max(scale_w, scale_h)  # Cover behavior
+
+            new_w = int(orig_w * scale)
+            new_h = int(orig_h * scale)
+
+            # Center the image within the panel bounds
+            offset_x = (width - new_w) / 2
+            offset_y = (height - new_h) / 2
+
+            # Resize image
+            pil_image = pil_image.resize(  # type: ignore[assignment]
+                (new_w, new_h), PILImage.Resampling.LANCZOS
+            )
+
+            # Convert to RGBA if needed
+            if pil_image.mode != "RGBA":
+                pil_image = pil_image.convert("RGBA")  # type: ignore[assignment]
+
+            # Create Cairo surface from PIL image
+            img_width, img_height = pil_image.size
+            img_data = pil_image.tobytes("raw", "BGRa")
+
+            surface = cairo.ImageSurface.create_for_data(
+                bytearray(img_data),
+                cairo.FORMAT_ARGB32,
+                img_width,
+                img_height,
+            )
+
+            # Save context and apply clip path for rounded corners
+            ctx.save()
+
+            # Create clip path using panel bounds
+            self._rounded_rect_path(x, y, width, height, radius)
+            ctx.clip()
+
+            # Draw the image
+            ctx.translate(x + offset_x, y + offset_y)
+            ctx.set_source_surface(surface, 0, 0)
+            ctx.paint()
+
+            ctx.restore()
+
+        except Exception:
+            pass  # Silently skip on errors
 
     def _render_bubble(self, data: dict[str, Any]) -> None:
         """Render a speech bubble."""

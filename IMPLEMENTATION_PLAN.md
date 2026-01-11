@@ -44,19 +44,35 @@ All Phase 2 items have been implemented and tested (180 tests passing):
   - Built-in themes (manga, webtoon, comic, minimal)
   - Global theme functions (get_theme, set_default_theme, etc.)
 
-## Next: Phase 3 - Layout Engine
+## Completed: Phase 3 - Layout Engine
 
-- [ ] FlowLayout for automatic positioning
-- [ ] Auto bubble positioning relative to characters
-- [ ] Constraint-based layouts
+All Phase 3 items have been implemented and tested (220 tests passing):
 
-## Future: Phase 4 - Extensions
+- [x] FlowLayout for automatic positioning
+  - Horizontal and vertical flow directions
+  - Wrap and nowrap modes
+  - Main axis alignment (start, center, end)
+  - Cross axis alignment (start, center, end)
+  - Respects individual object dimensions
+  - Offset support for margin handling
+- [x] Auto bubble positioning relative to characters
+  - Enhanced attach_to() with 8 anchor positions (top, top-left, top-right, left, right, bottom, bottom-left, bottom-right)
+  - Configurable buffer distance
+  - Collision detection with overlaps_with() method
+  - auto_attach_to() for intelligent position selection avoiding collisions
+  - auto_position_bubbles() utility for positioning multiple bubbles
+  - Boundary constraint support
+  - Preferred anchor order customization
+- [x] Page integration with set_flow_layout() method
+
+## Next: Phase 4 - Extensions
 
 - [ ] AI image integration (OpenAI/Replicate)
 - [ ] Markup parser for DSL-based comic creation
 - [ ] Web preview with hot reload
 - [ ] Effect system for webtoons (shake, zoom, motion lines)
 - [ ] Cairo renderer for PNG/PDF output
+- [ ] Constraint-based layouts (advanced)
 
 ## Technical Notes
 
@@ -64,8 +80,31 @@ All Phase 2 items have been implemented and tested (180 tests passing):
 - NumPy for coordinate calculations
 - SVG as primary output format
 - fonttools for font metrics
-- All tests passing (180/180)
+- All tests passing (220/220)
 - Python 3.13 required
+
+## API Changes (Phase 3)
+
+### FlowLayout class (new)
+- `FlowLayout(width, height, direction, spacing, wrap, alignment, cross_alignment, offset_x, offset_y)`
+- `calculate_positions(num_cells)` - GridLayout-compatible interface
+- `calculate_positions_for_objects(objects)` - Respects object dimensions
+
+### Page class
+- Added `set_flow_layout(direction, spacing, wrap, alignment, cross_alignment)` method
+- `auto_layout()` now works with both GridLayout and FlowLayout
+
+### Bubble class
+- Enhanced `attach_to(character, anchor, buffer)` with 8 anchor positions
+- Added `overlaps_with(other, margin)` for collision detection
+- Added `auto_attach_to(character, avoid_bubbles, bounds, preferred_anchors, buffer)` for intelligent positioning
+
+### New functions
+- `auto_position_bubbles(character_bubble_pairs, bounds, buffer)` - Position multiple bubbles avoiding collisions
+
+### Exports
+- `FlowLayout` and `GridLayout` now exported from main package
+- `auto_position_bubbles` exported from main package
 
 ## API Changes (Phase 2)
 
@@ -83,3 +122,4 @@ All Phase 2 items have been implemented and tested (180 tests passing):
 ### New modules
 - `comix/style/font.py` - Font management system
 - `comix/style/theme.py` - Theme system
+- `comix/layout/flow.py` - FlowLayout system

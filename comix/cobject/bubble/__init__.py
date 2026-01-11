@@ -7,6 +7,7 @@ from comix.cobject.bubble.bubble import (
     ShoutBubble,
     WhisperBubble,
     NarratorBubble,
+    auto_position_bubbles,
 )
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "ShoutBubble",
     "WhisperBubble",
     "NarratorBubble",
+    "auto_position_bubbles",
 ]

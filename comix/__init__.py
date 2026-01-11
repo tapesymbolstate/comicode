@@ -9,9 +9,12 @@ from comix.cobject.bubble.bubble import (
     ShoutBubble,
     WhisperBubble,
     NarratorBubble,
+    auto_position_bubbles,
 )
 from comix.cobject.text.text import Text, StyledText, SFX
 from comix.cobject.character.character import Character, Stickman, SimpleFace
+from comix.layout.flow import FlowLayout
+from comix.layout.grid import GridLayout
 from comix.page.page import Page, SinglePanel, Strip
 
 __all__ = [
@@ -23,12 +26,15 @@ __all__ = [
     "ShoutBubble",
     "WhisperBubble",
     "NarratorBubble",
+    "auto_position_bubbles",
     "Text",
     "StyledText",
     "SFX",
     "Character",
     "Stickman",
     "SimpleFace",
+    "FlowLayout",
+    "GridLayout",
     "Page",
     "SinglePanel",
     "Strip",

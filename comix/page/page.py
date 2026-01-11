@@ -7,6 +7,7 @@ from typing import Self
 
 from comix.cobject.cobject import CObject
 from comix.cobject.panel.panel import Panel
+from comix.layout.flow import FlowLayout
 from comix.layout.grid import GridLayout
 
 
@@ -33,7 +34,7 @@ class Page:
 
         self._panels: list[Panel] = []
         self._cobjects: list[CObject] = []
-        self._layout: GridLayout | None = None
+        self._layout: GridLayout | FlowLayout | None = None
 
     def add(self, *cobjects: CObject) -> Self:
         """Add CObjects to the page."""
@@ -60,13 +61,56 @@ class Page:
             width=self.width - 2 * self.margin,
             height=self.height - 2 * self.margin,
             gutter=self.gutter,
+            offset_x=self.margin,
+            offset_y=self.margin,
+        )
+        return self
+
+    def set_flow_layout(
+        self,
+        direction: str = "horizontal",
+        spacing: float | None = None,
+        wrap: str = "wrap",
+        alignment: str = "start",
+        cross_alignment: str = "start",
+    ) -> Self:
+        """Set flow layout for panels.
+
+        Args:
+            direction: Flow direction ("horizontal" or "vertical").
+            spacing: Space between items. Defaults to page gutter.
+            wrap: Whether to wrap ("wrap" or "nowrap").
+            alignment: Alignment along main axis ("start", "center", "end").
+            cross_alignment: Alignment along cross axis ("start", "center", "end").
+
+        Returns:
+            Self for method chaining.
+        """
+        self._layout = FlowLayout(
+            width=self.width - 2 * self.margin,
+            height=self.height - 2 * self.margin,
+            direction=direction,  # type: ignore[arg-type]
+            spacing=spacing if spacing is not None else self.gutter,
+            wrap=wrap,  # type: ignore[arg-type]
+            alignment=alignment,  # type: ignore[arg-type]
+            cross_alignment=cross_alignment,  # type: ignore[arg-type]
+            offset_x=self.margin,
+            offset_y=self.margin,
         )
         return self
 
     def auto_layout(self) -> Self:
         """Apply automatic layout to panels."""
         if self._layout and self._panels:
-            positions = self._layout.calculate_positions(len(self._panels))
+            # Use calculate_positions_for_objects for FlowLayout to respect panel sizes
+            if isinstance(self._layout, FlowLayout):
+                # Cast panels to CObject list for type checker
+                positions = self._layout.calculate_positions_for_objects(
+                    list(self._panels)  # type: ignore[arg-type]
+                )
+            else:
+                positions = self._layout.calculate_positions(len(self._panels))
+
             for panel, pos in zip(self._panels, positions):
                 panel.move_to((pos["center_x"], pos["center_y"]))
                 panel.width = pos["width"]

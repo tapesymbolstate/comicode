@@ -154,38 +154,183 @@ class Bubble(CObject):
         self.tail_target = target
         return self
 
-    def attach_to(self, character: CObject, anchor: str = "top") -> Self:
-        """Attach the bubble above a character.
+    def attach_to(
+        self,
+        character: CObject,
+        anchor: str = "top",
+        buffer: float = 20.0,
+    ) -> Self:
+        """Attach the bubble relative to a character.
 
         Args:
             character: The character to attach to.
-            anchor: Position relative to character ("top", "top-left", "top-right").
+            anchor: Position relative to character. Options are:
+                - "top", "top-left", "top-right": Above the character
+                - "left", "right": To the side of the character
+                - "bottom", "bottom-left", "bottom-right": Below the character
+            buffer: Space between character and bubble.
+
+        Returns:
+            Self for method chaining.
         """
         char_bbox = character.get_bounding_box()
         char_center = character.get_center()
+        char_min = char_bbox[0]  # (x_min, y_min)
+        char_max = char_bbox[1]  # (x_max, y_max)
 
-        bubble_offset = self._height / 2 + 20
+        # Mapping of anchor positions to (x, y, tail_direction)
+        anchor_positions = {
+            "top": (
+                char_center[0],
+                char_max[1] + self._height / 2 + buffer,
+                "bottom",
+            ),
+            "top-left": (
+                char_center[0] - 30,
+                char_max[1] + self._height / 2 + buffer,
+                "bottom-right",
+            ),
+            "top-right": (
+                char_center[0] + 30,
+                char_max[1] + self._height / 2 + buffer,
+                "bottom-left",
+            ),
+            "left": (
+                char_min[0] - self._width / 2 - buffer,
+                char_center[1],
+                "right",
+            ),
+            "right": (
+                char_max[0] + self._width / 2 + buffer,
+                char_center[1],
+                "left",
+            ),
+            "bottom": (
+                char_center[0],
+                char_min[1] - self._height / 2 - buffer,
+                "top",
+            ),
+            "bottom-left": (
+                char_center[0] - 30,
+                char_min[1] - self._height / 2 - buffer,
+                "top-right",
+            ),
+            "bottom-right": (
+                char_center[0] + 30,
+                char_min[1] - self._height / 2 - buffer,
+                "top-left",
+            ),
+        }
 
-        if anchor == "top":
-            new_x = char_center[0]
-            new_y = char_bbox[1][1] + bubble_offset
-            self.tail_direction = "bottom"
-        elif anchor == "top-left":
-            new_x = char_center[0] - 30
-            new_y = char_bbox[1][1] + bubble_offset
-            self.tail_direction = "bottom-right"
-        elif anchor == "top-right":
-            new_x = char_center[0] + 30
-            new_y = char_bbox[1][1] + bubble_offset
-            self.tail_direction = "bottom-left"
+        if anchor in anchor_positions:
+            new_x, new_y, tail_dir = anchor_positions[anchor]
         else:
-            new_x = char_center[0]
-            new_y = char_bbox[1][1] + bubble_offset
-            self.tail_direction = "bottom"
+            # Default to top
+            new_x, new_y, tail_dir = anchor_positions["top"]
 
+        self.tail_direction = tail_dir
         self.move_to((new_x, new_y))
         self.point_to(character)
         self.generate_points()
+        return self
+
+    def overlaps_with(self, other: Bubble, margin: float = 5.0) -> bool:
+        """Check if this bubble overlaps with another bubble.
+
+        Args:
+            other: Another Bubble to check collision with.
+            margin: Extra margin to consider around bubbles.
+
+        Returns:
+            True if bubbles overlap, False otherwise.
+        """
+        self_bbox = self.get_bounding_box()
+        other_bbox = other.get_bounding_box()
+
+        self_min = self_bbox[0]
+        self_max = self_bbox[1]
+        other_min = other_bbox[0]
+        other_max = other_bbox[1]
+
+        # Check for overlap with margin
+        return not (
+            self_max[0] + margin < other_min[0]
+            or self_min[0] - margin > other_max[0]
+            or self_max[1] + margin < other_min[1]
+            or self_min[1] - margin > other_max[1]
+        )
+
+    def auto_attach_to(
+        self,
+        character: CObject,
+        avoid_bubbles: list[Bubble] | None = None,
+        bounds: tuple[float, float, float, float] | None = None,
+        preferred_anchors: list[str] | None = None,
+        buffer: float = 20.0,
+    ) -> Self:
+        """Automatically attach bubble to character, avoiding collisions.
+
+        Tries different anchor positions and selects the first one that
+        doesn't overlap with other bubbles and stays within bounds.
+
+        Args:
+            character: The character to attach to.
+            avoid_bubbles: List of other bubbles to avoid overlapping with.
+            bounds: Optional (x_min, y_min, x_max, y_max) boundary constraints.
+            preferred_anchors: Preferred anchor order. Defaults to
+                ["top", "top-left", "top-right", "left", "right"].
+            buffer: Space between character and bubble.
+
+        Returns:
+            Self for method chaining.
+        """
+        if preferred_anchors is None:
+            # Default priority: top positions first (standard comic convention)
+            preferred_anchors = [
+                "top",
+                "top-left",
+                "top-right",
+                "left",
+                "right",
+            ]
+
+        if avoid_bubbles is None:
+            avoid_bubbles = []
+
+        # Store original position to restore if needed
+        original_pos = self.position.copy()
+
+        for anchor in preferred_anchors:
+            # Try this anchor position
+            self.attach_to(character, anchor=anchor, buffer=buffer)
+
+            # Check if position is valid
+            is_valid = True
+
+            # Check bounds
+            if bounds is not None:
+                x_min, y_min, x_max, y_max = bounds
+                bbox = self.get_bounding_box()
+                if (
+                    bbox[0][0] < x_min
+                    or bbox[1][0] > x_max
+                    or bbox[0][1] < y_min
+                    or bbox[1][1] > y_max
+                ):
+                    is_valid = False
+
+            # Check overlaps with other bubbles
+            if is_valid:
+                for other in avoid_bubbles:
+                    if other is not self and self.overlaps_with(other):
+                        is_valid = False
+                        break
+
+            if is_valid:
+                return self
+
+        # If no valid position found, use the first anchor and restore
+        self.attach_to(character, anchor=preferred_anchors[0], buffer=buffer)
         return self
 
     def apply_style(self, style: Style) -> Self:
@@ -311,3 +456,42 @@ class NarratorBubble(Bubble):
         kwargs.setdefault("corner_radius", 0.0)
         kwargs.setdefault("tail_length", 0.0)
         super().__init__(text=text, **kwargs)
+
+
+def auto_position_bubbles(
+    character_bubble_pairs: list[tuple[CObject, Bubble]],
+    bounds: tuple[float, float, float, float] | None = None,
+    buffer: float = 20.0,
+) -> list[Bubble]:
+    """Automatically position multiple bubbles avoiding collisions.
+
+    Positions bubbles one by one, with each subsequent bubble avoiding
+    overlap with previously positioned bubbles.
+
+    Args:
+        character_bubble_pairs: List of (character, bubble) pairs to position.
+        bounds: Optional (x_min, y_min, x_max, y_max) boundary constraints.
+        buffer: Space between character and bubble.
+
+    Returns:
+        List of positioned bubbles.
+
+    Example:
+        bubbles = auto_position_bubbles([
+            (alice, bubble1),
+            (bob, bubble2),
+            (charlie, bubble3),
+        ], bounds=(0, 0, 800, 600))
+    """
+    positioned: list[Bubble] = []
+
+    for character, bubble in character_bubble_pairs:
+        bubble.auto_attach_to(
+            character,
+            avoid_bubbles=positioned,
+            bounds=bounds,
+            buffer=buffer,
+        )
+        positioned.append(bubble)
+
+    return positioned

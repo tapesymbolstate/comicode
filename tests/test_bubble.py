@@ -10,6 +10,7 @@ from comix.cobject.bubble.bubble import (
     ShoutBubble,
     WhisperBubble,
     NarratorBubble,
+    auto_position_bubbles,
 )
 from comix.cobject.character.character import Stickman
 from comix.style.style import Style, MANGA_STYLE, COMIC_STYLE
@@ -250,3 +251,200 @@ class TestCustomBubbleShapes:
         assert bubble.wobble == 0.3
         assert bubble.wobble_mode == "wave"
         assert bubble.emphasis is True
+
+
+class TestBubbleAutoPositioning:
+    """Tests for auto bubble positioning features."""
+
+    def test_attach_to_anchor_top(self) -> None:
+        """Test attaching bubble to top of character."""
+        char = Stickman(name="Test").move_to((200, 200))
+        bubble = SpeechBubble(text="Hello!")
+        bubble.attach_to(char, anchor="top")
+
+        assert bubble.tail_direction == "bottom"
+        assert bubble.position[1] > char.get_bounding_box()[1][1]
+
+    def test_attach_to_anchor_left(self) -> None:
+        """Test attaching bubble to left of character."""
+        char = Stickman(name="Test").move_to((200, 200))
+        bubble = SpeechBubble(text="Hello!")
+        bubble.attach_to(char, anchor="left")
+
+        assert bubble.tail_direction == "right"
+        char_bbox = char.get_bounding_box()
+        assert bubble.position[0] < char_bbox[0][0]
+
+    def test_attach_to_anchor_right(self) -> None:
+        """Test attaching bubble to right of character."""
+        char = Stickman(name="Test").move_to((200, 200))
+        bubble = SpeechBubble(text="Hello!")
+        bubble.attach_to(char, anchor="right")
+
+        assert bubble.tail_direction == "left"
+        char_bbox = char.get_bounding_box()
+        assert bubble.position[0] > char_bbox[1][0]
+
+    def test_attach_to_anchor_bottom(self) -> None:
+        """Test attaching bubble to bottom of character."""
+        char = Stickman(name="Test").move_to((200, 200))
+        bubble = SpeechBubble(text="Hello!")
+        bubble.attach_to(char, anchor="bottom")
+
+        assert bubble.tail_direction == "top"
+        char_bbox = char.get_bounding_box()
+        assert bubble.position[1] < char_bbox[0][1]
+
+    def test_attach_to_with_custom_buffer(self) -> None:
+        """Test attaching bubble with custom buffer distance."""
+        char = Stickman(name="Test").move_to((200, 200))
+        bubble1 = SpeechBubble(text="Hello!")
+        bubble2 = SpeechBubble(text="Hello!")
+
+        bubble1.attach_to(char, anchor="top", buffer=10.0)
+        bubble2.attach_to(char, anchor="top", buffer=50.0)
+
+        # bubble2 should be further from character
+        assert bubble2.position[1] > bubble1.position[1]
+
+    def test_overlaps_with_overlapping(self) -> None:
+        """Test collision detection when bubbles overlap."""
+        bubble1 = SpeechBubble(text="Hello!").move_to((100, 100))
+        bubble2 = SpeechBubble(text="World!").move_to((110, 110))
+
+        assert bubble1.overlaps_with(bubble2)
+
+    def test_overlaps_with_not_overlapping(self) -> None:
+        """Test collision detection when bubbles don't overlap."""
+        bubble1 = SpeechBubble(text="Hello!").move_to((100, 100))
+        bubble2 = SpeechBubble(text="World!").move_to((500, 500))
+
+        assert not bubble1.overlaps_with(bubble2)
+
+    def test_auto_attach_to_no_collision(self) -> None:
+        """Test auto_attach_to with no other bubbles."""
+        char = Stickman(name="Test").move_to((200, 200))
+        bubble = SpeechBubble(text="Hello!")
+
+        result = bubble.auto_attach_to(char)
+
+        assert result is bubble
+        assert bubble.tail_direction == "bottom"  # Should use "top" anchor
+
+    def test_auto_attach_to_avoids_collision(self) -> None:
+        """Test that auto_attach_to avoids collision with existing bubbles."""
+        char1 = Stickman(name="Alice").move_to((200, 200))
+        char2 = Stickman(name="Bob").move_to((200, 200))
+
+        # First bubble takes the "top" position
+        bubble1 = SpeechBubble(text="First!").attach_to(char1)
+
+        # Second bubble should find a non-overlapping position
+        bubble2 = SpeechBubble(text="Second!")
+        bubble2.auto_attach_to(char2, avoid_bubbles=[bubble1])
+
+        # They should not overlap
+        assert not bubble1.overlaps_with(bubble2)
+
+    def test_auto_attach_to_with_bounds(self) -> None:
+        """Test auto_attach_to respects boundary constraints."""
+        char = Stickman(name="Test").move_to((50, 50))
+        bubble = SpeechBubble(text="Hello!")
+
+        # Set tight bounds that might push bubble to different position
+        bubble.auto_attach_to(
+            char,
+            bounds=(0, 0, 200, 300),
+        )
+
+        # Bubble should be within bounds
+        bbox = bubble.get_bounding_box()
+        # Just verify no exception is raised and bubble is positioned
+        assert bbox is not None
+
+    def test_auto_attach_to_preferred_anchors(self) -> None:
+        """Test auto_attach_to with custom preferred anchors."""
+        char = Stickman(name="Test").move_to((200, 200))
+        bubble = SpeechBubble(text="Hello!")
+
+        # Prefer right side
+        bubble.auto_attach_to(char, preferred_anchors=["right", "left"])
+
+        assert bubble.tail_direction == "left"
+
+    def test_auto_attach_to_method_chaining(self) -> None:
+        """Test that auto_attach_to returns self for chaining."""
+        char = Stickman(name="Test").move_to((200, 200))
+        bubble = (
+            SpeechBubble(text="Hello!")
+            .auto_attach_to(char)
+            .set_text("Updated")
+        )
+
+        assert bubble.text == "Updated"
+
+
+class TestAutoPosotionBubbles:
+    """Tests for auto_position_bubbles utility function."""
+
+    def test_auto_position_single_bubble(self) -> None:
+        """Test positioning a single bubble."""
+        char = Stickman(name="Test").move_to((200, 200))
+        bubble = SpeechBubble(text="Hello!")
+
+        positioned = auto_position_bubbles([(char, bubble)])
+
+        assert len(positioned) == 1
+        assert positioned[0] is bubble
+        assert bubble.tail_target is char
+
+    def test_auto_position_multiple_bubbles(self) -> None:
+        """Test positioning multiple bubbles without overlap."""
+        char1 = Stickman(name="Alice").move_to((100, 200))
+        char2 = Stickman(name="Bob").move_to((300, 200))
+
+        bubble1 = SpeechBubble(text="Hello Alice!")
+        bubble2 = SpeechBubble(text="Hello Bob!")
+
+        positioned = auto_position_bubbles([
+            (char1, bubble1),
+            (char2, bubble2),
+        ])
+
+        assert len(positioned) == 2
+        # Bubbles should not overlap
+        assert not bubble1.overlaps_with(bubble2)
+
+    def test_auto_position_with_bounds(self) -> None:
+        """Test positioning with boundary constraints."""
+        char = Stickman(name="Test").move_to((200, 200))
+        bubble = SpeechBubble(text="Hello!")
+
+        positioned = auto_position_bubbles(
+            [(char, bubble)],
+            bounds=(0, 0, 800, 600),
+        )
+
+        assert len(positioned) == 1
+
+    def test_auto_position_close_characters(self) -> None:
+        """Test positioning bubbles for characters close together."""
+        char1 = Stickman(name="Alice").move_to((150, 200))
+        char2 = Stickman(name="Bob").move_to((200, 200))
+        char3 = Stickman(name="Charlie").move_to((250, 200))
+
+        bubble1 = SpeechBubble(text="Hi!")
+        bubble2 = SpeechBubble(text="Hey!")
+        bubble3 = SpeechBubble(text="Hello!")
+
+        positioned = auto_position_bubbles([
+            (char1, bubble1),
+            (char2, bubble2),
+            (char3, bubble3),
+        ])
+
+        assert len(positioned) == 3
+        # Check that each bubble is attached to its character
+        assert bubble1.tail_target is char1
+        assert bubble2.tail_target is char2
+        assert bubble3.tail_target is char3

@@ -430,6 +430,14 @@ from comix import Rectangle, Circle, Line, Style, Theme, MANGA_STYLE, MANGA_THEM
 - `bounding_box` - Calculate bounding box of points
 - `normalize_angle` - Normalize angle to [-π, π] range
 - `angle_between` - Calculate angle from one point to another
+- `rotate_point` - Rotate a single point around a center
+- `rotate_points` - Rotate multiple points around a center
+- `translate_points` - Translate points by an offset
+- `scale_points` - Scale points around a center
+
+### Bezier Utilities (new exports)
+- `create_bubble_path` - Generate SVG path data for bubble shapes
+- `create_tail_points` - Generate points for bubble tail connectors
 
 ### Font System (new exports)
 - `FontInfo` - Font information dataclass

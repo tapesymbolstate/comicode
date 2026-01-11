@@ -70,7 +70,12 @@ from comix.utils.geometry import (
     bounding_box,
     normalize_angle,
     angle_between,
+    rotate_point,
+    rotate_points,
+    translate_points,
+    scale_points,
 )
+from comix.utils.bezier import create_bubble_path, create_tail_points
 
 # Optional Cairo renderer (requires pycairo)
 try:
@@ -178,6 +183,13 @@ __all__ = [
     "bounding_box",
     "normalize_angle",
     "angle_between",
+    "rotate_point",
+    "rotate_points",
+    "translate_points",
+    "scale_points",
+    # Bezier utilities
+    "create_bubble_path",
+    "create_tail_points",
     # Preview (optional)
     "PreviewServer",
     "PreviewError",

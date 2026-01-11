@@ -299,7 +299,7 @@ class TestAIImage:
             with pytest.raises(AIGenerationError, match="No prompt provided"):
                 await ai_img.generate_async()
 
-        asyncio.get_event_loop().run_until_complete(run_test())
+        asyncio.run(run_test())
 
     def test_aiimage_generate_openai_not_installed(self):
         """Test generation fails when openai is not installed."""
@@ -315,7 +315,7 @@ class TestAIImage:
                 with pytest.raises(AIProviderNotAvailableError):
                     await ai_img.generate_async()
 
-        asyncio.get_event_loop().run_until_complete(run_test())
+        asyncio.run(run_test())
 
     def test_aiimage_generate_replicate_not_installed(self):
         """Test generation fails when replicate is not installed."""
@@ -331,7 +331,7 @@ class TestAIImage:
                 with pytest.raises(AIProviderNotAvailableError):
                     await ai_img.generate_async()
 
-        asyncio.get_event_loop().run_until_complete(run_test())
+        asyncio.run(run_test())
 
     def test_aiimage_generate_openai_no_api_key(self):
         """Test generation fails without API key."""
@@ -349,7 +349,7 @@ class TestAIImage:
                         with pytest.raises(AIGenerationError, match="OPENAI_API_KEY"):
                             await ai_img.generate_async()
 
-        asyncio.get_event_loop().run_until_complete(run_test())
+        asyncio.run(run_test())
 
     def test_aiimage_generate_replicate_no_api_key(self):
         """Test generation fails without Replicate API token."""
@@ -365,7 +365,7 @@ class TestAIImage:
                         with pytest.raises(AIGenerationError, match="REPLICATE_API_TOKEN"):
                             await ai_img.generate_async()
 
-        asyncio.get_event_loop().run_until_complete(run_test())
+        asyncio.run(run_test())
 
 
 class TestImageRendering:

@@ -163,7 +163,7 @@ class AIImage(Image):
             AIProviderNotAvailableError: If the provider package is not installed.
             AIGenerationError: If generation fails.
         """
-        return asyncio.get_event_loop().run_until_complete(self.generate_async())
+        return asyncio.run(self.generate_async())
 
     async def generate_async(self) -> Self:
         """Generate the image asynchronously.

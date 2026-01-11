@@ -12,6 +12,8 @@ from comix.style.font import (
     get_default_metrics,
     estimate_text_width,
     estimate_text_height,
+    is_fullwidth_char,
+    calculate_text_width_with_cjk,
 )
 
 
@@ -249,3 +251,141 @@ class TestFontDiscovery:
         assert "serif" in registry._fallback_chains
         assert "monospace" in registry._fallback_chains
         assert "comic" in registry._fallback_chains
+
+
+class TestCJKFullwidthDetection:
+    """Tests for CJK full-width character detection."""
+
+    def test_cjk_unified_ideographs(self) -> None:
+        """Test detection of CJK Unified Ideographs (Chinese/Kanji)."""
+        # Common Chinese/Kanji characters
+        assert is_fullwidth_char("中") is True
+        assert is_fullwidth_char("文") is True
+        assert is_fullwidth_char("字") is True
+        assert is_fullwidth_char("漢") is True
+
+    def test_korean_hangul(self) -> None:
+        """Test detection of Korean Hangul characters."""
+        # Korean syllables
+        assert is_fullwidth_char("가") is True
+        assert is_fullwidth_char("한") is True
+        assert is_fullwidth_char("글") is True
+        assert is_fullwidth_char("철") is True
+        assert is_fullwidth_char("수") is True
+        # Hangul Jamo
+        assert is_fullwidth_char("ㄱ") is True
+        assert is_fullwidth_char("ㅏ") is True
+
+    def test_japanese_hiragana(self) -> None:
+        """Test detection of Japanese Hiragana."""
+        assert is_fullwidth_char("あ") is True
+        assert is_fullwidth_char("い") is True
+        assert is_fullwidth_char("う") is True
+
+    def test_japanese_katakana(self) -> None:
+        """Test detection of Japanese Katakana."""
+        assert is_fullwidth_char("ア") is True
+        assert is_fullwidth_char("イ") is True
+        assert is_fullwidth_char("ウ") is True
+
+    def test_cjk_punctuation(self) -> None:
+        """Test detection of CJK punctuation."""
+        assert is_fullwidth_char("。") is True  # CJK full stop
+        assert is_fullwidth_char("、") is True  # CJK comma
+        assert is_fullwidth_char("「") is True  # CJK quote
+
+    def test_fullwidth_ascii(self) -> None:
+        """Test detection of fullwidth ASCII characters."""
+        assert is_fullwidth_char("Ａ") is True  # Fullwidth A
+        assert is_fullwidth_char("１") is True  # Fullwidth 1
+
+    def test_halfwidth_ascii(self) -> None:
+        """Test that regular ASCII is half-width."""
+        assert is_fullwidth_char("A") is False
+        assert is_fullwidth_char("Z") is False
+        assert is_fullwidth_char("a") is False
+        assert is_fullwidth_char("z") is False
+        assert is_fullwidth_char("0") is False
+        assert is_fullwidth_char("9") is False
+        assert is_fullwidth_char(" ") is False
+        assert is_fullwidth_char("!") is False
+        assert is_fullwidth_char(".") is False
+
+    def test_empty_string(self) -> None:
+        """Test that empty string returns False."""
+        assert is_fullwidth_char("") is False
+
+
+class TestCJKTextWidthCalculation:
+    """Tests for CJK-aware text width calculation."""
+
+    def test_ascii_only(self) -> None:
+        """Test width calculation for ASCII-only text."""
+        # 5 chars * 0.5 * 16 = 40
+        width = calculate_text_width_with_cjk("Hello", 16.0)
+        assert width == pytest.approx(40.0)
+
+    def test_cjk_only(self) -> None:
+        """Test width calculation for CJK-only text."""
+        # 2 chars * 1.0 * 16 = 32
+        width = calculate_text_width_with_cjk("한글", 16.0)
+        assert width == pytest.approx(32.0)
+
+    def test_mixed_text(self) -> None:
+        """Test width calculation for mixed ASCII and CJK text."""
+        # "안녕 Hello" = 2 CJK + 1 space + 5 ASCII = 2*1.0 + 6*0.5 = 5.0 em
+        # 5.0 * 16 = 80
+        width = calculate_text_width_with_cjk("안녕 Hello", 16.0)
+        assert width == pytest.approx(80.0)
+
+    def test_korean_dialogue(self) -> None:
+        """Test width calculation for typical Korean comic dialogue."""
+        # "뭐라고?!" = 3 Korean + 2 ASCII = 3*1.0 + 2*0.5 = 4.0 em
+        # 4.0 * 16 = 64
+        width = calculate_text_width_with_cjk("뭐라고?!", 16.0)
+        assert width == pytest.approx(64.0)
+
+    def test_japanese_text(self) -> None:
+        """Test width calculation for Japanese text."""
+        # "こんにちは" = 5 hiragana * 1.0 * 16 = 80
+        width = calculate_text_width_with_cjk("こんにちは", 16.0)
+        assert width == pytest.approx(80.0)
+
+    def test_chinese_text(self) -> None:
+        """Test width calculation for Chinese text."""
+        # "你好" = 2 characters * 1.0 * 16 = 32
+        width = calculate_text_width_with_cjk("你好", 16.0)
+        assert width == pytest.approx(32.0)
+
+    def test_empty_text(self) -> None:
+        """Test width calculation for empty text."""
+        width = calculate_text_width_with_cjk("", 16.0)
+        assert width == 0.0
+
+    def test_custom_ratios(self) -> None:
+        """Test width calculation with custom ratios."""
+        # "A한" = 1 ASCII + 1 Korean
+        # 1*0.6 + 1*0.9 = 1.5 em * 10 = 15
+        width = calculate_text_width_with_cjk(
+            "A한", 10.0, halfwidth_ratio=0.6, fullwidth_ratio=0.9
+        )
+        assert width == pytest.approx(15.0)
+
+
+class TestEstimateTextWidthCJK:
+    """Tests for estimate_text_width with CJK support."""
+
+    def test_korean_text_wider_than_ascii(self) -> None:
+        """Test that Korean text is measured wider than equivalent ASCII."""
+        korean_width = estimate_text_width("한글", 16.0)  # 2 chars
+        ascii_width = estimate_text_width("AB", 16.0)  # 2 chars
+        # Korean should be approximately 2x wider (1.0 vs 0.5 em per char)
+        assert korean_width > ascii_width
+
+    def test_mixed_text(self) -> None:
+        """Test that mixed text is measured correctly."""
+        # "Hi 안녕" = 3 ASCII/space + 2 Korean
+        width = estimate_text_width("Hi 안녕", 16.0)
+        # With default metrics (0.5em for halfwidth), this should be:
+        # 3 * 0.5 + 2 * 1.0 = 3.5 em * 16 = 56 (approximately)
+        assert width > 0

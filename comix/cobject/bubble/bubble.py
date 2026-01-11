@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Self
 import numpy as np
 
 from comix.cobject.cobject import CObject
+from comix.style.font import calculate_text_width_with_cjk
 from comix.utils.bezier import create_bubble_path, create_tail_points
 
 if TYPE_CHECKING:
@@ -97,10 +98,16 @@ class Bubble(CObject):
         return self._height
 
     def _calculate_size(self) -> None:
-        """Calculate bubble size based on text content."""
+        """Calculate bubble size based on text content.
+
+        Uses CJK-aware width calculation for proper handling of
+        Korean, Japanese, and Chinese characters which are full-width.
+        """
         if self._auto_width or self._auto_height:
-            char_count = len(self.text)
-            estimated_text_width = char_count * self.font_size * 0.6
+            # Use CJK-aware width calculation (full-width chars = 1em, half-width = 0.6em)
+            estimated_text_width = calculate_text_width_with_cjk(
+                self.text, self.font_size, halfwidth_ratio=0.6, fullwidth_ratio=1.0
+            )
             estimated_text_height = self.font_size * self.line_height
 
             lines = max(1, int(np.ceil(estimated_text_width / 200)))

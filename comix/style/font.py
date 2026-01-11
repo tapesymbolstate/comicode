@@ -392,6 +392,99 @@ def get_default_metrics() -> FontMetrics:
     return _get_default_metrics()
 
 
+def is_fullwidth_char(char: str) -> bool:
+    """Check if a character is full-width (CJK or other wide characters).
+
+    Full-width characters include:
+    - CJK Unified Ideographs (Chinese, Japanese Kanji, Korean Hanja)
+    - Korean Hangul syllables and Jamo
+    - Japanese Hiragana and Katakana
+    - Full-width ASCII and punctuation
+
+    Args:
+        char: A single character to check
+
+    Returns:
+        True if the character is full-width, False otherwise
+    """
+    if not char:
+        return False
+
+    code = ord(char)
+
+    # CJK Unified Ideographs
+    if 0x4E00 <= code <= 0x9FFF:
+        return True
+    # CJK Extension A
+    if 0x3400 <= code <= 0x4DBF:
+        return True
+    # CJK Extension B-F (surrogate pairs in Python handled automatically)
+    if 0x20000 <= code <= 0x2EBEF:
+        return True
+    # Korean Hangul Syllables
+    if 0xAC00 <= code <= 0xD7AF:
+        return True
+    # Korean Hangul Jamo
+    if 0x1100 <= code <= 0x11FF:
+        return True
+    # Korean Hangul Compatibility Jamo
+    if 0x3130 <= code <= 0x318F:
+        return True
+    # Japanese Hiragana
+    if 0x3040 <= code <= 0x309F:
+        return True
+    # Japanese Katakana
+    if 0x30A0 <= code <= 0x30FF:
+        return True
+    # Katakana Phonetic Extensions
+    if 0x31F0 <= code <= 0x31FF:
+        return True
+    # CJK Symbols and Punctuation
+    if 0x3000 <= code <= 0x303F:
+        return True
+    # Fullwidth ASCII and Punctuation
+    if 0xFF00 <= code <= 0xFFEF:
+        return True
+    # CJK Compatibility Forms
+    if 0xFE30 <= code <= 0xFE4F:
+        return True
+
+    return False
+
+
+def calculate_text_width_with_cjk(
+    text: str,
+    font_size: float,
+    halfwidth_ratio: float = 0.5,
+    fullwidth_ratio: float = 1.0,
+) -> float:
+    """Calculate text width accounting for CJK full-width characters.
+
+    Full-width characters (CJK) are typically rendered at 1em width,
+    while half-width characters (Latin, numbers) are around 0.5em.
+
+    Args:
+        text: The text to measure
+        font_size: Font size in pixels
+        halfwidth_ratio: Width ratio for half-width chars (default 0.5)
+        fullwidth_ratio: Width ratio for full-width chars (default 1.0)
+
+    Returns:
+        Estimated text width in pixels
+    """
+    if not text:
+        return 0.0
+
+    total_em = 0.0
+    for char in text:
+        if is_fullwidth_char(char):
+            total_em += fullwidth_ratio
+        else:
+            total_em += halfwidth_ratio
+
+    return total_em * font_size
+
+
 def estimate_text_width(
     text: str,
     font_size: float,
@@ -399,6 +492,10 @@ def estimate_text_width(
     font_weight: str = "normal",
 ) -> float:
     """Estimate text width using font metrics or fallback.
+
+    This function accounts for CJK full-width characters, which are
+    typically rendered at full em width, while Latin characters are
+    rendered at approximately half em width.
 
     Args:
         text: The text to measure
@@ -415,8 +512,14 @@ def estimate_text_width(
     if metrics is None:
         metrics = get_default_metrics()
 
-    char_width = metrics.get_char_width(font_size)
-    return len(text) * char_width
+    # Get the average character width from metrics (used for half-width ratio)
+    avg_char_width = metrics.get_char_width(font_size)
+    halfwidth_ratio = avg_char_width / font_size if font_size > 0 else 0.5
+
+    # Full-width characters are typically 1em
+    return calculate_text_width_with_cjk(
+        text, font_size, halfwidth_ratio=halfwidth_ratio, fullwidth_ratio=1.0
+    )
 
 
 def estimate_text_height(

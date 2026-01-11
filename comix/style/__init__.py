@@ -10,6 +10,8 @@ from comix.style.font import (
     get_default_metrics,
     estimate_text_width,
     estimate_text_height,
+    is_fullwidth_char,
+    calculate_text_width_with_cjk,
 )
 from comix.style.theme import (
     ColorPalette,
@@ -42,6 +44,8 @@ __all__ = [
     "get_default_metrics",
     "estimate_text_width",
     "estimate_text_height",
+    "is_fullwidth_char",
+    "calculate_text_width_with_cjk",
     # Theme
     "ColorPalette",
     "Theme",

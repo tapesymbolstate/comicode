@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Self
 import numpy as np
 
 from comix.cobject.cobject import CObject
+from comix.style.font import calculate_text_width_with_cjk
 
 if TYPE_CHECKING:
     from comix.style.style import Style
@@ -43,9 +44,15 @@ class Text(CObject):
         self._calculate_bounds()
 
     def _calculate_bounds(self) -> None:
-        """Calculate text bounding box based on content."""
-        char_width = self.font_size * 0.6
-        total_width = len(self.text) * char_width
+        """Calculate text bounding box based on content.
+
+        Uses CJK-aware width calculation for proper handling of
+        Korean, Japanese, and Chinese characters which are full-width.
+        """
+        # Use CJK-aware width calculation (full-width chars = 1em, half-width = 0.6em)
+        total_width = calculate_text_width_with_cjk(
+            self.text, self.font_size, halfwidth_ratio=0.6, fullwidth_ratio=1.0
+        )
 
         if self.max_width and total_width > self.max_width:
             num_lines = int(np.ceil(total_width / self.max_width))

@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete
 
-All 4 phases have been implemented with **451 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **469 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -24,6 +24,7 @@ All 4 phases have been implemented with **451 tests passing**, mypy clean, and r
 - **Parser**: DSL markup for rapid comic creation
 - **AI Images**: OpenAI DALL-E and Replicate integration
 - **Preview Server**: Hot reload web preview with file watching
+- **CJK Text Support**: Proper width estimation for Korean/Japanese/Chinese characters
 
 ### Technical Stack
 
@@ -40,8 +41,8 @@ These are potential improvements, not planned work:
 1. **Animation Export**: Animated GIF/video for webtoon scroll effects
 2. **Panel Templates**: Pre-built layouts (4-koma, splash page, etc.)
 3. **Character Library**: Expanded character styles beyond Stickman/SimpleFace
-4. **Speech Balloon Optimization**: Auto text-wrapping with better line breaking
-5. **Multi-page Export**: PDF book compilation
+4. **Multi-page Export**: PDF book compilation
+5. **Web Renderer**: HTML output with interactive features
 
 ## Known Issues
 

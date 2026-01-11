@@ -28,6 +28,16 @@ from comix.layout.grid import GridLayout
 from comix.page.page import Page, SinglePanel, Strip
 from comix.parser import parse_markup, MarkupParser, ParseError
 
+# Optional preview module (requires watchdog)
+try:
+    from comix.preview import PreviewServer, PreviewError, serve as preview_serve
+    _PREVIEW_AVAILABLE = True
+except ImportError:
+    _PREVIEW_AVAILABLE = False
+    PreviewServer = None  # type: ignore[misc, assignment]
+    PreviewError = None  # type: ignore[misc, assignment]
+    preview_serve = None  # type: ignore[misc, assignment]
+
 __all__ = [
     # Core objects
     "CObject",
@@ -71,6 +81,10 @@ __all__ = [
     "parse_markup",
     "MarkupParser",
     "ParseError",
+    # Preview (optional)
+    "PreviewServer",
+    "PreviewError",
+    "preview_serve",
 ]
 
 __version__ = "0.1.0"

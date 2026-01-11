@@ -25,17 +25,14 @@ class SVGRenderer:
         self.page = page
         self._dwg: Drawing | None = None
 
-    def render(self, output_path: str) -> str:
-        """Render the page to an SVG file.
+    def _prepare_drawing(self, filename: str | None = None) -> None:
+        """Prepare the SVG drawing with all content.
 
         Args:
-            output_path: Path to save the SVG file.
-
-        Returns:
-            Path to the rendered file.
+            filename: Optional filename for the drawing.
         """
         self._dwg = svgwrite.Drawing(
-            output_path,
+            filename=filename,
             size=(f"{self.page.width}px", f"{self.page.height}px"),
             profile="full",
         )
@@ -72,10 +69,31 @@ class SVGRenderer:
         for effect in foreground_effects:
             self._render_effect(effect)
 
+    def render(self, output_path: str) -> str:
+        """Render the page to an SVG file.
+
+        Args:
+            output_path: Path to save the SVG file.
+
+        Returns:
+            Path to the rendered file.
+        """
+        self._prepare_drawing(output_path)
+
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         self._dwg.save()
 
         return output_path
+
+    def render_to_string(self) -> str:
+        """Render the page to an SVG string.
+
+        Returns:
+            The SVG content as a string.
+        """
+        self._prepare_drawing()
+
+        return self._dwg.tostring()
 
     def _render_effect(self, effect: Effect) -> None:
         """Render an effect to the SVG."""

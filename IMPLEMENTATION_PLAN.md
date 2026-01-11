@@ -106,8 +106,17 @@ Completed:
   - Placeholder rendering when no image data available
   - 43 comprehensive tests for image module
 
+- [x] Web preview with hot reload (417 tests passing)
+  - PreviewServer class with HTTP server and file watching
+  - ScriptLoader for dynamic script reloading
+  - HTML wrapper with auto-refresh JavaScript using long-polling
+  - `comix serve script.py` CLI command
+  - Watchdog integration for file change detection
+  - Fallback to polling when watchdog is not available
+  - Auto port selection when port is busy
+  - 27 comprehensive tests for preview module
+
 Remaining:
-- [ ] Web preview with hot reload
 - [ ] Constraint-based layouts (advanced)
 
 ## Technical Notes
@@ -117,7 +126,8 @@ Remaining:
 - SVG as primary output format, PNG/PDF via Cairo
 - fonttools for font metrics
 - pycairo for PNG/PDF rendering
-- All tests passing (390/390)
+- watchdog for file watching (optional)
+- All tests passing (417/417)
 - Python 3.13 required
 
 ## API Changes (Phase 3)
@@ -306,3 +316,37 @@ narrator: "text"                     # Narrator box
 ### New module
 - `comix/cobject/image/image.py` - Image CObject implementation
 - `comix/cobject/image/ai_image.py` - AIImage with OpenAI/Replicate support
+
+### Web Preview (new)
+
+#### PreviewServer class
+- `PreviewServer(script_path, port, host, open_browser, use_watchdog)` - Live preview server
+- `start(blocking)` - Start the server
+- `stop()` - Stop the server
+
+#### ScriptLoader class
+- `ScriptLoader(script_path)` - Loads and reloads comic scripts
+- `load_page()` - Load Page from script
+- `render_svg()` - Render page to SVG string
+- `get_version()` - Get current render version
+- `has_file_changed()` - Check if script file changed
+
+#### serve function
+- `serve(script_path, port, host, open_browser)` - Convenience function to start preview server
+
+#### CLI Command
+- `comix serve script.py` - Start live preview server with hot reload
+  - `-p, --port`: Port to run the server on (default: 8000)
+  - `-H, --host`: Host to bind to (default: localhost)
+  - `--no-browser`: Don't open browser automatically
+
+#### Dependencies
+- Optional `web` extras: `uv sync --extra web`
+- Requires watchdog>=4.0.0
+
+#### Exports
+- `PreviewServer`, `PreviewError`, `preview_serve` exported from main `comix` package (when watchdog is available)
+- Also available from `comix.preview` module
+
+### New module
+- `comix/preview/server.py` - Web preview server implementation

@@ -93,6 +93,35 @@ def preview(script: str) -> None:
 
 
 @main.command()
+@click.argument("script", type=click.Path(exists=True))
+@click.option("-p", "--port", default=8000, help="Port to run the server on")
+@click.option("-H", "--host", default="localhost", help="Host to bind to")
+@click.option("--no-browser", is_flag=True, help="Don't open browser automatically")
+def serve(script: str, port: int, host: str, no_browser: bool) -> None:
+    """Start a live preview server with hot reload.
+
+    Watches the script file for changes and automatically refreshes
+    the browser preview.
+
+    Requires: uv sync --extra web
+    """
+    try:
+        from comix.preview import serve as start_server
+    except ImportError:
+        click.echo(
+            "Error: Web preview requires watchdog. Install with: uv sync --extra web",
+            err=True,
+        )
+        raise SystemExit(1)
+
+    try:
+        start_server(script, port=port, host=host, open_browser=not no_browser)
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(1)
+
+
+@main.command()
 def info() -> None:
     """Display information about Comix."""
     click.echo("Comix - Code-based comic creation framework")
@@ -110,6 +139,7 @@ def info() -> None:
     click.echo("Usage:")
     click.echo("  comix render script.py -o output.svg")
     click.echo("  comix preview script.py")
+    click.echo("  comix serve script.py    # Live preview with hot reload")
 
 
 if __name__ == "__main__":

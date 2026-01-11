@@ -74,7 +74,7 @@ Completed:
   - Renders all element types: Panel, Bubble, Text, Character, Shapes
   - Page.render() integration with format="png" and format="pdf"
   - 30 comprehensive tests for Cairo rendering
-- [x] Effect system for webtoons (305 tests passing)
+- [x] Effect system for webtoons
   - Effect base class with position, intensity, color, opacity, z_index
   - ShakeEffect: visual tremor with ghost copies and motion blur lines
   - ZoomEffect: radial speed lines for emphasis
@@ -84,10 +84,21 @@ Completed:
   - Page.add_effect() and Page.remove_effect() methods
   - SVG and Cairo renderer integration
   - 55 comprehensive tests for Effect system
+- [x] Markup parser for DSL-based comic creation (347 tests passing)
+  - MarkupParser class with regex-based parsing
+  - Supports page layout: `[page 2x2]`
+  - Panel markers: `# panel 1`
+  - Character dialogue: `Character(position, expression): "text"`
+  - Sound effects: `sfx: BOOM`
+  - Narrator boxes: `narrator: "text"`
+  - Background directives: `[background: description]`
+  - Korean character names and dialogue support
+  - Multiple bubble types: speech, thought, shout, whisper
+  - Automatic Page object generation with panels, characters, and bubbles
+  - 42 comprehensive tests for parser
 
 Remaining:
 - [ ] AI image integration (OpenAI/Replicate)
-- [ ] Markup parser for DSL-based comic creation
 - [ ] Web preview with hot reload
 - [ ] Constraint-based layouts (advanced)
 
@@ -98,7 +109,7 @@ Remaining:
 - SVG as primary output format, PNG/PDF via Cairo
 - fonttools for font metrics
 - pycairo for PNG/PDF rendering
-- All tests passing (305/305)
+- All tests passing (347/347)
 - Python 3.13 required
 
 ## API Changes (Phase 3)
@@ -207,3 +218,46 @@ Remaining:
 
 ### New module
 - `comix/effect/effect.py` - Effect system implementation
+
+### Markup Parser (new)
+
+#### parse_markup function
+- `parse_markup(markup: str) -> Page` - Parse markup text and return a Page object
+
+#### MarkupParser class
+- `MarkupParser(text: str)` - Initialize with markup text
+- `parse() -> PageSpec` - Parse and return structured specification
+- `to_page() -> Page` - Parse and convert to Page object
+
+#### Markup Language Syntax
+
+```
+[page RxC]                           # Page with grid layout (rows x cols)
+[page RxC WxH]                       # Page with custom size (width x height)
+
+# panel N                            # Panel marker
+
+Character(position, expression): "text"  # Character dialogue
+Character(thought): "text"           # Thought bubble
+Character(shout): "text"             # Shout bubble
+Character(whisper): "text"           # Whisper bubble
+
+sfx: TEXT                            # Sound effect
+narrator: "text"                     # Narrator box
+[background: description]            # Background directive
+
+// comment                           # Line comment (ignored)
+```
+
+#### Supported Modifiers
+- Expressions: neutral, happy, sad, angry, surprised, confused, smug
+- Positions: left, right, center, closeup, top, bottom
+- Directions: left, right, front, back
+- Bubble types: speech, thought, think, shout, whisper
+
+#### Exports
+- `parse_markup`, `MarkupParser`, `ParseError` exported from main `comix` package
+- Also available from `comix.parser` module
+
+### New module
+- `comix/parser/parser.py` - Markup parser implementation

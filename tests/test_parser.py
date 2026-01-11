@@ -1,0 +1,564 @@
+"""Tests for the Comix markup parser."""
+
+from comix.parser import parse_markup, MarkupParser
+from comix.parser.parser import (
+    CharacterAction,
+    SFXAction,
+    NarratorAction,
+    BackgroundDirective,
+    _parse_modifiers,
+)
+from comix.page.page import Page
+from comix.cobject.bubble.bubble import NarratorBubble
+
+
+class TestParseModifiers:
+    """Tests for the modifier parsing function."""
+
+    def test_empty_modifiers(self):
+        """Test parsing empty modifier string."""
+        result = _parse_modifiers("")
+        assert result["expression"] == "neutral"
+        assert result["position"] == "center"
+        assert result["facing"] == "right"
+        assert result["bubble_type"] == "speech"
+
+    def test_single_position(self):
+        """Test parsing single position modifier."""
+        result = _parse_modifiers("left")
+        assert result["position"] == "left"
+        # Position left should set facing to right
+        assert result["facing"] == "right"
+
+    def test_single_expression(self):
+        """Test parsing single expression modifier."""
+        result = _parse_modifiers("happy")
+        assert result["expression"] == "happy"
+
+    def test_position_and_expression(self):
+        """Test parsing position and expression together."""
+        result = _parse_modifiers("left, surprised")
+        assert result["position"] == "left"
+        assert result["expression"] == "surprised"
+        assert result["facing"] == "right"
+
+    def test_right_position_facing(self):
+        """Test that right position sets facing to left."""
+        result = _parse_modifiers("right")
+        assert result["position"] == "right"
+        assert result["facing"] == "left"
+
+    def test_bubble_type_thought(self):
+        """Test parsing thought bubble type."""
+        result = _parse_modifiers("thought")
+        assert result["bubble_type"] == "thought"
+
+    def test_bubble_type_think(self):
+        """Test that 'think' is normalized to 'thought'."""
+        result = _parse_modifiers("think")
+        assert result["bubble_type"] == "thought"
+
+    def test_bubble_type_shout(self):
+        """Test parsing shout bubble type."""
+        result = _parse_modifiers("shout")
+        assert result["bubble_type"] == "shout"
+
+    def test_bubble_type_whisper(self):
+        """Test parsing whisper bubble type."""
+        result = _parse_modifiers("left, whisper")
+        assert result["position"] == "left"
+        assert result["bubble_type"] == "whisper"
+
+    def test_all_modifiers(self):
+        """Test parsing multiple modifiers together."""
+        result = _parse_modifiers("right, angry, thought")
+        assert result["position"] == "right"
+        assert result["expression"] == "angry"
+        assert result["bubble_type"] == "thought"
+        assert result["facing"] == "left"
+
+    def test_closeup_position(self):
+        """Test parsing closeup position."""
+        result = _parse_modifiers("closeup")
+        assert result["position"] == "closeup"
+
+    def test_case_insensitivity(self):
+        """Test that modifiers are case insensitive."""
+        result = _parse_modifiers("LEFT, HAPPY")
+        assert result["position"] == "left"
+        assert result["expression"] == "happy"
+
+
+class TestMarkupParser:
+    """Tests for the MarkupParser class."""
+
+    def test_parse_empty(self):
+        """Test parsing empty markup."""
+        parser = MarkupParser("")
+        spec = parser.parse()
+        assert spec.rows == 1
+        assert spec.cols == 1
+
+    def test_parse_page_declaration(self):
+        """Test parsing page declaration."""
+        parser = MarkupParser("[page 2x3]")
+        spec = parser.parse()
+        assert spec.rows == 2
+        assert spec.cols == 3
+
+    def test_parse_page_with_size(self):
+        """Test parsing page declaration with custom size."""
+        parser = MarkupParser("[page 2x2 1000x1500]")
+        spec = parser.parse()
+        assert spec.rows == 2
+        assert spec.cols == 2
+        assert spec.width == 1000.0
+        assert spec.height == 1500.0
+
+    def test_parse_panel_marker(self):
+        """Test parsing panel markers."""
+        markup = """
+        [page 2x2]
+
+        # panel 1
+
+        # panel 2
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+        assert len(spec.panels) >= 2
+        assert spec.panels[0].number == 1
+        assert spec.panels[1].number == 2
+
+    def test_parse_character_action(self):
+        """Test parsing character dialogue."""
+        markup = """
+        # panel 1
+        Alice(left, happy): "Hello!"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        assert len(spec.panels) >= 1
+        actions = spec.panels[0].actions
+        assert len(actions) == 1
+        assert isinstance(actions[0], CharacterAction)
+        assert actions[0].name == "Alice"
+        assert actions[0].text == "Hello!"
+        assert actions[0].position == "left"
+        assert actions[0].expression == "happy"
+
+    def test_parse_korean_character(self):
+        """Test parsing Korean character names and dialogue."""
+        markup = """
+        # panel 1
+        철수(left, surprised): "뭐라고?!"
+        영희(right): "응, 진짜야"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        actions = spec.panels[0].actions
+        assert len(actions) == 2
+        assert actions[0].name == "철수"
+        assert actions[0].text == "뭐라고?!"
+        assert actions[0].expression == "surprised"
+        assert actions[1].name == "영희"
+        assert actions[1].text == "응, 진짜야"
+
+    def test_parse_sfx(self):
+        """Test parsing sound effects."""
+        markup = """
+        # panel 1
+        sfx: BOOM
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        actions = spec.panels[0].actions
+        assert len(actions) == 1
+        assert isinstance(actions[0], SFXAction)
+        assert actions[0].text == "BOOM"
+
+    def test_parse_narrator(self):
+        """Test parsing narrator boxes."""
+        markup = """
+        # panel 1
+        narrator: "Meanwhile, in another dimension..."
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        actions = spec.panels[0].actions
+        assert len(actions) == 1
+        assert isinstance(actions[0], NarratorAction)
+        assert actions[0].text == "Meanwhile, in another dimension..."
+
+    def test_parse_background(self):
+        """Test parsing background directives."""
+        markup = """
+        # panel 1
+        [background: A beautiful sunset]
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        actions = spec.panels[0].actions
+        assert len(actions) == 1
+        assert isinstance(actions[0], BackgroundDirective)
+        assert actions[0].description == "A beautiful sunset"
+        assert spec.panels[0].background == "A beautiful sunset"
+
+    def test_parse_complete_panel(self):
+        """Test parsing a complete panel with multiple elements."""
+        markup = """
+        [page 2x2]
+
+        # panel 1
+        [background: City street]
+        Alice(left, surprised): "What?!"
+        Bob(right, smug): "Yep."
+        sfx: 충격
+        narrator: "It was a shocking revelation."
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        assert spec.rows == 2
+        assert spec.cols == 2
+
+        actions = spec.panels[0].actions
+        assert len(actions) == 5
+
+        assert isinstance(actions[0], BackgroundDirective)
+        assert isinstance(actions[1], CharacterAction)
+        assert isinstance(actions[2], CharacterAction)
+        assert isinstance(actions[3], SFXAction)
+        assert isinstance(actions[4], NarratorAction)
+
+    def test_parse_thought_bubble(self):
+        """Test parsing thought bubble type."""
+        markup = """
+        # panel 1
+        Alice(thought): "I wonder..."
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        action = spec.panels[0].actions[0]
+        assert isinstance(action, CharacterAction)
+        assert action.bubble_type == "thought"
+
+    def test_parse_shout_bubble(self):
+        """Test parsing shout bubble type."""
+        markup = """
+        # panel 1
+        Alice(shout): "NOOO!"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        action = spec.panels[0].actions[0]
+        assert isinstance(action, CharacterAction)
+        assert action.bubble_type == "shout"
+
+    def test_skip_comments(self):
+        """Test that // comments are skipped."""
+        markup = """
+        # panel 1
+        // This is a comment
+        Alice(left): "Hello"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        actions = spec.panels[0].actions
+        assert len(actions) == 1
+        assert isinstance(actions[0], CharacterAction)
+
+    def test_skip_shebang(self):
+        """Test that #! lines are skipped."""
+        markup = """
+        #! This is a shebang-like comment
+        # panel 1
+        Alice(left): "Hello"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        actions = spec.panels[0].actions
+        assert len(actions) == 1
+
+    def test_panels_without_explicit_markers(self):
+        """Test that content before any panel marker goes to panel 1."""
+        markup = """
+        Alice(left): "No panel marker here"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        assert len(spec.panels) >= 1
+        actions = spec.panels[0].actions
+        assert len(actions) == 1
+
+    def test_fill_missing_panels(self):
+        """Test that missing panels are filled for grid."""
+        markup = """
+        [page 2x2]
+
+        # panel 1
+        Alice(left): "Hello"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        # 2x2 grid needs 4 panels
+        assert len(spec.panels) == 4
+
+
+class TestToPage:
+    """Tests for converting parsed markup to Page objects."""
+
+    def test_to_page_basic(self):
+        """Test basic page conversion."""
+        markup = """
+        [page 2x2]
+
+        # panel 1
+        Alice(left): "Hello!"
+        """
+        parser = MarkupParser(markup)
+        page = parser.to_page()
+
+        assert isinstance(page, Page)
+        assert page.width == 800.0
+        assert page.height == 1200.0
+
+    def test_to_page_with_characters(self):
+        """Test page conversion creates characters."""
+        markup = """
+        # panel 1
+        Alice(left, happy): "Hello!"
+        """
+        parser = MarkupParser(markup)
+        page = parser.to_page()
+
+        # Check that panels were created
+        assert len(page._panels) >= 1
+
+        # Check panel has content
+        panel = page._panels[0]
+        assert len(panel.submobjects) >= 1
+
+    def test_to_page_creates_correct_bubble_types(self):
+        """Test that correct bubble types are created."""
+        markup = """
+        # panel 1
+        Alice(thought): "Thinking..."
+        Bob(shout): "LOUD!"
+        Charlie(whisper): "quiet..."
+        Dana(left): "Normal speech"
+        """
+        parser = MarkupParser(markup)
+        page = parser.to_page()
+
+        # Get all objects from the panel
+        panel = page._panels[0]
+        bubbles = [obj for obj in panel.submobjects if hasattr(obj, 'bubble_type')]
+
+        bubble_types = [b.bubble_type for b in bubbles]
+        assert "thought" in bubble_types
+        assert "shout" in bubble_types
+        assert "whisper" in bubble_types
+        assert "speech" in bubble_types
+
+    def test_to_page_creates_sfx(self):
+        """Test that SFX objects are created."""
+        markup = """
+        # panel 1
+        sfx: KABOOM
+        """
+        parser = MarkupParser(markup)
+        page = parser.to_page()
+
+        panel = page._panels[0]
+        from comix.cobject.text.text import SFX
+
+        sfx_objects = [obj for obj in panel.submobjects if isinstance(obj, SFX)]
+        assert len(sfx_objects) == 1
+
+    def test_to_page_creates_narrator(self):
+        """Test that narrator bubbles are created."""
+        markup = """
+        # panel 1
+        narrator: "Once upon a time..."
+        """
+        parser = MarkupParser(markup)
+        page = parser.to_page()
+
+        panel = page._panels[0]
+        narrator_bubbles = [obj for obj in panel.submobjects if isinstance(obj, NarratorBubble)]
+        assert len(narrator_bubbles) == 1
+        assert narrator_bubbles[0].text == "Once upon a time..."
+
+
+class TestParseMarkupFunction:
+    """Tests for the top-level parse_markup function."""
+
+    def test_parse_markup_returns_page(self):
+        """Test that parse_markup returns a Page object."""
+        page = parse_markup("[page 2x2]")
+        assert isinstance(page, Page)
+
+    def test_parse_markup_full_example(self):
+        """Test parse_markup with a complete example."""
+        markup = """
+        [page 2x2]
+
+        # panel 1
+        철수(left, surprised): "뭐라고?!"
+        영희(right, smug): "응, 진짜야"
+
+        # panel 2
+        철수(closeup): "..."
+        sfx: 충격
+
+        # panel 3
+        [background: 카페 전경]
+        narrator: "그날 이후..."
+
+        # panel 4
+        철수(center): "믿을 수 없어"
+        """
+        page = parse_markup(markup)
+
+        assert isinstance(page, Page)
+        assert len(page._panels) == 4
+
+    def test_parse_markup_can_render(self):
+        """Test that parsed markup can be rendered."""
+        import tempfile
+        import os
+
+        markup = """
+        [page 1x1]
+
+        # panel 1
+        Alice(left): "Hello!"
+        """
+        page = parse_markup(markup)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = os.path.join(tmpdir, "test.svg")
+            result = page.render(output_path)
+            assert os.path.exists(result)
+
+
+class TestEdgeCases:
+    """Tests for edge cases and special scenarios."""
+
+    def test_single_quotes_in_dialogue(self):
+        """Test that single quotes work for dialogue."""
+        markup = """
+        # panel 1
+        Alice(left): 'Hello world!'
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        action = spec.panels[0].actions[0]
+        assert action.text == "Hello world!"
+
+    def test_whitespace_handling(self):
+        """Test handling of various whitespace."""
+        markup = """
+
+        [page 2x2]
+
+
+        # panel 1
+
+        Alice( left , happy ): "Hello!"
+
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        assert spec.rows == 2
+        assert spec.cols == 2
+        assert len(spec.panels) >= 1
+
+    def test_multiple_characters_same_name(self):
+        """Test that same character can speak multiple times."""
+        markup = """
+        # panel 1
+        Alice(left): "First line"
+        Bob(right): "Response"
+        Alice(left): "Second line"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        actions = spec.panels[0].actions
+        assert len(actions) == 3
+        assert actions[0].name == "Alice"
+        assert actions[1].name == "Bob"
+        assert actions[2].name == "Alice"
+
+    def test_expression_names_are_valid(self):
+        """Test all documented expression names."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised", "confused"]
+        for expr in expressions:
+            markup = f"""
+            # panel 1
+            Alice({expr}): "Hello"
+            """
+            parser = MarkupParser(markup)
+            spec = parser.parse()
+            action = spec.panels[0].actions[0]
+            assert action.expression == expr
+
+    def test_position_names_are_valid(self):
+        """Test all documented position names."""
+        positions = ["left", "right", "center", "closeup", "top", "bottom"]
+        for pos in positions:
+            markup = f"""
+            # panel 1
+            Alice({pos}): "Hello"
+            """
+            parser = MarkupParser(markup)
+            spec = parser.parse()
+            action = spec.panels[0].actions[0]
+            assert action.position == pos
+
+
+class TestRenderIntegration:
+    """Integration tests for rendering parsed markup."""
+
+    def test_render_to_svg(self):
+        """Test rendering parsed markup to SVG."""
+        import tempfile
+        import os
+
+        markup = """
+        [page 2x1]
+
+        # panel 1
+        Alice(left, happy): "Hello!"
+        Bob(right): "Hi there!"
+
+        # panel 2
+        sfx: POW
+        narrator: "The story continues..."
+        """
+        page = parse_markup(markup)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = os.path.join(tmpdir, "comic.svg")
+            result = page.render(output_path, format="svg")
+
+            assert os.path.exists(result)
+            with open(result, "r") as f:
+                content = f.read()
+                assert "<svg" in content
+                assert "</svg>" in content

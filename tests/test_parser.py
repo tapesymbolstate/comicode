@@ -1,11 +1,14 @@
 """Tests for the Comix markup parser."""
 
+import pytest
+
 from comix.parser import parse_markup, MarkupParser
 from comix.parser.parser import (
     CharacterAction,
     SFXAction,
     NarratorAction,
     BackgroundDirective,
+    ParseError,
     _parse_modifiers,
 )
 from comix.page.page import Page
@@ -87,6 +90,49 @@ class TestParseModifiers:
         result = _parse_modifiers("LEFT, HAPPY")
         assert result["position"] == "left"
         assert result["expression"] == "happy"
+
+    def test_smug_expression(self):
+        """Test parsing 'smug' expression modifier."""
+        result = _parse_modifiers("right, smug")
+        assert result["expression"] == "smug"
+        assert result["position"] == "right"
+
+    def test_explicit_facing_front(self):
+        """Test explicit facing direction 'front'."""
+        result = _parse_modifiers("center, happy, front")
+        assert result["position"] == "center"
+        assert result["expression"] == "happy"
+        assert result["facing"] == "front"
+
+    def test_explicit_facing_back(self):
+        """Test explicit facing direction 'back'."""
+        result = _parse_modifiers("center, back")
+        assert result["position"] == "center"
+        assert result["facing"] == "back"
+
+    def test_explicit_facing_front_with_left_position(self):
+        """Test explicit facing 'front' with left position."""
+        # Position 'left' normally sets facing to 'right'
+        # But explicit 'front' facing should override
+        result = _parse_modifiers("left, front")
+        assert result["position"] == "left"
+        assert result["facing"] == "front"
+
+    def test_explicit_facing_back_with_right_position(self):
+        """Test explicit facing 'back' with right position."""
+        # Position 'right' normally sets facing to 'left'
+        # But explicit 'back' facing should override
+        result = _parse_modifiers("right, back")
+        assert result["position"] == "right"
+        assert result["facing"] == "back"
+
+    def test_front_and_back_directions(self):
+        """Test front and back direction values (not left/right which are positions)."""
+        # Note: 'left' and 'right' are treated as positions, not explicit facing directions
+        # Only 'front' and 'back' work as explicit facing direction modifiers
+        for direction in ["front", "back"]:
+            result = _parse_modifiers(f"center, {direction}")
+            assert result["facing"] == direction
 
 
 class TestMarkupParser:
@@ -507,7 +553,7 @@ class TestEdgeCases:
 
     def test_expression_names_are_valid(self):
         """Test all documented expression names."""
-        expressions = ["neutral", "happy", "sad", "angry", "surprised", "confused"]
+        expressions = ["neutral", "happy", "sad", "angry", "surprised", "confused", "smug"]
         for expr in expressions:
             markup = f"""
             # panel 1
@@ -562,3 +608,75 @@ class TestRenderIntegration:
                 content = f.read()
                 assert "<svg" in content
                 assert "</svg>" in content
+
+
+class TestParseError:
+    """Tests for the ParseError exception class."""
+
+    def test_parse_error_with_line_info(self):
+        """Test ParseError includes line number and content."""
+        error = ParseError("Test error", line_number=5, line="bad content")
+        assert error.line_number == 5
+        assert error.line == "bad content"
+        assert "Line 5" in str(error)
+        assert "Test error" in str(error)
+        assert "bad content" in str(error)
+
+    def test_parse_error_default_values(self):
+        """Test ParseError with default values."""
+        error = ParseError("Simple error")
+        assert error.line_number == 0
+        assert error.line == ""
+
+    def test_parse_error_is_exception(self):
+        """Test ParseError is a proper exception."""
+        with pytest.raises(ParseError):
+            raise ParseError("Test")
+
+
+class TestParserExplicitFacingInMarkup:
+    """Tests for explicit facing direction in markup."""
+
+    def test_character_with_explicit_front_facing(self):
+        """Test character with explicit front facing direction."""
+        markup = """
+        # panel 1
+        Alice(center, happy, front): "Looking at you!"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        action = spec.panels[0].actions[0]
+        assert isinstance(action, CharacterAction)
+        assert action.facing == "front"
+        assert action.position == "center"
+        assert action.expression == "happy"
+
+    def test_character_with_explicit_back_facing(self):
+        """Test character with explicit back facing direction."""
+        markup = """
+        # panel 1
+        Alice(right, back): "Walking away..."
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        action = spec.panels[0].actions[0]
+        assert isinstance(action, CharacterAction)
+        assert action.facing == "back"
+        # Position right normally defaults facing to left, but explicit back overrides
+        assert action.position == "right"
+
+    def test_smug_expression_in_markup(self):
+        """Test smug expression is correctly parsed in full markup."""
+        markup = """
+        # panel 1
+        Bob(right, smug): "I told you so"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        action = spec.panels[0].actions[0]
+        assert isinstance(action, CharacterAction)
+        assert action.expression == "smug"
+        assert action.name == "Bob"

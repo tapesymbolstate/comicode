@@ -2,6 +2,7 @@
 
 from comix.effect.effect import (
     Effect,
+    AppearEffect,
     ShakeEffect,
     ZoomEffect,
     MotionLines,
@@ -11,6 +12,7 @@ from comix.effect.effect import (
 
 __all__ = [
     "Effect",
+    "AppearEffect",
     "ShakeEffect",
     "ZoomEffect",
     "MotionLines",

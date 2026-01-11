@@ -10,6 +10,7 @@ from comix import (
     Page,
     Panel,
     Stickman,
+    AppearEffect,
     ShakeEffect,
     ZoomEffect,
     MotionLines,
@@ -373,6 +374,171 @@ class TestFocusLines:
         assert len(elements) > 0
 
 
+class TestAppearEffect:
+    """Tests for AppearEffect."""
+
+    def test_default_init(self):
+        """Test AppearEffect with default values."""
+        effect = AppearEffect()
+        assert effect.target is None
+        assert effect.intensity == 1.0
+        assert effect.opacity == 0.6
+        assert effect.z_index == -1
+        assert effect.style == "sparkle"
+        assert effect.num_elements == 12
+        assert effect.radius == 80.0
+        assert effect.glow_color is None
+
+    def test_with_target(self):
+        """Test AppearEffect with a target CObject."""
+        char = Stickman("Test").move_to((100, 100))
+        effect = AppearEffect(target=char)
+
+        pos = effect.position
+        assert abs(pos[0] - 100) < 1
+        assert abs(pos[1] - 100) < 50  # Account for character height offset
+
+    def test_set_methods_chain(self):
+        """Test that set methods return self for chaining."""
+        effect = AppearEffect()
+        result = (
+            effect.set_style("fade")
+            .set_num_elements(20)
+            .set_radius(100.0)
+            .set_glow_color("#FFFF00")
+            .set_intensity(0.8)
+            .set_color("#FF0000")
+            .set_opacity(0.5)
+        )
+        assert result is effect
+        assert effect.style == "fade"
+        assert effect.num_elements == 20
+        assert effect.radius == 100.0
+        assert effect.glow_color == "#FFFF00"
+        assert effect.intensity == 0.8
+        assert effect.color == "#FF0000"
+        assert effect.opacity == 0.5
+
+    def test_invalid_style_ignored(self):
+        """Test that invalid style is ignored."""
+        effect = AppearEffect()
+        effect.set_style("invalid_style")
+        assert effect.style == "sparkle"  # Should remain default
+
+    def test_valid_styles(self):
+        """Test all valid appearance styles."""
+        for style in ("sparkle", "fade", "flash", "reveal"):
+            effect = AppearEffect()
+            effect.set_style(style)
+            assert effect.style == style
+
+    def test_sparkle_style_elements(self):
+        """Test sparkle style generates expected elements."""
+        effect = AppearEffect(position=(100, 100), style="sparkle", seed=42)
+        elements = effect.get_elements()
+
+        assert len(elements) > 0
+        # Should have polygon (star) and circle (dot) elements
+        polygons = [e for e in elements if e.element_type == "polygon"]
+        circles = [e for e in elements if e.element_type == "circle"]
+        assert len(polygons) > 0
+        assert len(circles) > 0
+
+    def test_fade_style_elements(self):
+        """Test fade style generates concentric rings."""
+        effect = AppearEffect(position=(100, 100), style="fade", seed=42)
+        elements = effect.get_elements()
+
+        assert len(elements) > 0
+        # Should have polyline elements (rings)
+        polylines = [e for e in elements if e.element_type == "polyline"]
+        assert len(polylines) > 0
+        # Rings should have dash patterns
+        for elem in polylines:
+            assert elem.stroke_dasharray is not None
+
+    def test_flash_style_elements(self):
+        """Test flash style generates burst elements."""
+        effect = AppearEffect(position=(100, 100), style="flash", seed=42)
+        elements = effect.get_elements()
+
+        assert len(elements) > 0
+        # Should have polygon (rays) and circle (center glow)
+        polygons = [e for e in elements if e.element_type == "polygon"]
+        circles = [e for e in elements if e.element_type == "circle"]
+        assert len(polygons) > 0
+        assert len(circles) == 1  # Center glow
+
+    def test_reveal_style_elements(self):
+        """Test reveal style generates reveal lines and corners."""
+        effect = AppearEffect(position=(100, 100), style="reveal", seed=42)
+        elements = effect.get_elements()
+
+        assert len(elements) > 0
+        # Should have line and polyline elements
+        lines = [e for e in elements if e.element_type == "line"]
+        polylines = [e for e in elements if e.element_type == "polyline"]
+        assert len(lines) > 0
+        assert len(polylines) == 4  # Four corner accents
+
+    def test_intensity_affects_elements(self):
+        """Test that intensity affects number of elements."""
+        effect_full = AppearEffect(position=(100, 100), intensity=1.0, style="sparkle", seed=42)
+        effect_half = AppearEffect(position=(100, 100), intensity=0.5, style="sparkle", seed=42)
+
+        elements_full = effect_full.get_elements()
+        elements_half = effect_half.get_elements()
+
+        # Full intensity should produce more elements
+        assert len(elements_full) > len(elements_half)
+
+    def test_radius_adjusted_for_target(self):
+        """Test that radius adjusts for target size."""
+        char = Stickman("Test").move_to((100, 100))
+        effect = AppearEffect(target=char, radius=10, seed=42)  # Small initial radius
+
+        elements = effect.get_elements()
+        # Elements should still be generated correctly
+        assert len(elements) > 0
+
+    def test_glow_color_applied(self):
+        """Test that glow color is applied to elements."""
+        effect = AppearEffect(position=(100, 100), glow_color="#FF00FF", style="sparkle", seed=42)
+        elements = effect.get_elements()
+
+        # At least some elements should have the glow color
+        glow_elements = [e for e in elements if e.fill_color == "#FF00FF"]
+        assert len(glow_elements) > 0
+
+    def test_render_data(self):
+        """Test get_render_data method."""
+        effect = AppearEffect(position=(100, 100), seed=42)
+        data = effect.get_render_data()
+
+        assert data["type"] == "Effect"
+        assert data["effect_type"] == "AppearEffect"
+        assert data["position"] == [100, 100]
+        assert len(data["elements"]) > 0
+
+    def test_reproducible_with_seed(self):
+        """Test that same seed produces same elements."""
+        effect1 = AppearEffect(position=(100, 100), style="sparkle", seed=123)
+        effect2 = AppearEffect(position=(100, 100), style="sparkle", seed=123)
+
+        elements1 = effect1.get_elements()
+        elements2 = effect2.get_elements()
+
+        assert len(elements1) == len(elements2)
+        for e1, e2 in zip(elements1, elements2):
+            assert e1.points == e2.points
+
+    def test_repr(self):
+        """Test AppearEffect repr."""
+        effect = AppearEffect(position=(100, 200), intensity=0.5)
+        repr_str = repr(effect)
+        assert "AppearEffect" in repr_str
+
+
 class TestImpactEffect:
     """Tests for ImpactEffect."""
 
@@ -674,6 +840,7 @@ class TestEffectImports:
         import comix
 
         assert hasattr(comix, "Effect")
+        assert hasattr(comix, "AppearEffect")
         assert hasattr(comix, "ShakeEffect")
         assert hasattr(comix, "ZoomEffect")
         assert hasattr(comix, "MotionLines")
@@ -685,6 +852,7 @@ class TestEffectImports:
         from comix import effect as effect_module
 
         assert hasattr(effect_module, "Effect")
+        assert hasattr(effect_module, "AppearEffect")
         assert hasattr(effect_module, "ShakeEffect")
         assert hasattr(effect_module, "ZoomEffect")
         assert hasattr(effect_module, "MotionLines")

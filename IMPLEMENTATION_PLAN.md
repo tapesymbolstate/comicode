@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete
 
-All 4 phases have been implemented with **550 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **565 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -20,7 +20,7 @@ All 4 phases have been implemented with **550 tests passing**, mypy clean, and r
 - **Character system**: Stickman, SimpleFace with Expression/Pose systems
 - **Layout**: GridLayout, FlowLayout, ConstraintLayout with priority-based solving
 - **Renderers**: SVG (always available), Cairo PNG/PDF (optional)
-- **Effects**: ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect
+- **Effects**: AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect (6 effect types)
 - **Parser**: DSL markup for rapid comic creation
 - **AI Images**: OpenAI DALL-E and Replicate integration
 - **Preview Server**: Hot reload web preview with file watching

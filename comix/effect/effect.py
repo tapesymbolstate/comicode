@@ -721,6 +721,345 @@ class FocusLines(Effect):
         return elements
 
 
+class AppearEffect(Effect):
+    """Creates an appearance/reveal effect.
+
+    Generates visual elements that convey an object materializing,
+    fading in, or dramatically appearing in a panel. Commonly used
+    in webtoons to show characters or objects entering a scene.
+    """
+
+    def __init__(
+        self,
+        target: CObject | None = None,
+        position: tuple[float, float] | None = None,
+        z_index: int = -1,
+        intensity: float = 1.0,
+        color: str = "#000000",
+        opacity: float = 0.6,
+        seed: int | None = None,
+        style: str = "sparkle",
+        num_elements: int = 12,
+        radius: float = 80.0,
+        glow_color: str | None = None,
+    ) -> None:
+        """Initialize appear effect.
+
+        Args:
+            target: CObject that is appearing
+            position: Position if no target
+            z_index: Layer position
+            intensity: Effect intensity
+            color: Primary color for effect elements
+            opacity: Effect opacity
+            seed: Random seed
+            style: Appearance style - "sparkle", "fade", "flash", or "reveal"
+            num_elements: Number of effect elements
+            radius: Radius of effect area
+            glow_color: Optional glow/highlight color (defaults to lighter version of color)
+        """
+        super().__init__(target, position, z_index, intensity, color, opacity, seed)
+        self.style = style
+        self.num_elements = num_elements
+        self.radius = radius
+        self.glow_color = glow_color
+
+    def set_style(self, style: str) -> Self:
+        """Set appearance style."""
+        if style in ("sparkle", "fade", "flash", "reveal"):
+            self.style = style
+            self._needs_generate = True
+        return self
+
+    def set_num_elements(self, num: int) -> Self:
+        """Set number of effect elements."""
+        self.num_elements = max(4, num)
+        self._needs_generate = True
+        return self
+
+    def set_radius(self, radius: float) -> Self:
+        """Set effect radius."""
+        self.radius = radius
+        self._needs_generate = True
+        return self
+
+    def set_glow_color(self, color: str) -> Self:
+        """Set glow color."""
+        self.glow_color = color
+        self._needs_generate = True
+        return self
+
+    def _generate_elements(self) -> list[EffectElement]:
+        """Generate appear effect elements."""
+        if self.style == "sparkle":
+            return self._generate_sparkle()
+        elif self.style == "fade":
+            return self._generate_fade()
+        elif self.style == "flash":
+            return self._generate_flash()
+        elif self.style == "reveal":
+            return self._generate_reveal()
+        return self._generate_sparkle()  # Default
+
+    def _generate_sparkle(self) -> list[EffectElement]:
+        """Generate sparkle/twinkle appearance effect."""
+        elements = []
+        center = self.position
+
+        # Adjust radius based on target size
+        radius = self.radius
+        if self.target is not None:
+            bbox = self.target.get_bounding_box()
+            target_radius = max(
+                float(bbox[1][0] - bbox[0][0]),
+                float(bbox[1][1] - bbox[0][1]),
+            ) / 2
+            radius = max(radius, target_radius + 30)
+
+        effective_elements = int(self.num_elements * self.intensity)
+
+        # Generate sparkle stars
+        for i in range(effective_elements):
+            angle = (2 * math.pi * i) / effective_elements + random.uniform(-0.2, 0.2)
+            dist = random.uniform(radius * 0.4, radius)
+
+            x = center[0] + dist * math.cos(angle)
+            y = center[1] + dist * math.sin(angle)
+
+            # Create 4-point star sparkle
+            star_size = random.uniform(3, 8) * self.intensity
+            star_points = self._create_star_points(x, y, star_size)
+
+            elements.append(
+                EffectElement(
+                    element_type="polygon",
+                    points=star_points,
+                    stroke_color=self.color,
+                    stroke_width=1.0,
+                    fill_color=self.glow_color or self.color,
+                    opacity=self.opacity * random.uniform(0.5, 1.0),
+                )
+            )
+
+        # Add some small dots for extra sparkle
+        for _ in range(effective_elements // 2):
+            angle = random.uniform(0, 2 * math.pi)
+            dist = random.uniform(radius * 0.2, radius * 0.9)
+            x = center[0] + dist * math.cos(angle)
+            y = center[1] + dist * math.sin(angle)
+            dot_size = random.uniform(1, 3)
+
+            elements.append(
+                EffectElement(
+                    element_type="circle",
+                    points=[(x, y), (x + dot_size, y)],  # center and radius point
+                    stroke_color="none",
+                    stroke_width=0,
+                    fill_color=self.glow_color or self.color,
+                    opacity=self.opacity * 0.7,
+                )
+            )
+
+        return elements
+
+    def _create_star_points(
+        self, cx: float, cy: float, size: float
+    ) -> list[tuple[float, float]]:
+        """Create 4-point star shape."""
+        points = []
+        for i in range(8):
+            angle = (math.pi * i) / 4
+            # Alternate between outer and inner radius
+            r = size if i % 2 == 0 else size * 0.3
+            x = cx + r * math.cos(angle)
+            y = cy + r * math.sin(angle)
+            points.append((x, y))
+        points.append(points[0])  # Close the path
+        return points
+
+    def _generate_fade(self) -> list[EffectElement]:
+        """Generate concentric fade rings for appearance effect."""
+        elements = []
+        center = self.position
+
+        radius = self.radius
+        if self.target is not None:
+            bbox = self.target.get_bounding_box()
+            target_radius = max(
+                float(bbox[1][0] - bbox[0][0]),
+                float(bbox[1][1] - bbox[0][1]),
+            ) / 2
+            radius = max(radius, target_radius + 20)
+
+        # Generate concentric rings with decreasing opacity
+        num_rings = int(4 * self.intensity)
+        for i in range(num_rings):
+            ring_radius = radius * (1 - i / (num_rings + 1))
+            ring_opacity = self.opacity * (i + 1) / (num_rings + 1)
+
+            # Create dashed circle points
+            num_segments = 32
+            points = []
+            for j in range(num_segments + 1):
+                angle = (2 * math.pi * j) / num_segments
+                x = center[0] + ring_radius * math.cos(angle)
+                y = center[1] + ring_radius * math.sin(angle)
+                points.append((x, y))
+
+            elements.append(
+                EffectElement(
+                    element_type="polyline",
+                    points=points,
+                    stroke_color=self.glow_color or self.color,
+                    stroke_width=2.0 - i * 0.3,
+                    opacity=ring_opacity,
+                    stroke_dasharray=f"{4 + i * 2},{2 + i}",
+                )
+            )
+
+        return elements
+
+    def _generate_flash(self) -> list[EffectElement]:
+        """Generate flash/burst appearance effect."""
+        elements = []
+        center = self.position
+
+        radius = self.radius
+        if self.target is not None:
+            bbox = self.target.get_bounding_box()
+            target_radius = max(
+                float(bbox[1][0] - bbox[0][0]),
+                float(bbox[1][1] - bbox[0][1]),
+            ) / 2
+            radius = max(radius, target_radius + 30)
+
+        # Create central flash burst
+        num_rays = int(8 * self.intensity)
+        for i in range(num_rays):
+            angle = (2 * math.pi * i) / num_rays + random.uniform(-0.1, 0.1)
+            inner_r = radius * 0.1
+            outer_r = radius * random.uniform(0.6, 1.0)
+
+            x1 = center[0] + inner_r * math.cos(angle)
+            y1 = center[1] + inner_r * math.sin(angle)
+            x2 = center[0] + outer_r * math.cos(angle)
+            y2 = center[1] + outer_r * math.sin(angle)
+
+            # Create tapered ray using triangle
+            perp_angle = angle + math.pi / 2
+            base_width = random.uniform(3, 8) * self.intensity
+            bx1 = x1 + base_width * math.cos(perp_angle)
+            by1 = y1 + base_width * math.sin(perp_angle)
+            bx2 = x1 - base_width * math.cos(perp_angle)
+            by2 = y1 - base_width * math.sin(perp_angle)
+
+            elements.append(
+                EffectElement(
+                    element_type="polygon",
+                    points=[(bx1, by1), (x2, y2), (bx2, by2), (bx1, by1)],
+                    stroke_color=self.color,
+                    stroke_width=1.0,
+                    fill_color=self.glow_color or "#FFFFFF",
+                    opacity=self.opacity * random.uniform(0.7, 1.0),
+                )
+            )
+
+        # Add central glow circle
+        elements.append(
+            EffectElement(
+                element_type="circle",
+                points=[(center[0], center[1]), (center[0] + radius * 0.15, center[1])],
+                stroke_color="none",
+                stroke_width=0,
+                fill_color=self.glow_color or "#FFFFFF",
+                opacity=self.opacity * 0.9,
+            )
+        )
+
+        return elements
+
+    def _generate_reveal(self) -> list[EffectElement]:
+        """Generate curtain/reveal appearance effect."""
+        elements = []
+        center = self.position
+
+        # Get bounds
+        width = self.radius * 2
+        height = self.radius * 2
+        if self.target is not None:
+            bbox = self.target.get_bounding_box()
+            width = float(bbox[1][0] - bbox[0][0]) + 40
+            height = float(bbox[1][1] - bbox[0][1]) + 40
+
+        # Create reveal lines from edges toward center
+        num_lines = int(self.num_elements * self.intensity)
+
+        # Horizontal reveal lines (from left and right)
+        for i in range(num_lines // 2):
+            y_offset = (i - num_lines // 4) * (height / (num_lines // 2))
+            y = center[1] + y_offset + random.uniform(-5, 5)
+
+            # Left side line
+            left_length = random.uniform(width * 0.2, width * 0.4)
+            elements.append(
+                EffectElement(
+                    element_type="line",
+                    points=[
+                        (center[0] - width / 2 - 10, y),
+                        (center[0] - width / 2 + left_length, y),
+                    ],
+                    stroke_color=self.color,
+                    stroke_width=random.uniform(1, 3),
+                    opacity=self.opacity * random.uniform(0.5, 0.9),
+                )
+            )
+
+            # Right side line
+            right_length = random.uniform(width * 0.2, width * 0.4)
+            elements.append(
+                EffectElement(
+                    element_type="line",
+                    points=[
+                        (center[0] + width / 2 + 10, y),
+                        (center[0] + width / 2 - right_length, y),
+                    ],
+                    stroke_color=self.color,
+                    stroke_width=random.uniform(1, 3),
+                    opacity=self.opacity * random.uniform(0.5, 0.9),
+                )
+            )
+
+        # Add corner accent marks
+        corner_size = min(width, height) * 0.15
+        corners = [
+            (center[0] - width / 2, center[1] - height / 2),  # Top-left
+            (center[0] + width / 2, center[1] - height / 2),  # Top-right
+            (center[0] - width / 2, center[1] + height / 2),  # Bottom-left
+            (center[0] + width / 2, center[1] + height / 2),  # Bottom-right
+        ]
+
+        for i, (cx, cy) in enumerate(corners):
+            # Direction multipliers based on corner
+            dx = 1 if i % 2 == 0 else -1
+            dy = 1 if i < 2 else -1
+
+            elements.append(
+                EffectElement(
+                    element_type="polyline",
+                    points=[
+                        (cx, cy + dy * corner_size),
+                        (cx, cy),
+                        (cx + dx * corner_size, cy),
+                    ],
+                    stroke_color=self.color,
+                    stroke_width=2.5,
+                    opacity=self.opacity,
+                )
+            )
+
+        return elements
+
+
 class ImpactEffect(Effect):
     """Creates an impact/explosion visual effect.
 

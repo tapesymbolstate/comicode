@@ -24,6 +24,7 @@ from comix.cobject.image.image import Image
 from comix.cobject.image.ai_image import AIImage, AIProvider, AIImageError
 from comix.effect.effect import (
     Effect,
+    AppearEffect,
     ShakeEffect,
     ZoomEffect,
     MotionLines,
@@ -139,6 +140,7 @@ __all__ = [
     "AIImageError",
     # Effects
     "Effect",
+    "AppearEffect",
     "ShakeEffect",
     "ZoomEffect",
     "MotionLines",

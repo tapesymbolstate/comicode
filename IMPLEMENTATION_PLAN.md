@@ -31,7 +31,7 @@ All 4 phases have been implemented with **627 tests passing**, mypy clean, and r
 - **SVG Renderer Tests**: Added render_to_string() tests and comprehensive effect rendering tests (18 new tests)
 - **Character.whisper()**: Added whisper() method to Character class for creating WhisperBubble (completes the bubble convenience methods: say, think, shout, whisper)
 - **BackgroundDirective Rendering**: Parser now properly handles background directives - sets color, image path, or description for AI generation
-- **PRD Documentation Sync**: Updated specs/PRD.md to match actual implementation (bubble_type parameter, consolidated module structure, removed non-existent imports)
+- **PRD Documentation Sync**: Updated specs/PRD.md to match actual implementation (bubble_type parameter, consolidated module structure, removed non-existent imports, added NarratorBubble class definition)
 
 ### Technical Stack
 

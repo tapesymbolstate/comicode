@@ -535,6 +535,14 @@ class WhisperBubble(Bubble):
     def __init__(self, text: str = "", **kwargs):
         kwargs.setdefault("font_size", 14)
         super().__init__(text=text, bubble_type=Bubble.WHISPER, **kwargs)
+
+
+class NarratorBubble(Bubble):
+    """나레이션 풍선 (사각형, 꼬리 없음)"""
+    def __init__(self, text: str = "", **kwargs):
+        kwargs.setdefault("corner_radius", 0)  # 직각 모서리
+        kwargs.setdefault("tail_length", 0)    # 꼬리 없음
+        super().__init__(text=text, bubble_type=Bubble.NARRATOR, **kwargs)
 ```
 
 ### 3.4 Character 클래스

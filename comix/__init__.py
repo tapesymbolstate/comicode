@@ -13,6 +13,7 @@ from comix.cobject.bubble.bubble import (
 )
 from comix.cobject.text.text import Text, StyledText, SFX
 from comix.cobject.character.character import Character, Stickman, SimpleFace
+from comix.cobject.shapes.shapes import Rectangle, Circle, Line
 from comix.cobject.image.image import Image
 from comix.cobject.image.ai_image import AIImage, AIProvider, AIImageError
 from comix.effect.effect import (
@@ -28,6 +29,27 @@ from comix.layout.flow import FlowLayout
 from comix.layout.grid import GridLayout
 from comix.page.page import Page, SinglePanel, Strip
 from comix.parser import parse_markup, MarkupParser, ParseError
+from comix.style.style import (
+    Style,
+    MANGA_STYLE,
+    WEBTOON_STYLE,
+    COMIC_STYLE,
+    MINIMAL_STYLE,
+)
+from comix.style.theme import (
+    Theme,
+    ColorPalette,
+    ThemeRegistry,
+    MANGA_THEME,
+    WEBTOON_THEME,
+    COMIC_THEME,
+    MINIMAL_THEME,
+    get_theme,
+    get_default_theme,
+    set_default_theme,
+    register_theme,
+    get_theme_registry,
+)
 
 # Optional preview module (requires watchdog)
 try:
@@ -59,6 +81,10 @@ __all__ = [
     "Character",
     "Stickman",
     "SimpleFace",
+    # Shapes
+    "Rectangle",
+    "Circle",
+    "Line",
     # Images
     "Image",
     "AIImage",
@@ -84,6 +110,25 @@ __all__ = [
     "parse_markup",
     "MarkupParser",
     "ParseError",
+    # Style
+    "Style",
+    "MANGA_STYLE",
+    "WEBTOON_STYLE",
+    "COMIC_STYLE",
+    "MINIMAL_STYLE",
+    # Theme
+    "Theme",
+    "ColorPalette",
+    "ThemeRegistry",
+    "MANGA_THEME",
+    "WEBTOON_THEME",
+    "COMIC_THEME",
+    "MINIMAL_THEME",
+    "get_theme",
+    "get_default_theme",
+    "set_default_theme",
+    "register_theme",
+    "get_theme_registry",
     # Preview (optional)
     "PreviewServer",
     "PreviewError",

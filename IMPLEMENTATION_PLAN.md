@@ -398,3 +398,28 @@ narrator: "text"                     # Narrator box
 
 ### New module
 - `comix/layout/constraints.py` - Constraint-based layout system
+
+## Completed: Package Export Improvements
+
+Added missing exports to main `comix` package for better usability:
+
+### Shape Classes (new exports)
+- `Rectangle` - Rectangle shape with configurable size, fill, stroke, corner radius
+- `Circle` - Circle shape with configurable radius, fill, stroke
+- `Line` - Line segment with start/end points, stroke styling
+
+### Style System (new exports)
+- `Style` - CSS-like style definition dataclass
+- `MANGA_STYLE`, `WEBTOON_STYLE`, `COMIC_STYLE`, `MINIMAL_STYLE` - Preset styles
+
+### Theme System (new exports)
+- `Theme` - Global theming definition
+- `ColorPalette` - Coordinated color definitions
+- `ThemeRegistry` - Theme management class
+- `MANGA_THEME`, `WEBTOON_THEME`, `COMIC_THEME`, `MINIMAL_THEME` - Preset themes
+- `get_theme()`, `get_default_theme()`, `set_default_theme()`, `register_theme()`, `get_theme_registry()` - Global theme functions
+
+All classes were already implemented but not exported from the main package. Now users can import directly:
+```python
+from comix import Rectangle, Circle, Line, Style, Theme, MANGA_STYLE, MANGA_THEME
+```

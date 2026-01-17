@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.17] - 2026-01-18
+
+### Documentation
+- Added CHANGELOG.md to consolidate version history and release notes
+- Cleaned up IMPLEMENTATION_PLAN.md by moving historical verification notes to CHANGELOG.md
+- Reduced IMPLEMENTATION_PLAN.md from 368 to 266 lines for better maintainability
+
 ## [v0.1.16] - 2026-01-18
 
 ### Documentation

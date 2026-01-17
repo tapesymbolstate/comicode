@@ -535,3 +535,300 @@ class TestCObjectConvenienceMethods:
         assert np.allclose(obj.position, [50, 50])
         assert obj.scale == 2.0  # 40 / 20
         assert obj.opacity == 0.0
+
+
+class TestCObjectNextTo:
+    """Tests for CObject next_to positioning method."""
+
+    def test_next_to_right(self) -> None:
+        """Test positioning next to another object on the right."""
+        obj1 = CObject()
+        obj1._points = np.array([[-25, -25], [25, 25]], dtype=np.float64)
+        obj1.move_to((100, 100))
+
+        obj2 = CObject()
+        obj2._points = np.array([[-10, -10], [10, 10]], dtype=np.float64)
+
+        result = obj2.next_to(obj1, direction="right", buff=10.0)
+
+        assert result is obj2
+        # obj1 center at 100, half_width=25, buff=10, obj2 half_width=10
+        # new_x = 100 + 25 + 10 + 10 = 145
+        assert obj2.position[0] == 145.0
+        assert obj2.position[1] == 100.0  # Same y as obj1 center
+
+    def test_next_to_left(self) -> None:
+        """Test positioning next to another object on the left."""
+        obj1 = CObject()
+        obj1._points = np.array([[-25, -25], [25, 25]], dtype=np.float64)
+        obj1.move_to((100, 100))
+
+        obj2 = CObject()
+        obj2._points = np.array([[-10, -10], [10, 10]], dtype=np.float64)
+
+        obj2.next_to(obj1, direction="left", buff=10.0)
+
+        # new_x = 100 - 25 - 10 - 10 = 55
+        assert obj2.position[0] == 55.0
+        assert obj2.position[1] == 100.0
+
+    def test_next_to_up(self) -> None:
+        """Test positioning next to another object above."""
+        obj1 = CObject()
+        obj1._points = np.array([[-25, -25], [25, 25]], dtype=np.float64)
+        obj1.move_to((100, 100))
+
+        obj2 = CObject()
+        obj2._points = np.array([[-10, -10], [10, 10]], dtype=np.float64)
+
+        obj2.next_to(obj1, direction="up", buff=10.0)
+
+        assert obj2.position[0] == 100.0  # Same x as obj1 center
+        # new_y = 100 + 25 + 10 + 10 = 145
+        assert obj2.position[1] == 145.0
+
+    def test_next_to_down(self) -> None:
+        """Test positioning next to another object below."""
+        obj1 = CObject()
+        obj1._points = np.array([[-25, -25], [25, 25]], dtype=np.float64)
+        obj1.move_to((100, 100))
+
+        obj2 = CObject()
+        obj2._points = np.array([[-10, -10], [10, 10]], dtype=np.float64)
+
+        obj2.next_to(obj1, direction="down", buff=10.0)
+
+        assert obj2.position[0] == 100.0
+        # new_y = 100 - 25 - 10 - 10 = 55
+        assert obj2.position[1] == 55.0
+
+    def test_next_to_invalid_direction(self) -> None:
+        """Test next_to with invalid direction defaults to center."""
+        obj1 = CObject()
+        obj1._points = np.array([[-25, -25], [25, 25]], dtype=np.float64)
+        obj1.move_to((100, 100))
+
+        obj2 = CObject()
+        obj2._points = np.array([[-10, -10], [10, 10]], dtype=np.float64)
+
+        obj2.next_to(obj1, direction="invalid", buff=10.0)
+
+        # Invalid direction defaults to centering on obj1
+        assert obj2.position[0] == 100.0
+        assert obj2.position[1] == 100.0
+
+    def test_next_to_default_buff(self) -> None:
+        """Test next_to with default buffer."""
+        obj1 = CObject()
+        obj1._points = np.array([[-20, -20], [20, 20]], dtype=np.float64)
+        obj1.move_to((50, 50))
+
+        obj2 = CObject()
+        obj2._points = np.array([[-10, -10], [10, 10]], dtype=np.float64)
+
+        obj2.next_to(obj1)  # Default direction is "right", buff is 10.0
+
+        # new_x = 50 + 20 + 10 + 10 = 90
+        assert obj2.position[0] == 90.0
+
+
+class TestCObjectAlignTo:
+    """Tests for CObject align_to positioning method."""
+
+    def test_align_to_left(self) -> None:
+        """Test aligning to another object's left edge."""
+        obj1 = CObject()
+        obj1._points = np.array([[0, 0], [100, 100]], dtype=np.float64)
+        obj1.move_to((50, 50))
+        # obj1 bbox: min=[0,0], max=[100,100] after translation at (50,50)
+        # Actually with position offset: min=[50,50], max=[150,150]
+
+        obj2 = CObject()
+        obj2._points = np.array([[0, 0], [40, 40]], dtype=np.float64)
+        obj2.move_to((200, 200))
+        # obj2 bbox: [200,200] to [240,240]
+
+        result = obj2.align_to(obj1, edge="left")
+
+        assert result is obj2
+        # obj1 left edge (bbox[0][0]) = 50
+        # obj2 left edge (bbox[0][0]) = 200
+        # offset = 50 - 200 = -150
+        # new obj2.position[0] = 200 + (-150) = 50
+        assert obj2.position[0] == 50.0
+
+    def test_align_to_right(self) -> None:
+        """Test aligning to another object's right edge."""
+        obj1 = CObject()
+        obj1._points = np.array([[0, 0], [100, 100]], dtype=np.float64)
+        obj1.move_to((50, 50))
+        # obj1 bbox: [50,50] to [150,150]
+
+        obj2 = CObject()
+        obj2._points = np.array([[0, 0], [40, 40]], dtype=np.float64)
+        obj2.move_to((0, 0))
+        # obj2 bbox: [0,0] to [40,40]
+
+        obj2.align_to(obj1, edge="right")
+
+        # obj1 right edge = 150
+        # obj2 right edge = 40
+        # offset = 150 - 40 = 110
+        assert obj2.position[0] == 110.0
+
+    def test_align_to_top(self) -> None:
+        """Test aligning to another object's top edge."""
+        obj1 = CObject()
+        obj1._points = np.array([[0, 0], [100, 100]], dtype=np.float64)
+        obj1.move_to((50, 50))
+        # obj1 bbox: [50,50] to [150,150]
+
+        obj2 = CObject()
+        obj2._points = np.array([[0, 0], [40, 40]], dtype=np.float64)
+        obj2.move_to((0, 0))
+        # obj2 bbox: [0,0] to [40,40]
+
+        obj2.align_to(obj1, edge="top")
+
+        # obj1 top edge (bbox[1][1]) = 150
+        # obj2 top edge = 40
+        # offset = 150 - 40 = 110
+        assert obj2.position[1] == 110.0
+
+    def test_align_to_bottom(self) -> None:
+        """Test aligning to another object's bottom edge."""
+        obj1 = CObject()
+        obj1._points = np.array([[0, 0], [100, 100]], dtype=np.float64)
+        obj1.move_to((50, 50))
+        # obj1 bbox: [50,50] to [150,150]
+
+        obj2 = CObject()
+        obj2._points = np.array([[0, 0], [40, 40]], dtype=np.float64)
+        obj2.move_to((200, 200))
+        # obj2 bbox: [200,200] to [240,240]
+
+        obj2.align_to(obj1, edge="bottom")
+
+        # obj1 bottom edge = 50
+        # obj2 bottom edge = 200
+        # offset = 50 - 200 = -150
+        assert obj2.position[1] == 50.0
+
+    def test_align_to_center(self) -> None:
+        """Test aligning to another object's center."""
+        obj1 = CObject()
+        obj1._points = np.array([[-50, -50], [50, 50]], dtype=np.float64)
+        obj1.move_to((100, 100))
+        # obj1 center at (100, 100)
+
+        obj2 = CObject()
+        obj2._points = np.array([[-20, -20], [20, 20]], dtype=np.float64)
+        obj2.move_to((0, 0))
+
+        obj2.align_to(obj1, edge="center")
+
+        # Should move to obj1's center
+        assert np.allclose(obj2.position, [100, 100])
+
+    def test_align_to_returns_self(self) -> None:
+        """Test align_to returns self for chaining."""
+        obj1 = CObject()
+        obj1._points = np.array([[-10, -10], [10, 10]], dtype=np.float64)
+
+        obj2 = CObject()
+        obj2._points = np.array([[-10, -10], [10, 10]], dtype=np.float64)
+
+        result = obj2.align_to(obj1, edge="left")
+        assert result is obj2
+
+
+class TestCObjectBoundingBox:
+    """Tests for CObject bounding box calculations."""
+
+    def test_get_bounding_box_empty_points(self) -> None:
+        """Test bounding box with no points returns position."""
+        obj = CObject(position=(50, 75))
+        bbox = obj.get_bounding_box()
+
+        # With no points, should return position as both min and max
+        assert np.allclose(bbox[0], [50, 75])
+        assert np.allclose(bbox[1], [50, 75])
+
+    def test_get_bounding_box_with_submobjects(self) -> None:
+        """Test bounding box includes submobjects."""
+        parent = CObject()
+        parent._points = np.array([[0, 0], [50, 50]], dtype=np.float64)
+
+        child = CObject()
+        child._points = np.array([[60, 60], [100, 100]], dtype=np.float64)
+
+        parent.add(child)
+        bbox = parent.get_bounding_box()
+
+        # Should encompass both parent and child
+        assert bbox[0][0] == 0.0  # min x
+        assert bbox[0][1] == 0.0  # min y
+        assert bbox[1][0] == 100.0  # max x
+        assert bbox[1][1] == 100.0  # max y
+
+    def test_get_transformed_points_with_scale(self) -> None:
+        """Test transformed points with scaling."""
+        obj = CObject(position=(0, 0), scale=2.0)
+        obj._points = np.array([[10, 10], [20, 20]], dtype=np.float64)
+
+        transformed = obj._get_transformed_points()
+
+        # Points should be scaled by 2
+        assert np.allclose(transformed[0], [20, 20])
+        assert np.allclose(transformed[1], [40, 40])
+
+    def test_get_transformed_points_with_rotation(self) -> None:
+        """Test transformed points with rotation."""
+        import math
+        obj = CObject(position=(0, 0), rotation=math.pi / 2)  # 90 degrees
+        obj._points = np.array([[10, 0]], dtype=np.float64)
+
+        transformed = obj._get_transformed_points()
+
+        # Point at (10, 0) rotated 90 degrees should be at (0, 10)
+        assert np.allclose(transformed[0], [0, 10], atol=1e-10)
+
+    def test_get_transformed_points_with_position(self) -> None:
+        """Test transformed points with position offset."""
+        obj = CObject(position=(100, 200))
+        obj._points = np.array([[0, 0], [10, 10]], dtype=np.float64)
+
+        transformed = obj._get_transformed_points()
+
+        assert np.allclose(transformed[0], [100, 200])
+        assert np.allclose(transformed[1], [110, 210])
+
+    def test_get_width_and_height(self) -> None:
+        """Test get_width and get_height methods."""
+        obj = CObject()
+        obj._points = np.array([[0, 0], [100, 50]], dtype=np.float64)
+
+        assert obj.get_width() == 100.0
+        assert obj.get_height() == 50.0
+
+    def test_get_center(self) -> None:
+        """Test get_center method."""
+        obj = CObject()
+        obj._points = np.array([[0, 0], [100, 100]], dtype=np.float64)
+
+        center = obj.get_center()
+        assert np.allclose(center, [50, 50])
+
+
+class TestCObjectRepr:
+    """Tests for CObject string representation."""
+
+    def test_repr(self) -> None:
+        """Test __repr__ method."""
+        obj = CObject(name="test_obj", position=(50, 100))
+        repr_str = repr(obj)
+
+        assert "CObject" in repr_str
+        assert "test_obj" in repr_str
+        assert "50" in repr_str
+        assert "100" in repr_str

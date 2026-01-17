@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Multi-page PDF Export
 
-All 4 phases have been implemented with **894 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **972 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -43,6 +43,9 @@ All 4 phases have been implemented with **894 tests passing**, mypy clean, and r
 - **Test Warning Fixes**: Fixed RuntimeWarning in AIImage tests by properly handling unawaited coroutines in mock tests. Uses `AsyncMock` for async method mocking and properly closes coroutines in sync wrapper tests.
 - **Font Module Test Coverage**: Comprehensive test coverage for font management system (70% to 90%+ coverage). Tests cover font metrics extraction (full tables, fallback paths, missing tables), platform-specific font discovery (macOS, Linux, Windows), font info loading (weight/style detection, edge cases), metrics caching, CJK extended Unicode ranges, font system initialization, and directory scanning (54 new tests).
 - **Bezier and Geometry Utils Test Coverage**: Comprehensive test coverage for bezier/geometry utility functions. Tests cover all tail directions, edge cases (empty arrays, clamped radii, invalid inputs), bubble path styles (whisper, unknown), scaling/rotation with centers, and mathematical edge cases (27 new tests).
+- **CObject Positioning Test Coverage**: Full test coverage for CObject next_to() and align_to() methods, including all directional positioning (up, down, left, right) and edge alignment (top, bottom, left, right, center). Tests cover bounding box calculations with submobjects and transformations (20 new tests).
+- **FlowLayout Extended Test Coverage**: Comprehensive tests for FlowLayout edge cases including vertical end alignment, cross-alignment options (start, center, end), bounding box fallback, wrap modes in both directions, and equal cell calculations (11 new tests).
+- **Package Import Test Coverage**: Tests verifying all package exports are correctly available, including optional dependencies (CairoRenderer, PreviewServer) and version attributes (20 new tests).
 
 ### Technical Stack
 

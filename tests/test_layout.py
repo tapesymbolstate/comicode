@@ -439,3 +439,236 @@ class TestPageFlowLayout:
 
         assert len(page._panels) == 3
         assert page._layout is not None
+
+
+class TestFlowLayoutExtended:
+    """Extended tests for FlowLayout edge cases."""
+
+    def test_vertical_flow_end_alignment(self):
+        """Test vertical flow with end alignment."""
+        layout = FlowLayout(
+            width=100.0,
+            height=400.0,
+            direction="vertical",
+            spacing=0.0,
+            wrap="nowrap",
+            alignment="end",
+        )
+
+        panels = [Panel(width=100, height=100) for _ in range(2)]
+        positions = layout.calculate_positions_for_objects(panels)
+
+        # Total height: 200, remaining: 200, start_y = 200
+        assert positions[0]["center_y"] == 250.0  # 200 + 50
+        assert positions[1]["center_y"] == 350.0  # 200 + 100 + 50
+
+    def test_vertical_cross_alignment_center(self):
+        """Test vertical flow with center cross alignment."""
+        layout = FlowLayout(
+            width=200.0,
+            height=400.0,
+            direction="vertical",
+            spacing=10.0,
+            wrap="nowrap",
+            alignment="start",
+            cross_alignment="center",
+        )
+
+        panels = [
+            Panel(width=50, height=100),
+            Panel(width=100, height=100),
+            Panel(width=75, height=100),
+        ]
+        positions = layout.calculate_positions_for_objects(panels)
+
+        # All should be centered horizontally within column width of 100
+        assert positions[0]["center_x"] == 50.0  # Centered in col_width 100
+        assert positions[1]["center_x"] == 50.0  # Full width
+        assert positions[2]["center_x"] == 50.0  # Centered in col_width 100
+
+    def test_vertical_cross_alignment_end(self):
+        """Test vertical flow with end cross alignment."""
+        layout = FlowLayout(
+            width=200.0,
+            height=400.0,
+            direction="vertical",
+            spacing=0.0,
+            wrap="nowrap",
+            alignment="start",
+            cross_alignment="end",
+        )
+
+        panels = [
+            Panel(width=50, height=100),
+            Panel(width=100, height=100),
+        ]
+        positions = layout.calculate_positions_for_objects(panels)
+
+        # Both should be aligned to right edge of column (col_width = 100)
+        # Panel 1: half_width = 25, center_x = 100 - 25 = 75
+        assert positions[0]["center_x"] == 75.0
+        # Panel 2: half_width = 50, center_x = 100 - 50 = 50
+        assert positions[1]["center_x"] == 50.0
+
+    def test_horizontal_cross_alignment_end(self):
+        """Test horizontal flow with end cross alignment."""
+        layout = FlowLayout(
+            width=400.0,
+            height=200.0,
+            direction="horizontal",
+            spacing=0.0,
+            wrap="nowrap",
+            alignment="start",
+            cross_alignment="end",
+        )
+
+        panels = [
+            Panel(width=100, height=50),
+            Panel(width=100, height=100),
+        ]
+        positions = layout.calculate_positions_for_objects(panels)
+
+        # Row height is 100 (max of panels)
+        # Panel 1: height=50, half_h=25, center_y = 0 + 100 - 25 = 75
+        assert positions[0]["center_y"] == 75.0
+        # Panel 2: height=100, half_h=50, center_y = 0 + 100 - 50 = 50
+        assert positions[1]["center_y"] == 50.0
+
+    def test_calculate_positions_with_bounding_box_fallback(self):
+        """Test calculate_positions_for_objects with objects using bounding box."""
+        from comix.cobject.cobject import CObject
+        import numpy as np
+
+        layout = FlowLayout(
+            width=400.0,
+            height=200.0,
+            direction="horizontal",
+            spacing=10.0,
+        )
+
+        # Create CObjects without explicit width/height
+        obj1 = CObject()
+        obj1._points = np.array([[-50, -25], [50, 25]], dtype=np.float64)
+
+        obj2 = CObject()
+        obj2._points = np.array([[-30, -30], [30, 30]], dtype=np.float64)
+
+        positions = layout.calculate_positions_for_objects([obj1, obj2])
+
+        assert len(positions) == 2
+        assert positions[0]["width"] == 100.0
+        assert positions[0]["height"] == 50.0
+        assert positions[1]["width"] == 60.0
+        assert positions[1]["height"] == 60.0
+
+    def test_calculate_positions_with_attribute_error_fallback(self):
+        """Test calculate_positions_for_objects with fallback to default size."""
+
+        class MinimalObject:
+            """Object without width/height or get_width/get_height."""
+            pass
+
+        layout = FlowLayout(
+            width=400.0,
+            height=200.0,
+            direction="horizontal",
+            spacing=10.0,
+        )
+
+        obj = MinimalObject()
+        positions = layout.calculate_positions_for_objects([obj])
+
+        # Should fallback to 100x100 default
+        assert len(positions) == 1
+        assert positions[0]["width"] == 100.0
+        assert positions[0]["height"] == 100.0
+
+    def test_vertical_wrap_multiple_columns(self):
+        """Test vertical flow wrapping to multiple columns."""
+        layout = FlowLayout(
+            width=400.0,
+            height=150.0,  # Only fits one 100px panel per column
+            direction="vertical",
+            spacing=10.0,
+            wrap="wrap",
+            alignment="start",
+        )
+
+        panels = [Panel(width=100, height=100) for _ in range(4)]
+        positions = layout.calculate_positions_for_objects(panels)
+
+        assert len(positions) == 4
+        # Each panel should be in its own column
+        assert positions[0]["center_x"] == 50.0  # Column 1
+        assert positions[1]["center_x"] == 160.0  # Column 2
+        assert positions[2]["center_x"] == 270.0  # Column 3
+        assert positions[3]["center_x"] == 380.0  # Column 4
+
+    def test_horizontal_equal_cell_mode_wrap(self):
+        """Test calculate_positions with num_cells in wrap mode."""
+        layout = FlowLayout(
+            width=500.0,
+            height=400.0,
+            direction="horizontal",
+            spacing=10.0,
+            wrap="wrap",
+        )
+
+        positions = layout.calculate_positions(6)
+
+        assert len(positions) == 6
+        # Should create reasonable cell sizes
+        for pos in positions:
+            assert pos["width"] > 0
+            assert pos["height"] > 0
+
+    def test_vertical_equal_cell_mode_wrap(self):
+        """Test calculate_positions with num_cells in vertical wrap mode."""
+        layout = FlowLayout(
+            width=400.0,
+            height=500.0,
+            direction="vertical",
+            spacing=10.0,
+            wrap="wrap",
+        )
+
+        positions = layout.calculate_positions(6)
+
+        assert len(positions) == 6
+        for pos in positions:
+            assert pos["width"] > 0
+            assert pos["height"] > 0
+
+    def test_horizontal_equal_cell_mode_nowrap(self):
+        """Test calculate_positions with num_cells in horizontal nowrap mode."""
+        layout = FlowLayout(
+            width=400.0,
+            height=100.0,
+            direction="horizontal",
+            spacing=10.0,
+            wrap="nowrap",
+        )
+
+        positions = layout.calculate_positions(4)
+
+        assert len(positions) == 4
+        # In nowrap mode, cells should span full height
+        for pos in positions:
+            assert pos["height"] == 100.0
+
+    def test_vertical_equal_cell_mode_nowrap(self):
+        """Test calculate_positions with num_cells in vertical nowrap mode."""
+        layout = FlowLayout(
+            width=100.0,
+            height=400.0,
+            direction="vertical",
+            spacing=10.0,
+            wrap="nowrap",
+        )
+
+        positions = layout.calculate_positions(4)
+
+        assert len(positions) == 4
+        # In nowrap mode, cells should span full width
+        for pos in positions:
+            assert pos["width"] == 100.0

@@ -1,7 +1,7 @@
 # Examples Maintenance - 예제 정리 및 관리 기준
 
 > **Note**: This document contains **process guidelines** for future maintenance.
-> All 15 examples (01-15) are currently working correctly as of v0.1.42.
+> All 15 examples (01-15) are currently working correctly as of v0.1.44.
 
 ## What
 examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 예제만 유지**하고, 버그가 있는 예제는 명확히 표시하거나 임시 제거한다.

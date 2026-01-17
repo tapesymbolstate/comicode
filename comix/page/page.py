@@ -243,6 +243,53 @@ class Page:
             _temp_preview_files.append(path)
             webbrowser.open(f"file://{path}")
 
+    def animate(
+        self,
+        output_path: str,
+        timeline: Any | None = None,
+        *,
+        fps: int = 24,
+        duration: float = 1.0,
+        loop: bool = True,
+        quality: str = "medium",
+        progress_callback: Any | None = None,
+    ) -> str:
+        """Render the page with animations to an animated GIF.
+
+        Requires optional 'animation' dependencies:
+            uv sync --extra animation
+
+        Args:
+            output_path: Path to save the GIF file.
+            timeline: Animation timeline to use. If None, renders a static GIF.
+            fps: Frames per second (1-60).
+            duration: Total animation duration in seconds.
+            loop: Whether the GIF should loop.
+            quality: Rendering quality ("low", "medium", "high").
+            progress_callback: Called with (current_frame, total_frames).
+
+        Returns:
+            Path to the rendered file.
+
+        Raises:
+            ImportError: If animation dependencies are not installed.
+        """
+        self.build()
+        self.auto_layout()
+
+        from comix.renderer.gif_renderer import GIFRenderer
+
+        renderer = GIFRenderer(self)
+        return renderer.render(
+            output_path,
+            timeline,
+            fps=fps,
+            duration=duration,
+            loop=loop,
+            quality=quality,  # type: ignore[arg-type]
+            progress_callback=progress_callback,
+        )
+
     def get_all_cobjects(self) -> list[CObject]:
         """Get all CObjects including nested ones."""
         all_objects: list[CObject] = []

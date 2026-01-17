@@ -29,6 +29,10 @@ ai = [
 web = [
     "watchdog>=4.0.0",
 ]
+animation = [
+    "pycairo>=1.26.0",
+    "Pillow>=10.0.0",
+]
 
 [project.scripts]
 comix = "comix.__main__:main"

@@ -143,6 +143,39 @@ except ImportError:
     PreviewError = None  # type: ignore[misc, assignment]
     preview_serve = None  # type: ignore[assignment]
 
+# Optional animation module (requires pycairo and Pillow)
+try:
+    from comix.animation import (
+        Animation,
+        AnimationConfig,
+        AnimationGroup,
+        EffectAnimation,
+        ObjectAnimation,
+        PropertyAnimation,
+        Timeline,
+        TimelineEntry,
+        EASING_FUNCTIONS,
+        get_easing,
+        register_easing,
+    )
+    from comix.renderer.gif_renderer import GIFRenderer
+
+    _ANIMATION_AVAILABLE = True
+except ImportError:
+    _ANIMATION_AVAILABLE = False
+    Animation = None  # type: ignore[misc, assignment]
+    AnimationConfig = None  # type: ignore[misc, assignment]
+    AnimationGroup = None  # type: ignore[misc, assignment]
+    EffectAnimation = None  # type: ignore[misc, assignment]
+    ObjectAnimation = None  # type: ignore[misc, assignment]
+    PropertyAnimation = None  # type: ignore[misc, assignment]
+    Timeline = None  # type: ignore[misc, assignment]
+    TimelineEntry = None  # type: ignore[misc, assignment]
+    EASING_FUNCTIONS = None  # type: ignore[assignment]
+    get_easing = None  # type: ignore[assignment]
+    register_easing = None  # type: ignore[assignment]
+    GIFRenderer = None  # type: ignore[misc, assignment]
+
 __all__ = [
     # Constants
     "VERSION",
@@ -278,6 +311,19 @@ __all__ = [
     "PreviewServer",
     "PreviewError",
     "preview_serve",
+    # Animation (optional)
+    "Animation",
+    "AnimationConfig",
+    "AnimationGroup",
+    "EffectAnimation",
+    "ObjectAnimation",
+    "PropertyAnimation",
+    "Timeline",
+    "TimelineEntry",
+    "EASING_FUNCTIONS",
+    "get_easing",
+    "register_easing",
+    "GIFRenderer",
 ]
 
 __version__ = VERSION

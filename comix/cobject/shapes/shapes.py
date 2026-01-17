@@ -20,6 +20,7 @@ class Rectangle(CObject):
         stroke_color: str = "#000000",
         stroke_width: float = 2.0,
         corner_radius: float = 0.0,
+        stroke_style: str = "solid",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -30,6 +31,7 @@ class Rectangle(CObject):
         self.stroke_color = stroke_color
         self.stroke_width = stroke_width
         self.corner_radius = corner_radius
+        self.stroke_style = stroke_style
 
         self.generate_points()
 
@@ -67,6 +69,7 @@ class Rectangle(CObject):
                 "stroke_color": self.stroke_color,
                 "stroke_width": self.stroke_width,
                 "corner_radius": self.corner_radius,
+                "stroke_style": self.stroke_style,
             }
         )
         return data
@@ -82,6 +85,7 @@ class Circle(CObject):
         stroke_color: str = "#000000",
         stroke_width: float = 2.0,
         num_points: int = 32,
+        stroke_style: str = "solid",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -91,6 +95,7 @@ class Circle(CObject):
         self.stroke_color = stroke_color
         self.stroke_width = stroke_width
         self.num_points = num_points
+        self.stroke_style = stroke_style
 
         self.generate_points()
 
@@ -116,6 +121,7 @@ class Circle(CObject):
                 "fill_color": self.fill_color,
                 "stroke_color": self.stroke_color,
                 "stroke_width": self.stroke_width,
+                "stroke_style": self.stroke_style,
             }
         )
         return data

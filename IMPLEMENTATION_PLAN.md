@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-All 4 phases have been implemented with **1328 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **1344 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -148,6 +148,7 @@ All 4 phases have been implemented with **1328 tests passing**, mypy clean, and 
 - **Parser Expression Support Fix**: Added all 11 expression types (including sleepy, excited, scared, smirk, crying) to parser's EXPRESSIONS set. Previously only 7 expressions were recognized. Extended parser tests to verify all expression names are parsed correctly (5 new expression tests)
 - **Superhero mask='full' Renderer Tests**: Added explicit tests for `mask="full"` option in both SVG and Cairo renderers (2 new tests)
 - **Robot Expression Renderer Tests**: Extended Robot expression tests in both SVG and Cairo renderers to include all 11 expressions (previously only 9 were tested, missing smirk and crying) (4 new tests)
+- **Shape Stroke Styles**: Added `stroke_style` parameter to Rectangle and Circle classes for consistent API with Line class. Supports "solid", "dashed", and "dotted" styles. Both SVG and Cairo renderers fully support the new parameter (16 new tests)
 
 ### Technical Stack
 

@@ -1232,6 +1232,54 @@ class TestCairoRendererCoverage:
             assert Path(output_path).exists()
             Path(output_path).unlink()
 
+    def test_render_dashed_rectangle(self):
+        """Test rendering a rectangle with dashed stroke."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=200, height=100, stroke_style="dashed").move_to((200, 150))
+        page.add(rect)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_dotted_rectangle(self):
+        """Test rendering a rectangle with dotted stroke."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=200, height=100, stroke_style="dotted").move_to((200, 150))
+        page.add(rect)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_dashed_circle(self):
+        """Test rendering a circle with dashed stroke."""
+        page = Page(width=400, height=300)
+        circle = Circle(radius=50, stroke_style="dashed").move_to((200, 150))
+        page.add(circle)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_dotted_circle(self):
+        """Test rendering a circle with dotted stroke."""
+        page = Page(width=400, height=300)
+        circle = Circle(radius=50, stroke_style="dotted").move_to((200, 150))
+        page.add(circle)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
     def test_render_effect_motion_lines(self):
         """Test rendering motion lines effect."""
         page = Page(width=400, height=300)

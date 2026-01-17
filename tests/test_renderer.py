@@ -1491,6 +1491,92 @@ class TestRectangleCornerRadius:
         assert 'rx="10"' not in svg_string
 
 
+class TestRectangleStrokeStyles:
+    """Tests for rectangle stroke style rendering."""
+
+    def test_rectangle_with_dashed_stroke(self):
+        """Test rendering rectangle with dashed stroke style."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=200, height=100, stroke_style="dashed")
+        rect.move_to((200, 150))
+        page.add(rect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Dashed rectangle should have stroke-dasharray="5,5"
+        assert 'stroke-dasharray="5,5"' in svg_string
+
+    def test_rectangle_with_dotted_stroke(self):
+        """Test rendering rectangle with dotted stroke style."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=200, height=100, stroke_style="dotted")
+        rect.move_to((200, 150))
+        page.add(rect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Dotted rectangle should have stroke-dasharray="2,2"
+        assert 'stroke-dasharray="2,2"' in svg_string
+
+    def test_rectangle_with_solid_stroke(self):
+        """Test rendering rectangle with solid stroke (default) has no dasharray."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=200, height=100, stroke_style="solid")
+        rect.move_to((200, 150))
+        page.add(rect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Solid rectangle should NOT have stroke-dasharray attribute
+        assert "stroke-dasharray" not in svg_string
+
+
+class TestCircleStrokeStyles:
+    """Tests for circle stroke style rendering."""
+
+    def test_circle_with_dashed_stroke(self):
+        """Test rendering circle with dashed stroke style."""
+        page = Page(width=400, height=300)
+        circle = Circle(radius=50, stroke_style="dashed")
+        circle.move_to((200, 150))
+        page.add(circle)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Dashed circle should have stroke-dasharray="5,5"
+        assert 'stroke-dasharray="5,5"' in svg_string
+
+    def test_circle_with_dotted_stroke(self):
+        """Test rendering circle with dotted stroke style."""
+        page = Page(width=400, height=300)
+        circle = Circle(radius=50, stroke_style="dotted")
+        circle.move_to((200, 150))
+        page.add(circle)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Dotted circle should have stroke-dasharray="2,2"
+        assert 'stroke-dasharray="2,2"' in svg_string
+
+    def test_circle_with_solid_stroke(self):
+        """Test rendering circle with solid stroke (default) has no dasharray."""
+        page = Page(width=400, height=300)
+        circle = Circle(radius=50, stroke_style="solid")
+        circle.move_to((200, 150))
+        page.add(circle)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Solid circle should NOT have stroke-dasharray attribute
+        assert "stroke-dasharray" not in svg_string
+
+
 class TestLineStrokeStyles:
     """Tests for line stroke style rendering."""
 

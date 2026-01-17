@@ -1865,6 +1865,12 @@ class SVGRenderer:
             rect["rx"] = data["corner_radius"]
             rect["ry"] = data["corner_radius"]
 
+        stroke_style = data.get("stroke_style", "solid")
+        if stroke_style == "dashed":
+            rect["stroke-dasharray"] = "5,5"
+        elif stroke_style == "dotted":
+            rect["stroke-dasharray"] = "2,2"
+
         group.add(rect)
 
     def _render_circle(self, data: dict[str, Any], group: Group) -> None:
@@ -1878,6 +1884,13 @@ class SVGRenderer:
             stroke=data.get("stroke_color", "#000000"),
             stroke_width=data.get("stroke_width", 2),
         )
+
+        stroke_style = data.get("stroke_style", "solid")
+        if stroke_style == "dashed":
+            circle["stroke-dasharray"] = "5,5"
+        elif stroke_style == "dotted":
+            circle["stroke-dasharray"] = "2,2"
+
         group.add(circle)
 
     def _render_line(self, data: dict[str, Any], group: Group) -> None:

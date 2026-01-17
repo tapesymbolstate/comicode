@@ -1763,6 +1763,7 @@ class CairoRenderer:
         # Stroke
         self._set_color(data.get("stroke_color", "#000000"))
         ctx.set_line_width(data.get("stroke_width", 2))
+        self._set_dash_style(data.get("stroke_style", "solid"))
         ctx.stroke()
 
     def _render_circle(self, data: dict[str, Any]) -> None:
@@ -1782,6 +1783,7 @@ class CairoRenderer:
         # Stroke
         self._set_color(data.get("stroke_color", "#000000"))
         ctx.set_line_width(data.get("stroke_width", 2))
+        self._set_dash_style(data.get("stroke_style", "solid"))
         ctx.stroke()
 
     def _render_line(self, data: dict[str, Any]) -> None:

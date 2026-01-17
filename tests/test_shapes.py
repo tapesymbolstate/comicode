@@ -17,6 +17,7 @@ class TestRectangle:
         assert rect.stroke_color == "#000000"
         assert rect.stroke_width == 2.0
         assert rect.corner_radius == 0.0
+        assert rect.stroke_style == "solid"
 
     def test_custom_dimensions(self):
         """Test initialization with custom dimensions."""
@@ -39,6 +40,16 @@ class TestRectangle:
         """Test initialization with corner radius."""
         rect = Rectangle(corner_radius=10.0)
         assert rect.corner_radius == 10.0
+
+    def test_stroke_style_dashed(self):
+        """Test initialization with dashed stroke style."""
+        rect = Rectangle(stroke_style="dashed")
+        assert rect.stroke_style == "dashed"
+
+    def test_stroke_style_dotted(self):
+        """Test initialization with dotted stroke style."""
+        rect = Rectangle(stroke_style="dotted")
+        assert rect.stroke_style == "dotted"
 
     def test_generate_points(self):
         """Test that points are generated correctly."""
@@ -91,7 +102,14 @@ class TestRectangle:
         assert data["stroke_color"] == "#333333"
         assert data["stroke_width"] == 3.0
         assert data["corner_radius"] == 8.0
+        assert data["stroke_style"] == "solid"
         assert "points" in data
+
+    def test_get_render_data_with_stroke_style(self):
+        """Test get_render_data with stroke_style."""
+        rect = Rectangle(stroke_style="dashed")
+        data = rect.get_render_data()
+        assert data["stroke_style"] == "dashed"
 
     def test_bounding_box(self):
         """Test bounding box calculation."""
@@ -123,6 +141,7 @@ class TestCircle:
         assert circle.stroke_color == "#000000"
         assert circle.stroke_width == 2.0
         assert circle.num_points == 32
+        assert circle.stroke_style == "solid"
 
     def test_custom_radius(self):
         """Test initialization with custom radius."""
@@ -145,6 +164,16 @@ class TestCircle:
         circle = Circle(num_points=64)
         assert circle.num_points == 64
         assert len(circle._points) == 64
+
+    def test_stroke_style_dashed(self):
+        """Test initialization with dashed stroke style."""
+        circle = Circle(stroke_style="dashed")
+        assert circle.stroke_style == "dashed"
+
+    def test_stroke_style_dotted(self):
+        """Test initialization with dotted stroke style."""
+        circle = Circle(stroke_style="dotted")
+        assert circle.stroke_style == "dotted"
 
     def test_generate_points(self):
         """Test that points form a circle."""
@@ -200,7 +229,14 @@ class TestCircle:
         assert data["fill_color"] == "#CCCCCC"
         assert data["stroke_color"] == "#666666"
         assert data["stroke_width"] == 2.5
+        assert data["stroke_style"] == "solid"
         assert "points" in data
+
+    def test_get_render_data_with_stroke_style(self):
+        """Test get_render_data with stroke_style."""
+        circle = Circle(stroke_style="dotted")
+        data = circle.get_render_data()
+        assert data["stroke_style"] == "dotted"
 
     def test_bounding_box(self):
         """Test bounding box calculation."""

@@ -2,9 +2,9 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.20**
+**Current Git Tag: v0.1.21**
 
-All 5 phases have been implemented with **1536 tests passing**, ruff clean, and mypy passing. Current version: **v0.1.0**.
+All 5 phases have been implemented with **1545 tests passing**, ruff clean, and mypy passing. Current version: **v0.1.0**.
 
 ### Completed Phases Summary
 
@@ -189,6 +189,12 @@ All 5 phases have been implemented with **1536 tests passing**, ruff clean, and 
   - All utilities exported from `comix.utils` for public use
   - 19 new tests in `tests/test_script_loader.py` covering all utility functions
 - **Documentation Sync (v0.1.20)**: Updated specs/README.md test count to 1536 to match actual test suite
+- **Complete Pose Test Coverage (v0.1.21)**: Added comprehensive 12-pose test coverage across all 8 character types:
+  - Added test_all_poses() to Stickman and SimpleFace unit tests (previously missing)
+  - Added "lying" pose to existing test_all_poses() for ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon
+  - Added test_all_expressions() to Stickman and SimpleFace unit tests
+  - Added SVG renderer all_poses tests for Stickman, SimpleFace, ChubbyStickman, Robot, and Chibi (previously only Anime, Superhero, Cartoon had these)
+  - Total: 9 new tests, test count increased from 1536 to 1545
 
 ### Technical Stack
 

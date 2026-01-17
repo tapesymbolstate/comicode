@@ -320,6 +320,23 @@ class TestStickman:
 
         np.allclose(right_x, -left_x)
 
+    def test_all_poses(self):
+        """Test stickman with all 12 poses."""
+        poses = ["standing", "sitting", "walking", "running", "pointing",
+                 "waving", "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
+        for pose_name in poses:
+            stickman = Stickman(pose=pose_name)
+            assert stickman._pose.name == pose_name
+            assert len(stickman._points) > 0
+
+    def test_all_expressions(self):
+        """Test stickman with all 11 expressions."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            stickman = Stickman(expression=expr_name)
+            assert stickman._expression.name == expr_name
+
 
 class TestSimpleFace:
     """Tests for SimpleFace class."""
@@ -342,6 +359,23 @@ class TestSimpleFace:
         data = face.get_render_data()
         assert "face_radius" in data
         assert data["face_radius"] == 30.0
+
+    def test_all_poses(self):
+        """Test simple face with all 12 poses."""
+        poses = ["standing", "sitting", "walking", "running", "pointing",
+                 "waving", "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
+        for pose_name in poses:
+            face = SimpleFace(pose=pose_name)
+            assert face._pose.name == pose_name
+            assert len(face._points) == 32
+
+    def test_all_expressions(self):
+        """Test simple face with all 11 expressions."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            face = SimpleFace(expression=expr_name)
+            assert face._expression.name == expr_name
 
 
 class TestChubbyStickman:
@@ -446,7 +480,7 @@ class TestChubbyStickman:
     def test_all_poses(self):
         """Test chubby stickman with different poses."""
         poses = ["standing", "sitting", "walking", "running", "pointing",
-                 "waving", "jumping", "dancing", "kneeling", "cheering", "thinking"]
+                 "waving", "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
         for pose_name in poses:
             chubby = ChubbyStickman(pose=pose_name)
             assert chubby._pose.name == pose_name
@@ -598,7 +632,7 @@ class TestRobot:
     def test_all_poses(self):
         """Test robot with different poses."""
         poses = ["standing", "sitting", "walking", "running", "pointing",
-                 "waving", "jumping", "dancing", "kneeling", "cheering", "thinking"]
+                 "waving", "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
         for pose_name in poses:
             robot = Robot(pose=pose_name)
             assert robot._pose.name == pose_name
@@ -754,7 +788,7 @@ class TestChibi:
     def test_all_poses(self):
         """Test chibi with different poses."""
         poses = ["standing", "sitting", "walking", "running", "pointing",
-                 "waving", "jumping", "dancing", "kneeling", "cheering", "thinking"]
+                 "waving", "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
         for pose_name in poses:
             chibi = Chibi(pose=pose_name)
             assert chibi._pose.name == pose_name
@@ -917,7 +951,7 @@ class TestAnime:
     def test_all_poses(self):
         """Test anime with different poses."""
         poses = ["standing", "sitting", "walking", "running", "pointing",
-                 "waving", "jumping", "dancing", "kneeling", "cheering", "thinking"]
+                 "waving", "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
         for pose_name in poses:
             anime = Anime(pose=pose_name)
             assert anime._pose.name == pose_name
@@ -1133,7 +1167,7 @@ class TestSuperhero:
     def test_all_poses(self):
         """Test superhero with different poses."""
         poses = ["standing", "sitting", "walking", "running", "pointing",
-                 "waving", "jumping", "dancing", "kneeling", "cheering", "thinking"]
+                 "waving", "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
         for pose_name in poses:
             hero = Superhero(pose=pose_name)
             assert hero._pose.name == pose_name
@@ -1355,7 +1389,7 @@ class TestCartoon:
     def test_all_poses(self):
         """Test cartoon with different poses."""
         poses = ["standing", "sitting", "walking", "running", "pointing",
-                 "waving", "jumping", "dancing", "kneeling", "cheering", "thinking"]
+                 "waving", "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
         for pose_name in poses:
             cartoon = Cartoon(pose=pose_name)
             assert cartoon._pose.name == pose_name

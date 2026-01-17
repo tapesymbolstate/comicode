@@ -2668,3 +2668,78 @@ class TestCharacterRenderingEdgeCases:
             svg_string = renderer.render_to_string()
 
             assert "<svg" in svg_string, f"Pose '{pose_name}' should render SVG"
+
+    def test_render_stickman_all_poses(self):
+        """Test stickman character renders with all poses."""
+        poses = ["standing", "sitting", "waving", "pointing", "walking", "running",
+                 "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
+
+        for pose_name in poses:
+            page = Page(width=400, height=400)
+            char = Stickman(name=f"Pose_{pose_name}", pose=pose_name).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string, f"Pose '{pose_name}' should render SVG"
+
+    def test_render_simple_face_all_poses(self):
+        """Test simple face character renders with all poses."""
+        poses = ["standing", "sitting", "waving", "pointing", "walking", "running",
+                 "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
+
+        for pose_name in poses:
+            page = Page(width=400, height=400)
+            char = SimpleFace(name=f"Pose_{pose_name}", pose=pose_name).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string, f"Pose '{pose_name}' should render SVG"
+
+    def test_render_chubby_stickman_all_poses(self):
+        """Test chubby stickman character renders with all poses."""
+        poses = ["standing", "sitting", "waving", "pointing", "walking", "running",
+                 "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
+
+        for pose_name in poses:
+            page = Page(width=400, height=400)
+            char = ChubbyStickman(name=f"Pose_{pose_name}", pose=pose_name).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string, f"Pose '{pose_name}' should render SVG"
+
+    def test_render_robot_all_poses(self):
+        """Test robot character renders with all poses."""
+        poses = ["standing", "sitting", "waving", "pointing", "walking", "running",
+                 "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
+
+        for pose_name in poses:
+            page = Page(width=400, height=400)
+            char = Robot(name=f"Pose_{pose_name}", pose=pose_name).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string, f"Pose '{pose_name}' should render SVG"
+
+    def test_render_chibi_all_poses(self):
+        """Test chibi character renders with all poses."""
+        poses = ["standing", "sitting", "waving", "pointing", "walking", "running",
+                 "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
+
+        for pose_name in poses:
+            page = Page(width=400, height=400)
+            char = Chibi(name=f"Pose_{pose_name}", pose=pose_name).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string, f"Pose '{pose_name}' should render SVG"

@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.19**
+**Current Git Tag: v0.1.20**
 
 All 5 phases have been implemented with **1536 tests passing**, ruff clean, and mypy passing. Current version: **v0.1.0**.
 
@@ -188,6 +188,7 @@ All 5 phases have been implemented with **1536 tests passing**, ruff clean, and 
   - Preview server `ScriptLoader` class refactored to use shared utilities
   - All utilities exported from `comix.utils` for public use
   - 19 new tests in `tests/test_script_loader.py` covering all utility functions
+- **Documentation Sync (v0.1.20)**: Updated specs/README.md test count to 1536 to match actual test suite
 
 ### Technical Stack
 

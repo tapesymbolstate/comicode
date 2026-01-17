@@ -14,11 +14,21 @@ Generated PNG files will be saved to `examples/output/`.
 
 ## Examples List
 
+### Core Examples (01-05)
+
 1. **01_simple_dialogue.py** - Two characters having a conversation (2 panels)
 2. **02_four_panel_comic.py** - Traditional 4-panel (4koma) comic structure
 3. **03_group_scene.py** - Multiple characters in a single panel
 4. **04_expressions.py** - Different character expressions (happy, sad, angry, etc.)
 5. **05_bubble_types.py** - Different speech bubble styles (speech, thought, shout, whisper)
+
+### Advanced Examples (06-10)
+
+6. **06_multi_page_pdf.py** - Creating multi-page PDF comics using the Book class
+7. **07_custom_layout.py** - Custom grid layouts (3x2, 2x3, etc.)
+8. **08_manual_positioning.py** - Precise manual positioning of elements
+9. **09_using_templates.py** - Using built-in templates (FourKoma, TwoByTwo, ActionPage, WebComic)
+10. **10_error_handling.py** - Graceful error handling and fallbacks
 
 ## Requirements
 

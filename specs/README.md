@@ -8,6 +8,15 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 
 **Current Status**: All core features implemented and working with 1366+ tests passing.
 
+## 🔴 CRITICAL: Must Read First
+
+**Ralph Agent는 반드시 이 순서로 읽고 작업해야 합니다:**
+
+1. **[Visual Validation Requirements](visual-validation-requirements.md)** - 모든 구현 작업의 필수 검증 절차
+2. **[Code-Visual Validation Report](code-visual-validation.md)** - 각 예제 코드와 시각적 결과 일치 검증
+
+**핵심 원칙: 코드와 시각적 결과가 완벽히 일치해야 함. 이것이 이 프로젝트의 전부.**
+
 ## Active Specs
 
 ### Core Workflows
@@ -24,13 +33,22 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 
 ## Quick Status
 
-| Spec | Status | Notes |
-|------|--------|-------|
-| Getting Started | ✅ Complete | Full character and bubble rendering working |
-| Character Basics | ✅ Complete | 8 character types, 11 expressions, 12 poses |
-| Speech Bubbles | ✅ Complete | 5 bubble types with borders, tails, and styling |
-| Page Rendering | ✅ Complete | SVG, PNG, and PDF output supported |
-| Working Examples | ✅ Complete | Examples 01-05 in examples/ directory |
+| Spec | Status | Critical Issues (Visual Validation) |
+|------|--------|-------------------------------------|
+| Visual Validation | 🔴 **MANDATORY** | All work must follow this validation process |
+| Getting Started | 🔴 **BROKEN** | Layout bugs: content clustered in one panel |
+| Character Basics | 🔴 **BROKEN** | Only head renders, missing body/arms/legs |
+| Speech Bubbles | 🟡 Partial | Text renders but no bubble borders in some cases |
+| Page Rendering | 🟡 Partial | Renders but output is visually incorrect |
+| Working Examples | 🔴 **BROKEN** | 01, 02, 04 have layout bugs. Only 03, 05 work |
+
+### Visual Validation Results (examples/output/)
+
+- ❌ **01_simple_dialogue.png**: Content clustered in left panel, right panel empty
+- ❌ **02_four_panel_comic.png**: All content in first panel, bubbles exceed panel bounds
+- ✅ **03_group_scene.png**: Layout OK (but characters still only heads)
+- ❌ **04_expressions.png**: Only top-left panel has content, others empty
+- ✅ **05_bubble_types.png**: Works correctly!
 
 ## Features
 

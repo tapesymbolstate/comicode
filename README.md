@@ -10,8 +10,8 @@ A code-based comic creation framework inspired by [Manim](https://www.manim.comm
 - **5 Bubble Types**: Speech, Thought, Shout, Whisper, Narrator
 - **7 Page Templates**: FourKoma, TwoByTwo, SplashPage, WebComic, ThreeRowLayout, MangaPage, ActionPage
 - **6 Visual Effects**: AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect
-- **Animation System**: Timeline-based animations with 29 easing functions and GIF export
-- **Multiple Output Formats**: SVG (always available), PNG/PDF (with optional Cairo), HTML (interactive), GIF (animated)
+- **Animation System**: Timeline-based animations with 29 easing functions and GIF/Video export
+- **Multiple Output Formats**: SVG (always available), PNG/PDF (with optional Cairo), HTML (interactive), GIF (animated), MP4/WebM (video)
 
 ## Installation
 
@@ -36,6 +36,9 @@ uv sync --extra web
 
 # Optional: Install animation/GIF export support
 uv sync --extra animation
+
+# Optional: Install video export support (MP4/WebM)
+uv sync --extra video
 ```
 
 ## Quick Start
@@ -221,7 +224,7 @@ comix compile page1.py page2.py -o book.pdf
 
 ## Examples
 
-See the `examples/` directory for 14 working examples:
+See the `examples/` directory for 15 working examples:
 
 ```bash
 # Run an example

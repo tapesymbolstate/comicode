@@ -176,6 +176,15 @@ except ImportError:
     register_easing = None  # type: ignore[assignment]
     GIFRenderer = None  # type: ignore[misc, assignment]
 
+# Optional video module (requires pycairo, Pillow, and imageio-ffmpeg)
+try:
+    from comix.renderer.video_renderer import VideoRenderer
+
+    _VIDEO_AVAILABLE = True
+except ImportError:
+    _VIDEO_AVAILABLE = False
+    VideoRenderer = None  # type: ignore[misc, assignment]
+
 __all__ = [
     # Constants
     "VERSION",
@@ -324,6 +333,8 @@ __all__ = [
     "get_easing",
     "register_easing",
     "GIFRenderer",
+    # Video (optional)
+    "VideoRenderer",
 ]
 
 __version__ = VERSION

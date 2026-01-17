@@ -2,6 +2,34 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.39] - 2026-01-18
+
+### Features
+- **Video Export System** (Phase 8 Complete):
+  - Added `VideoRenderer` class for MP4/WebM video output
+  - Uses imageio-ffmpeg for cross-platform video encoding
+  - Quality settings: low (72 DPI), medium (96 DPI), high (150 DPI)
+  - Progress callback support for tracking rendering progress
+  - Frame extraction for post-processing workflows
+  - Proper handling of odd dimensions (video codecs require even dimensions)
+  - JPEG frame export with alpha channel compositing
+  - New example 15: Video Export (`15_video_export.py`)
+
+### Technical
+- Added `video` optional dependency group in pyproject.toml (imageio[ffmpeg], imageio[pyav])
+- Added mypy overrides for imageio modules
+- Added 25 new tests for VideoRenderer
+
+### Documentation
+- Updated README.md with video export information
+- Updated IMPLEMENTATION_PLAN.md to Phase 8 complete
+- Updated example count from 14 to 15
+
+## [v0.1.38] - 2026-01-18
+
+### Documentation
+- Updated IMPLEMENTATION_PLAN.md version number
+
 ## [v0.1.37] - 2026-01-18
 
 ### Features

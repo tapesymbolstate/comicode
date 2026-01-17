@@ -33,6 +33,12 @@ animation = [
     "pycairo>=1.26.0",
     "Pillow>=10.0.0",
 ]
+video = [
+    "pycairo>=1.26.0",
+    "Pillow>=10.0.0",
+    "imageio[ffmpeg]>=2.34.0",
+    "imageio[pyav]>=2.34.0",
+]
 
 [project.scripts]
 comix = "comix.__main__:main"
@@ -62,6 +68,18 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "replicate"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "imageio.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "imageio_ffmpeg"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "av.*"
 ignore_missing_imports = true
 
 [tool.ruff]

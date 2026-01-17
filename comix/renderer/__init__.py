@@ -9,4 +9,10 @@ try:
 except ImportError:
     CairoRenderer = None  # type: ignore[assignment, misc]
 
-__all__ = ["SVGRenderer", "CairoRenderer", "HTMLRenderer"]
+# VideoRenderer requires optional video dependencies
+try:
+    from comix.renderer.video_renderer import VideoRenderer
+except ImportError:
+    VideoRenderer = None  # type: ignore[assignment, misc]
+
+__all__ = ["SVGRenderer", "CairoRenderer", "HTMLRenderer", "VideoRenderer"]

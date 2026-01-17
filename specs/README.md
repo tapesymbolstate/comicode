@@ -18,6 +18,13 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 - [Page Rendering](page-rendering.md) - Exporting comics to PNG and PDF formats
 - [Working Examples](working-examples.md) - Runnable Python scripts demonstrating usage
 
+### Extended Features
+
+- [Effect System](effect-system.md) - Visual effects (shake, zoom, motion lines, focus, impact)
+- [Parser DSL](parser-dsl.md) - Markup language for rapid comic creation
+- [AI Images](ai-images.md) - DALL-E and Replicate AI image generation
+- [Preview Server](preview-server.md) - Live reload development server
+
 ### Architecture (Reference)
 
 - [PRD.md](PRD.md) - Product Requirements Document with full architecture design
@@ -31,6 +38,10 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 | Speech Bubbles | ✅ Complete |
 | Page Rendering | ✅ Complete |
 | Working Examples | ✅ All 10 examples working |
+| Effect System | ✅ Complete |
+| Parser DSL | ✅ Complete |
+| AI Images | ✅ Complete |
+| Preview Server | ✅ Complete |
 
 ### Examples Status (examples/output/)
 

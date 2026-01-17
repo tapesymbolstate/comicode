@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterator, Literal, Self
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal, Self
 
 if TYPE_CHECKING:
     from comix.page.page import Page
@@ -136,6 +136,7 @@ class Book:
         self,
         output_path: str = "book.pdf",
         quality: Literal["low", "medium", "high"] = "medium",
+        progress_callback: Callable[[int, int], None] | None = None,
     ) -> str:
         """Render the book to a multi-page PDF.
 
@@ -143,6 +144,9 @@ class Book:
             output_path: Path to save the PDF file.
             quality: Rendering quality ("low", "medium", "high").
                     Affects DPI for any rasterized content.
+            progress_callback: Optional callback function called after each page is rendered.
+                              Called with (current_page, total_pages) where current_page is 1-indexed.
+                              Useful for displaying progress bars or status updates.
 
         Returns:
             Path to the rendered PDF file.
@@ -169,7 +173,9 @@ class Book:
 
         # Create a renderer with the first page to initialize
         renderer = CairoRenderer(self._pages[0])
-        return renderer.render_book(self._pages, output_path, quality=quality)
+        return renderer.render_book(
+            self._pages, output_path, quality=quality, progress_callback=progress_callback
+        )
 
     def get_metadata(self) -> dict[str, Any]:
         """Get book metadata.

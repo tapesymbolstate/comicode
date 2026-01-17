@@ -2,9 +2,9 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.10**
+**Current Git Tag: v0.1.11**
 
-All 5 phases have been implemented with **1502 tests passing** (1 skipped), ruff clean, and mypy passing. Current version: **v0.1.0**.
+All 5 phases have been implemented with **1507 tests passing** (1 skipped), ruff clean, and mypy passing. Current version: **v0.1.0**.
 
 ### Completed Phases Summary
 
@@ -314,6 +314,12 @@ Files modified:
 - fontTools, svgwrite, openai, and replicate modules configured with `ignore_missing_imports = true`
 - This is the correct approach since these libraries don't have type stubs (contrary to previous notes)
 - mypy strict mode continues to pass with 0 errors
+
+### Progress Callback Feature (v0.1.11)
+- **Progress Callback for Multi-page PDF Rendering**: Added optional `progress_callback` parameter to `Book.render()` and `CairoRenderer.render_book()` methods. The callback is called after each page is rendered with `(current_page, total_pages)` arguments (1-indexed). Useful for displaying progress bars or status updates during long-running renders.
+  - Modified files: `comix/page/book.py`, `comix/renderer/cairo_renderer.py`
+  - Added 5 new tests in `tests/test_book.py::TestProgressCallback`
+  - Updated `specs/page-rendering.md` to mark the "Progress callback for long-running renders" item as complete
 
 ### Documentation Sync (v0.1.10)
 - Updated specs/README.md test count from 1460 to 1502 (1 skipped) to match actual test count

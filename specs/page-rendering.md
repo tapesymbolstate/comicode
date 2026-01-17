@@ -30,7 +30,7 @@ Without working rendering, all the comic creation work produces no usable output
 - [x] High quality renders slower (300 DPI, full detail)
 - [x] DPI parameter can be explicitly set for PNG output
 - [x] Multi-page PDF support via Book class
-- [ ] Progress callback for long-running renders
+- [x] Progress callback for long-running renders
 - [x] Render returns path to created file
 
 ### Won't Have (This Iteration)

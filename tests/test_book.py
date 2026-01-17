@@ -453,3 +453,113 @@ class TestCairoRendererRenderBook:
                 output = str(Path(tmpdir) / f"{quality}.pdf")
                 result = renderer.render_book([page], output, quality=quality)
                 assert Path(result).exists()
+
+
+class TestProgressCallback:
+    """Tests for progress callback functionality."""
+
+    @pytest.fixture(autouse=True)
+    def check_cairo(self):
+        """Skip tests if Cairo is not available."""
+        try:
+            import cairo  # noqa: F401
+        except ImportError:
+            pytest.skip("Cairo not available")
+
+    def test_book_render_progress_callback(self):
+        """Test that Book.render() calls progress callback."""
+        book = Book(title="Progress Test")
+        for i in range(3):
+            page = Page(width=400, height=600)
+            page.add(Panel(width=300, height=500))
+            book.add_page(page)
+
+        progress_calls: list[tuple[int, int]] = []
+
+        def on_progress(current: int, total: int) -> None:
+            progress_calls.append((current, total))
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output = str(Path(tmpdir) / "progress.pdf")
+            book.render(output, progress_callback=on_progress)
+
+        assert len(progress_calls) == 3
+        assert progress_calls[0] == (1, 3)
+        assert progress_calls[1] == (2, 3)
+        assert progress_calls[2] == (3, 3)
+
+    def test_book_render_no_callback(self):
+        """Test that Book.render() works without progress callback."""
+        book = Book()
+        page = Page(width=400, height=600)
+        page.add(Panel(width=300, height=500))
+        book.add_page(page)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output = str(Path(tmpdir) / "no_callback.pdf")
+            result = book.render(output)
+            assert Path(result).exists()
+
+    def test_renderer_progress_callback(self):
+        """Test CairoRenderer.render_book() progress callback directly."""
+        from comix.renderer.cairo_renderer import CairoRenderer
+
+        pages = []
+        for i in range(5):
+            page = Page(width=400, height=600)
+            page.add(Panel(width=300, height=500))
+            page.build()
+            page.auto_layout()
+            pages.append(page)
+
+        renderer = CairoRenderer(pages[0])
+        progress_calls: list[tuple[int, int]] = []
+
+        def on_progress(current: int, total: int) -> None:
+            progress_calls.append((current, total))
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output = str(Path(tmpdir) / "renderer_progress.pdf")
+            renderer.render_book(pages, output, progress_callback=on_progress)
+
+        assert len(progress_calls) == 5
+        for i in range(5):
+            assert progress_calls[i] == (i + 1, 5)
+
+    def test_progress_callback_single_page(self):
+        """Test progress callback with single page."""
+        book = Book()
+        page = Page(width=400, height=600)
+        page.add(Panel())
+        book.add_page(page)
+
+        progress_calls: list[tuple[int, int]] = []
+
+        def on_progress(current: int, total: int) -> None:
+            progress_calls.append((current, total))
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output = str(Path(tmpdir) / "single_progress.pdf")
+            book.render(output, progress_callback=on_progress)
+
+        assert len(progress_calls) == 1
+        assert progress_calls[0] == (1, 1)
+
+    def test_progress_callback_with_quality(self):
+        """Test progress callback works with quality parameter."""
+        book = Book()
+        for _ in range(2):
+            page = Page()
+            page.add(Panel())
+            book.add_page(page)
+
+        progress_calls: list[tuple[int, int]] = []
+
+        def on_progress(current: int, total: int) -> None:
+            progress_calls.append((current, total))
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output = str(Path(tmpdir) / "quality_progress.pdf")
+            book.render(output, quality="high", progress_callback=on_progress)
+
+        assert len(progress_calls) == 2

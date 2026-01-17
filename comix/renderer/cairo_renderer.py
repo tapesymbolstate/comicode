@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Literal, Sequence
 
 try:
     import cairo
@@ -91,6 +91,7 @@ class CairoRenderer:
         pages: Sequence[Page],
         output_path: str,
         quality: Literal["low", "medium", "high"] = "medium",
+        progress_callback: Callable[[int, int], None] | None = None,
     ) -> str:
         """Render multiple pages to a single multi-page PDF.
 
@@ -98,6 +99,8 @@ class CairoRenderer:
             pages: Sequence of Page objects to render.
             output_path: Path to save the PDF file.
             quality: Rendering quality (affects any rasterized content).
+            progress_callback: Optional callback function called after each page is rendered.
+                              Called with (current_page, total_pages) where current_page is 1-indexed.
 
         Returns:
             Path to the rendered PDF file.
@@ -128,6 +131,7 @@ class CairoRenderer:
         self._ctx = cairo.Context(self._surface)
 
         # Render each page
+        total_pages = len(pages)
         for i, page in enumerate(pages):
             # Update the current page reference
             self.page = page
@@ -138,6 +142,10 @@ class CairoRenderer:
 
             # Draw the page content
             self._draw_page()
+
+            # Call progress callback after rendering each page (1-indexed)
+            if progress_callback is not None:
+                progress_callback(i + 1, total_pages)
 
             # Show the page (creates a new page in the PDF)
             # Don't show_page after the last page

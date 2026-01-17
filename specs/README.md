@@ -14,8 +14,12 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 
 1. **[Visual Validation Requirements](visual-validation-requirements.md)** - 모든 구현 작업의 필수 검증 절차
 2. **[Code-Visual Validation Report](code-visual-validation.md)** - 각 예제 코드와 시각적 결과 일치 검증
+3. **[Examples Maintenance](examples-maintenance.md)** - 예제 정리 및 관리 기준
 
-**핵심 원칙: 코드와 시각적 결과가 완벽히 일치해야 함. 이것이 이 프로젝트의 전부.**
+**핵심 원칙:**
+- 코드와 시각적 결과가 완벽히 일치해야 함
+- 작동하는 예제와 버그 있는 예제를 명확히 분리
+- 주기적으로 examples/를 정리하며 진행
 
 ## Active Specs
 

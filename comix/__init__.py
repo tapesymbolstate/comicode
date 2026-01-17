@@ -26,10 +26,11 @@ from comix.cobject.bubble.bubble import (
 from comix.cobject.text.text import Text, StyledText, SFX
 from comix.cobject.character.character import (
     Character,
-    Stickman,
-    SimpleFace,
+    ChubbyStickman,
     Expression,
     Pose,
+    SimpleFace,
+    Stickman,
 )
 from comix.cobject.shapes.shapes import Rectangle, Circle, Line
 from comix.cobject.image.image import Image
@@ -158,10 +159,11 @@ __all__ = [
     "SFX",
     # Characters
     "Character",
-    "Stickman",
-    "SimpleFace",
+    "ChubbyStickman",
     "Expression",
     "Pose",
+    "SimpleFace",
+    "Stickman",
     # Shapes
     "Rectangle",
     "Circle",

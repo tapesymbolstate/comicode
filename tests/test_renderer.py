@@ -6,7 +6,7 @@ from pathlib import Path
 from comix.page.page import Page
 from comix.cobject.panel.panel import Panel
 from comix.cobject.bubble.bubble import SpeechBubble
-from comix.cobject.character.character import Stickman, SimpleFace
+from comix.cobject.character.character import Stickman, SimpleFace, ChubbyStickman
 from comix.cobject.text.text import Text, SFX
 from comix.cobject.shapes.shapes import Rectangle, Circle, Line
 from comix.renderer.svg_renderer import SVGRenderer
@@ -86,6 +86,58 @@ class TestSVGRenderer:
             output_path = page.render(f.name)
             content = Path(output_path).read_text()
             assert "<circle" in content
+            Path(output_path).unlink()
+
+    def test_render_chubby_stickman(self):
+        """Test rendering a chubby stickman character."""
+        page = Page(width=400, height=300)
+        chubby = ChubbyStickman(name="Chunky").move_to((200, 150))
+        page.add(chubby)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            # Chubby stickman has polygon elements for head and body
+            assert "<polygon" in content
+            Path(output_path).unlink()
+
+    def test_render_chubby_stickman_with_expression(self):
+        """Test rendering a chubby stickman with expression."""
+        page = Page(width=400, height=300)
+        chubby = ChubbyStickman(name="Happy", expression="happy").move_to((200, 150))
+        page.add(chubby)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            assert "<polygon" in content
+            # Should have face features
+            assert "<polyline" in content or "<circle" in content
+            Path(output_path).unlink()
+
+    def test_render_chubby_stickman_with_pose(self):
+        """Test rendering a chubby stickman with different poses."""
+        for pose_name in ["standing", "waving", "jumping", "cheering"]:
+            page = Page(width=400, height=300)
+            chubby = ChubbyStickman(name="Poser", pose=pose_name).move_to((200, 150))
+            page.add(chubby)
+
+            with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+                output_path = page.render(f.name)
+                content = Path(output_path).read_text()
+                assert "<polygon" in content
+                Path(output_path).unlink()
+
+    def test_render_chubby_stickman_facing_left(self):
+        """Test rendering a chubby stickman facing left."""
+        page = Page(width=400, height=300)
+        chubby = ChubbyStickman(name="Lefty", facing="left").move_to((200, 150))
+        page.add(chubby)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            assert "<polygon" in content
             Path(output_path).unlink()
 
     def test_render_shapes(self):

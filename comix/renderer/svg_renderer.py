@@ -180,7 +180,7 @@ class SVGRenderer:
             self._render_bubble(data, group)
         elif obj_type in ("Text", "StyledText", "SFX"):
             self._render_text(data, group)
-        elif obj_type in ("Stickman", "SimpleFace", "Character"):
+        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Character"):
             self._render_character(data, group)
         elif obj_type == "Rectangle":
             self._render_rectangle(data, group)
@@ -465,6 +465,8 @@ class SVGRenderer:
             self._render_stickman(data, group, pos, points)
         elif style == "simple":
             self._render_simple_face(data, group, pos)
+        elif style == "chubby":
+            self._render_chubby_stickman(data, group, pos, points)
         else:
             self._render_generic(data, group)
 
@@ -504,6 +506,114 @@ class SVGRenderer:
                         stroke_width=stroke_width,
                     )
                     group.add(line)
+
+    def _render_chubby_stickman(
+        self, data: dict[str, Any], group: Group, pos: list[float], points: list[list[float]]
+    ) -> None:
+        """Render a chubby stickman character.
+
+        Renders a rounded, friendlier stick figure with:
+        - Larger filled head
+        - Oval body
+        - Thicker limbs with rounded ends
+        """
+        color = data.get("color", "#000000")
+        fill_color = data.get("fill_color", "#FFFFFF")
+        stroke_width = 3  # Slightly thicker for chubby appearance
+
+        if len(points) < 24:
+            return
+
+        # Head points (first 24 points form the head circle)
+        head_points = points[:24]
+        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
+        head = Polygon(
+            points=translated_head,
+            fill=fill_color,
+            stroke=color,
+            stroke_width=stroke_width,
+        )
+        group.add(head)
+
+        # Body oval points (next 16 points)
+        body_points = points[24:40]
+        if body_points:
+            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
+            body = Polygon(
+                points=translated_body,
+                fill=fill_color,
+                stroke=color,
+                stroke_width=stroke_width,
+            )
+            group.add(body)
+
+        # Limbs with rounded ends
+        # Points structure after body: left_arm_start, left_arm_end, left_hand(8pts),
+        # right_arm_start, right_arm_end, right_hand(8pts), etc.
+        limb_start = 40
+
+        # Helper to render a limb segment
+        def render_limb(start_idx: int) -> None:
+            if start_idx + 10 > len(points):
+                return
+            # Limb line
+            p1 = points[start_idx]
+            p2 = points[start_idx + 1]
+            line = SVGLine(
+                start=(p1[0] + pos[0], p1[1] + pos[1]),
+                end=(p2[0] + pos[0], p2[1] + pos[1]),
+                stroke=color,
+                stroke_width=stroke_width,
+            )
+            group.add(line)
+            # Rounded end (circle approximation from next 8 points)
+            end_points = points[start_idx + 2 : start_idx + 10]
+            if end_points:
+                translated_end = [(p[0] + pos[0], p[1] + pos[1]) for p in end_points]
+                end_shape = Polygon(
+                    points=translated_end,
+                    fill=fill_color,
+                    stroke=color,
+                    stroke_width=stroke_width - 1,
+                )
+                group.add(end_shape)
+
+        # Render all 4 limbs
+        # Left arm: starts at index 40
+        render_limb(limb_start)
+        # Right arm: starts at index 50
+        render_limb(limb_start + 10)
+        # Left leg: starts at index 60
+        render_limb(limb_start + 20)
+        # Right leg: starts at index 70
+        render_limb(limb_start + 30)
+
+        # Render simple face features on the head
+        expression = data.get("expression", {})
+        eye_type = expression.get("eyes", "normal")
+        mouth_type = expression.get("mouth", "normal")
+        eyebrow_type = expression.get("eyebrows", "normal")
+
+        # Calculate head center (average of head points)
+        head_center_x = sum(p[0] for p in head_points) / len(head_points)
+        head_center_y = sum(p[1] for p in head_points) / len(head_points)
+        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+
+        # Calculate head radius from data
+        height = data.get("character_height", 100)
+        head_radius = height * 0.22  # Same ratio as in ChubbyStickman class
+
+        # Eye parameters (scaled for larger head)
+        eye_y = head_pos[1] - head_radius * 0.15
+        eye_offset = head_radius * 0.35
+        eye_radius = head_radius * 0.12
+
+        # Render eyes
+        self._render_face_eyes(group, head_pos, head_radius, eye_y, eye_offset, eye_radius, eye_type, color)
+        # Render eyebrows
+        self._render_face_eyebrows(group, head_pos, head_radius, eye_y, eye_offset, eyebrow_type, color)
+        # Render mouth
+        self._render_face_mouth(group, head_pos, head_radius, mouth_type, color)
 
     def _render_simple_face(self, data: dict[str, Any], group: Group, pos: list[float]) -> None:
         """Render a simple face character with expression-based features.

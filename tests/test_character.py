@@ -4,10 +4,11 @@ import numpy as np
 
 from comix.cobject.character.character import (
     Character,
-    Stickman,
-    SimpleFace,
+    ChubbyStickman,
     Expression,
     Pose,
+    SimpleFace,
+    Stickman,
 )
 
 
@@ -266,3 +267,123 @@ class TestSimpleFace:
         data = face.get_render_data()
         assert "face_radius" in data
         assert data["face_radius"] == 30.0
+
+
+class TestChubbyStickman:
+    """Tests for ChubbyStickman class."""
+
+    def test_default_init(self):
+        """Test default initialization."""
+        chubby = ChubbyStickman()
+        assert chubby.name == "ChubbyStickman"
+        assert chubby.style == "chubby"
+        assert chubby.fill_color == "#FFFFFF"
+
+    def test_custom_name(self):
+        """Test custom name."""
+        chubby = ChubbyStickman(name="Bubbles")
+        assert chubby.name == "Bubbles"
+
+    def test_generates_points(self):
+        """Test that chubby stickman generates points."""
+        chubby = ChubbyStickman()
+        # Should have enough points for head (24), body (16), and limbs (4 * 10)
+        assert len(chubby._points) >= 80
+
+    def test_facing_flips_points(self):
+        """Test that facing left flips x coordinates."""
+        right = ChubbyStickman(facing="right")
+        left = ChubbyStickman(facing="left")
+
+        right_x = right._points[:, 0]
+        left_x = left._points[:, 0]
+
+        np.allclose(right_x, -left_x)
+
+    def test_custom_height(self):
+        """Test custom height."""
+        chubby = ChubbyStickman(height=150.0)
+        assert chubby.character_height == 150.0
+        # Points should scale with height
+        data = chubby.get_render_data()
+        assert data["character_height"] == 150.0
+
+    def test_custom_colors(self):
+        """Test custom colors."""
+        chubby = ChubbyStickman(color="#FF0000", fill_color="#FFAAAA")
+        assert chubby.color == "#FF0000"
+        assert chubby.fill_color == "#FFAAAA"
+
+    def test_get_render_data(self):
+        """Test render data includes chubby-specific fields."""
+        chubby = ChubbyStickman()
+        data = chubby.get_render_data()
+        assert "head_ratio" in data
+        assert data["head_ratio"] == 0.22
+        assert "body_width_ratio" in data
+        assert data["body_width_ratio"] == 0.18
+        assert "limb_thickness" in data
+        assert data["limb_thickness"] == 100.0 * 0.04  # Default height * ratio
+
+    def test_set_expression(self):
+        """Test setting expression on chubby stickman."""
+        chubby = ChubbyStickman()
+        result = chubby.set_expression("happy")
+        assert result is chubby
+        assert chubby._expression.name == "happy"
+
+    def test_set_pose(self):
+        """Test setting pose on chubby stickman."""
+        chubby = ChubbyStickman()
+        result = chubby.set_pose("waving")
+        assert result is chubby
+        assert chubby._pose.name == "waving"
+
+    def test_say_creates_bubble(self):
+        """Test say method creates speech bubble."""
+        chubby = ChubbyStickman().move_to((100, 100))
+        bubble = chubby.say("Hello!")
+        assert bubble.text == "Hello!"
+        assert bubble.bubble_type == "speech"
+        assert bubble.tail_target is chubby
+
+    def test_think_creates_bubble(self):
+        """Test think method creates thought bubble."""
+        chubby = ChubbyStickman().move_to((100, 100))
+        bubble = chubby.think("Hmm...")
+        assert bubble.text == "Hmm..."
+        assert bubble.bubble_type == "thought"
+
+    def test_shout_creates_bubble(self):
+        """Test shout method creates shout bubble."""
+        chubby = ChubbyStickman().move_to((100, 100))
+        bubble = chubby.shout("WOW!")
+        assert bubble.text == "WOW!"
+        assert bubble.bubble_type == "shout"
+
+    def test_whisper_creates_bubble(self):
+        """Test whisper method creates whisper bubble."""
+        chubby = ChubbyStickman().move_to((100, 100))
+        bubble = chubby.whisper("secret...")
+        assert bubble.text == "secret..."
+        assert bubble.bubble_type == "whisper"
+
+    def test_all_poses(self):
+        """Test chubby stickman with different poses."""
+        poses = ["standing", "sitting", "walking", "running", "pointing",
+                 "waving", "jumping", "dancing", "kneeling", "cheering", "thinking"]
+        for pose_name in poses:
+            chubby = ChubbyStickman(pose=pose_name)
+            assert chubby._pose.name == pose_name
+            # Should still generate valid points
+            assert len(chubby._points) >= 80
+
+    def test_all_expressions(self):
+        """Test chubby stickman with different expressions."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            chubby = ChubbyStickman(expression=expr_name)
+            assert chubby._expression.name == expr_name
+            data = chubby.get_render_data()
+            assert data["expression"]["name"] == expr_name

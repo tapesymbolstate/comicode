@@ -228,7 +228,7 @@ class CairoRenderer:
             self._render_bubble(data)
         elif obj_type in ("Text", "StyledText", "SFX"):
             self._render_text(data)
-        elif obj_type in ("Stickman", "SimpleFace", "Character"):
+        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Character"):
             self._render_character(data)
         elif obj_type == "Rectangle":
             self._render_rectangle(data)
@@ -497,6 +497,8 @@ class CairoRenderer:
             self._render_stickman(data, pos)
         elif style == "simple":
             self._render_simple_face(data, pos)
+        elif style == "chubby":
+            self._render_chubby_stickman(data, pos)
         else:
             self._render_generic(data)
 
@@ -533,6 +535,104 @@ class CairoRenderer:
                     self._set_color(color)
                     ctx.set_line_width(stroke_width)
                     ctx.stroke()
+
+    def _render_chubby_stickman(self, data: dict[str, Any], pos: list[float]) -> None:
+        """Render a chubby stickman character.
+
+        Renders a rounded, friendlier stick figure with:
+        - Larger filled head
+        - Oval body
+        - Thicker limbs with rounded ends
+        """
+        ctx = self._ctx
+        assert ctx is not None
+
+        points = data.get("points", [])
+        color = data.get("color", "#000000")
+        fill_color = data.get("fill_color", "#FFFFFF")
+        stroke_width = 3  # Slightly thicker for chubby appearance
+
+        if len(points) < 24:
+            return
+
+        # Draw head (first 24 points form a circle)
+        head_points = points[:24]
+        if head_points:
+            translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
+            self._polygon_path(translated_head)
+            self._set_color(fill_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+
+        # Draw body oval (next 16 points)
+        body_points = points[24:40]
+        if body_points:
+            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
+            self._polygon_path(translated_body)
+            self._set_color(fill_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+
+        # Render limbs with rounded ends
+        limb_start = 40
+
+        def render_limb(start_idx: int) -> None:
+            if start_idx + 10 > len(points):
+                return
+            # Limb line
+            p1 = points[start_idx]
+            p2 = points[start_idx + 1]
+            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
+            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            self._set_color(color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+
+            # Rounded end (circle approximation from next 8 points)
+            end_points = points[start_idx + 2 : start_idx + 10]
+            if end_points:
+                translated_end = [(p[0] + pos[0], p[1] + pos[1]) for p in end_points]
+                self._polygon_path(translated_end)
+                self._set_color(fill_color)
+                ctx.fill_preserve()
+                self._set_color(color)
+                ctx.set_line_width(stroke_width - 1)
+                ctx.stroke()
+
+        # Render all 4 limbs
+        render_limb(limb_start)       # Left arm
+        render_limb(limb_start + 10)  # Right arm
+        render_limb(limb_start + 20)  # Left leg
+        render_limb(limb_start + 30)  # Right leg
+
+        # Render face features
+        expression = data.get("expression", {})
+        eye_type = expression.get("eyes", "normal")
+        mouth_type = expression.get("mouth", "normal")
+        eyebrow_type = expression.get("eyebrows", "normal")
+
+        # Calculate head center
+        head_center_x = sum(p[0] for p in head_points) / len(head_points)
+        head_center_y = sum(p[1] for p in head_points) / len(head_points)
+        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+
+        # Calculate head radius from character height
+        height = data.get("character_height", 100)
+        head_radius = height * 0.22  # Same ratio as in ChubbyStickman class
+
+        # Eye parameters (scaled for larger head)
+        eye_y = head_pos[1] - head_radius * 0.15
+        eye_offset = head_radius * 0.35
+        eye_radius = head_radius * 0.12
+
+        # Render face features
+        self._render_face_eyes_cairo(head_pos, head_radius, eye_y, eye_offset, eye_radius, eye_type, color)
+        self._render_face_eyebrows_cairo(head_pos, head_radius, eye_y, eye_offset, eyebrow_type, color)
+        self._render_face_mouth_cairo(head_pos, head_radius, mouth_type, color)
 
     def _render_simple_face(self, data: dict[str, Any], pos: list[float]) -> None:
         """Render a simple face character with expression-based features.

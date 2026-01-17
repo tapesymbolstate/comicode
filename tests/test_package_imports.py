@@ -47,6 +47,7 @@ class TestMainPackageImports:
             Text,
             Stickman,
             SimpleFace,
+            ChubbyStickman,
             Page,
             SVGRenderer,
         )
@@ -57,6 +58,7 @@ class TestMainPackageImports:
         assert Text is not None
         assert Stickman is not None
         assert SimpleFace is not None
+        assert ChubbyStickman is not None
         assert Page is not None
         assert SVGRenderer is not None
 

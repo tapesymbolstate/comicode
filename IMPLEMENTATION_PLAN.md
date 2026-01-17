@@ -75,6 +75,14 @@ All 4 phases have been implemented with **1092 tests passing**, mypy clean, and 
   - **Mouth**: grin (wide smile with teeth), gasp (larger open mouth), smirk (asymmetric half-smile)
   - **Eyebrows**: relaxed (low, slightly droopy), asymmetric (one raised, one flat)
 - Both SVG and Cairo renderers fully support all new expression components (17 new tests).
+- **ChubbyStickman Character**: New character style with rounded, friendlier appearance:
+  - Larger head (22% of height vs 15% for regular Stickman)
+  - Oval body shape for a rounder look
+  - Shorter, thicker limbs with rounded ends (hands/feet)
+  - Default white fill color for body parts
+  - Full expression support (eyes, mouth, eyebrows render on the face)
+  - Full pose support (all 12 poses work correctly)
+  - Both SVG and Cairo renderers fully support ChubbyStickman rendering (24 new tests)
 
 ### Technical Stack
 
@@ -89,7 +97,7 @@ All 4 phases have been implemented with **1092 tests passing**, mypy clean, and 
 These are potential improvements, not planned work:
 
 1. **Animation Export**: Animated GIF/video for webtoon scroll effects
-2. **Additional Character Styles**: New character classes beyond Stickman/SimpleFace (e.g., DetailedFace, AnimeStyle, ChubbyStickman)
+2. **Additional Character Styles**: New character classes beyond Stickman/SimpleFace/ChubbyStickman (e.g., DetailedFace, AnimeStyle)
 3. **Web Renderer**: HTML output with interactive features
 
 ## Known Issues

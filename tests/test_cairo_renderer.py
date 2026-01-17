@@ -7,7 +7,7 @@ from pathlib import Path
 from comix.page.page import Page
 from comix.cobject.panel.panel import Panel
 from comix.cobject.bubble.bubble import SpeechBubble, ThoughtBubble
-from comix.cobject.character.character import Stickman, SimpleFace
+from comix.cobject.character.character import Stickman, SimpleFace, ChubbyStickman
 from comix.cobject.text.text import Text, SFX
 from comix.cobject.shapes.shapes import Rectangle, Circle, Line
 from comix.cobject.panel.panel import Border
@@ -155,6 +155,70 @@ class TestCairoRenderer:
             output_path = renderer.render(f.name, format="png")
             assert Path(output_path).exists()
             Path(output_path).unlink()
+
+    def test_render_chubby_stickman(self):
+        """Test rendering a chubby stickman character."""
+        page = Page(width=400, height=300)
+        chubby = ChubbyStickman(name="Chunky").move_to((200, 150))
+        page.add(chubby)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_chubby_stickman_with_expression(self):
+        """Test rendering a chubby stickman with expression."""
+        page = Page(width=400, height=300)
+        chubby = ChubbyStickman(name="Happy", expression="happy").move_to((200, 150))
+        page.add(chubby)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_chubby_stickman_with_pose(self):
+        """Test rendering a chubby stickman with different poses."""
+        for pose_name in ["standing", "waving", "jumping", "cheering"]:
+            page = Page(width=400, height=300)
+            chubby = ChubbyStickman(name="Poser", pose=pose_name).move_to((200, 150))
+            page.add(chubby)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_chubby_stickman_facing_left(self):
+        """Test rendering a chubby stickman facing left."""
+        page = Page(width=400, height=300)
+        chubby = ChubbyStickman(name="Lefty", facing="left").move_to((200, 150))
+        page.add(chubby)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_chubby_stickman_all_expressions(self):
+        """Test rendering a chubby stickman with all expression types."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            page = Page(width=400, height=300)
+            chubby = ChubbyStickman(name="Expressive", expression=expr_name).move_to((200, 150))
+            page.add(chubby)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
 
     def test_render_simple_face_neutral(self):
         """Test rendering a simple face with neutral expression."""

@@ -44,6 +44,22 @@ packages = ["comix"]
 python_version = "3.13"
 strict = true
 
+[[tool.mypy.overrides]]
+module = "fontTools.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "svgwrite.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "openai"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "replicate"
+ignore_missing_imports = true
+
 [tool.ruff]
 target-version = "py313"
 line-length = 100

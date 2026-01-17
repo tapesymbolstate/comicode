@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.8**
+**Current Git Tag: v0.1.9**
 
 All 5 phases have been implemented with **1502 tests passing** (1 skipped), ruff clean, and mypy passing. Current version: **v0.1.0**.
 
@@ -305,9 +305,15 @@ Files modified:
 ### Type Stub Cleanup (v0.1.8)
 
 - Removed obsolete `# type: ignore` comments from fontTools, svgwrite, openai, and replicate imports
-- These packages now have proper type stubs and annotations
 - mypy now passes with 0 errors
 - Improved type checking coverage across the entire codebase
+
+### Mypy Configuration Fix (v0.1.9)
+
+- Added proper `[[tool.mypy.overrides]]` configuration in pyproject.toml for third-party libraries without type stubs
+- fontTools, svgwrite, openai, and replicate modules configured with `ignore_missing_imports = true`
+- This is the correct approach since these libraries don't have type stubs (contrary to previous notes)
+- mypy strict mode continues to pass with 0 errors
 
 ### Documentation Update (2026-01-18)
 

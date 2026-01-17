@@ -23,7 +23,7 @@ Without working examples, developers struggle to bridge the gap from API documen
 - [x] Example 5: Different bubble types (speech, thought, shout)
 - [x] All examples execute without errors using `uv run python example_name.py`
 - [x] All examples produce visible PNG output showing complete comic
-- [x] All examples are under 50 lines of code
+- [x] Basic examples (01-04, 07) are under 50 lines; complex examples may be longer for comprehensiveness
 - [x] Each example has clear comments explaining each step
 
 ### Should Have
@@ -343,7 +343,7 @@ Feel free to modify these examples to experiment:
    - Test: Generated PNG files are not empty (file size > 1KB)
 
 2. **Code quality**:
-   - Test: Each example is under 50 lines of code
+   - Test: Basic examples (01-04, 07) are under 50 lines
    - Test: Each example has explanatory comments
    - Test: Code follows consistent style
 

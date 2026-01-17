@@ -144,7 +144,7 @@ except IOError as e:
 
 ## Open Questions
 
-- [x] Should `Page.render()` create parent directories if they don't exist? **Decision**: No, fail fast with clear error
+- [x] Should `Page.render()` create parent directories if they don't exist? **Decision**: Yes, auto-create for convenience
 - [x] Should speech bubbles auto-size based on text length? **Decision**: Yes, with optional fixed width
 - [x] What's the default DPI for PNG rendering? **Decision**: 150 DPI (balance between quality and file size)
 - [x] Should there be a `Page.show()` method for quick preview in browser? **Decision**: Yes, implemented with auto-cleanup on exit

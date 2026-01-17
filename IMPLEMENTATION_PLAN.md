@@ -2,9 +2,9 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.22**
+**Current Git Tag: v0.1.23**
 
-All 5 phases have been implemented with **1577 tests passing**, ruff clean, and mypy passing. Current version: **v0.1.0**.
+All 5 phases have been implemented with **1578 tests passing**, ruff clean, and mypy passing. Current version: **v0.1.0**.
 
 ### Completed Phases Summary
 
@@ -200,6 +200,13 @@ All 5 phases have been implemented with **1577 tests passing**, ruff clean, and 
   - Bubble positioning fallback tests: invalid anchor fallback to top, auto_attach_to fallback when all anchors out of bounds or overlap, tail_target as tuple position in render data
   - Character expression/pose resolution tests: passing Expression/Pose objects directly to from_name(), handling unknown values with warning logging
   - Total: 32 new tests, test count increased from 1545 to 1577
+- **Spec Consistency and Book PDF Test (v0.1.23)**: Documentation and test improvements:
+  - Updated page-rendering.md to remove obsolete "book.pdf contains only rectangle" bug mention (issue resolved)
+  - Updated working-examples.md to reflect realistic line counts (complex examples may exceed 50 lines)
+  - Updated getting-started.md spec decision: parent directories are auto-created for convenience
+  - Added test_render_with_characters_and_bubbles() to test_book.py verifying Book PDF rendering with Stickman characters and SpeechBubbles across multiple pages
+  - Updated specs/README.md test count to 1578
+  - Total: 1 new test, test count increased from 1577 to 1578
 
 ### Technical Stack
 

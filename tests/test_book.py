@@ -333,6 +333,58 @@ class TestBookRenderWithCairo:
             assert Path(result).exists()
             assert Path(result).stat().st_size > 100  # Should have actual content
 
+    def test_render_with_characters_and_bubbles(self):
+        """Test rendering pages with characters and speech bubbles.
+
+        Verifies that Book PDF rendering correctly includes Stickman characters
+        and SpeechBubbles across multiple pages, not just empty rectangles.
+        """
+        from comix.cobject.character.character import Stickman
+
+        book = Book(title="Character Comic", author="Test Author")
+
+        # Page 1: Character with speech bubble
+        page1 = Page(width=400, height=600)
+        panel1 = Panel(width=350, height=500)
+        char1 = Stickman(name="Alice", height=100)
+        char1.move_to((175, 350))
+        bubble1 = char1.say("Hello!")
+        panel1.add(char1, bubble1)
+        page1.add(panel1)
+        book.add_page(page1)
+
+        # Page 2: Two characters with different bubble types
+        page2 = Page(width=400, height=600)
+        panel2 = Panel(width=350, height=500)
+        char2 = Stickman(name="Bob", height=100)
+        char2.move_to((120, 350))
+        bubble2 = char2.say("How are you?")
+        char3 = Stickman(name="Charlie", height=100)
+        char3.move_to((280, 350))
+        char3.face("left")
+        bubble3 = char3.think("I wonder...")
+        panel2.add(char2, char3, bubble2, bubble3)
+        page2.add(panel2)
+        book.add_page(page2)
+
+        # Page 3: Character with expression
+        page3 = Page(width=400, height=600)
+        panel3 = Panel(width=350, height=500)
+        char4 = Stickman(name="Dana", height=100)
+        char4.move_to((175, 350))
+        char4.set_expression("happy")
+        bubble4 = char4.shout("Great!")
+        panel3.add(char4, bubble4)
+        page3.add(panel3)
+        book.add_page(page3)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output = str(Path(tmpdir) / "characters_and_bubbles.pdf")
+            result = book.render(output)
+            assert Path(result).exists()
+            # Character content should result in larger file than empty panels
+            assert Path(result).stat().st_size > 1000
+
     def test_render_quality_low(self):
         """Test rendering with low quality."""
         book = Book()

@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete
 
-**Current Git Tag: v0.1.25**
+**Current Git Tag: v0.1.26**
 
 All 5 phases have been implemented with **1578 tests passing**, ruff clean, and mypy passing.
 

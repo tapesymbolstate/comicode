@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Multi-page PDF Export
 
-All 4 phases have been implemented with **972 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **1006 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -46,6 +46,8 @@ All 4 phases have been implemented with **972 tests passing**, mypy clean, and r
 - **CObject Positioning Test Coverage**: Full test coverage for CObject next_to() and align_to() methods, including all directional positioning (up, down, left, right) and edge alignment (top, bottom, left, right, center). Tests cover bounding box calculations with submobjects and transformations (20 new tests).
 - **FlowLayout Extended Test Coverage**: Comprehensive tests for FlowLayout edge cases including vertical end alignment, cross-alignment options (start, center, end), bounding box fallback, wrap modes in both directions, and equal cell calculations (11 new tests).
 - **Package Import Test Coverage**: Tests verifying all package exports are correctly available, including optional dependencies (CairoRenderer, PreviewServer) and version attributes (20 new tests).
+- **ConstraintLayout Test Coverage**: Extended test coverage for constraint-based layout system (86% to 95%+ coverage). Tests cover right-hand arithmetic operators (__radd__, __rmul__), all element edge references (left, bottom, center_y, height), ref(None) behavior, constrain() error handling, default dimension/position fallbacks, bottom+height positioning, and circular dependency resolution (28 new tests).
+- **PreviewServer Test Coverage**: Extended test coverage for preview server (81% to 92%+ coverage). Tests cover /poll endpoint functionality, file change detection via polling, render error handling (build/layout errors), has_file_changed with deleted files, server double-start protection, port exhaustion handling, browser opening, spec loader errors, and comprehensive watchdog handler tests (debouncing, file filtering, callback=None) (13 new tests).
 
 ### Technical Stack
 

@@ -471,3 +471,277 @@ class TestEdgeCases:
 
         assert positions[p1]["left"] == positions[p2]["left"]
         assert positions[p1]["top"] == positions[p2]["top"]
+
+
+class TestConstraintValueExtended:
+    """Extended tests for ConstraintValue arithmetic operators."""
+
+    def test_right_hand_addition(self) -> None:
+        """Test right-hand addition (number + constraint)."""
+        cv = ConstraintValue(source="container", edge=EdgeType.LEFT, offset=10.0)
+        cv2 = 5 + cv  # type: ignore[operator]
+        assert cv2.offset == 15.0
+        assert cv2.source == cv.source
+        assert cv2.edge == cv.edge
+
+    def test_right_hand_multiplication(self) -> None:
+        """Test right-hand multiplication (number * constraint)."""
+        cv = ConstraintValue(source="container", edge=EdgeType.WIDTH, multiplier=1.0)
+        cv2 = 2 * cv  # type: ignore[operator]
+        assert cv2.multiplier == 2.0
+        assert cv2.source == cv.source
+        assert cv2.edge == cv.edge
+
+
+class TestElementReferenceEdges:
+    """Tests for element reference edge getters."""
+
+    def test_reference_left_edge(self) -> None:
+        """Test referencing left edge of another element."""
+        layout = ConstraintLayout(width=800, height=600)
+        p1 = Panel(width=200, height=150)
+        p2 = Panel(width=100, height=100)
+
+        layout.add(p1, left=100, top=100, width=200, height=150)
+        layout.add(
+            p2,
+            left=layout.ref(p1).left,  # Line 250: LEFT edge reference
+            top=300,
+            width=100,
+            height=100,
+        )
+
+        positions = layout.solve()
+        assert positions[p2]["left"] == 100  # Same as p1's left
+
+    def test_reference_bottom_edge(self) -> None:
+        """Test referencing bottom edge of another element."""
+        layout = ConstraintLayout(width=800, height=600)
+        p1 = Panel(width=200, height=150)
+        p2 = Panel(width=100, height=100)
+
+        layout.add(p1, left=100, top=100, width=200, height=150)
+        layout.add(
+            p2,
+            left=100,
+            top=layout.ref(p1).bottom + 10,  # Line 256: BOTTOM edge reference
+            width=100,
+            height=100,
+        )
+
+        positions = layout.solve()
+        assert positions[p2]["top"] == 260  # p1.top (100) + p1.height (150) + 10
+
+    def test_reference_center_y(self) -> None:
+        """Test referencing center_y of another element."""
+        layout = ConstraintLayout(width=800, height=600)
+        p1 = Panel(width=200, height=200)
+        p2 = Panel(width=100, height=50)
+
+        layout.add(p1, left=100, top=100, width=200, height=200)
+        layout.add(
+            p2,
+            left=350,
+            center_y=layout.ref(p1).center_y,  # Line 260: CENTER_Y edge reference
+            width=100,
+            height=50,
+        )
+
+        positions = layout.solve()
+        # p1's center_y = 100 + 200/2 = 200
+        assert positions[p2]["center_y"] == 200
+
+    def test_reference_height(self) -> None:
+        """Test referencing height of another element."""
+        layout = ConstraintLayout(width=800, height=600)
+        p1 = Panel(width=200, height=175)
+        p2 = Panel(width=100, height=100)
+
+        layout.add(p1, left=100, top=100, width=200, height=175)
+        layout.add(
+            p2,
+            left=350,
+            top=100,
+            width=100,
+            height=layout.ref(p1).height,  # Line 264: HEIGHT edge reference
+        )
+
+        positions = layout.solve()
+        assert positions[p2]["height"] == 175  # Same as p1's height
+
+
+class TestConstraintRefNone:
+    """Tests for ref(None) returning container reference."""
+
+    def test_ref_with_none_returns_container(self) -> None:
+        """Test that ref(None) returns container reference."""
+        layout = ConstraintLayout(width=800, height=600)
+        ref = layout.ref(None)
+        assert ref.is_container is True
+
+    def test_ref_none_left_equals_layout_left(self) -> None:
+        """Test that ref(None).left equals layout.left."""
+        layout = ConstraintLayout(width=800, height=600)
+        ref = layout.ref(None)
+        assert ref.left.source == "container"
+        assert ref.left.edge == EdgeType.LEFT
+
+
+class TestConstrainMethod:
+    """Tests for constrain() method."""
+
+    def test_constrain_nonexistent_element_raises_error(self) -> None:
+        """Test that constraining non-existent element raises ValueError."""
+        import pytest
+
+        layout = ConstraintLayout(width=800, height=600)
+        panel = Panel()
+
+        with pytest.raises(ValueError, match="not found in layout"):
+            layout.constrain(panel, "left", 100)
+
+    def test_constrain_existing_element_works(self) -> None:
+        """Test that constraining existing element works."""
+        layout = ConstraintLayout(width=800, height=600)
+        panel = Panel(width=200, height=100)
+
+        layout.add(panel, left=100, top=50)
+        layout.constrain(panel, "width", 300)
+
+        positions = layout.solve()
+        assert positions[panel]["width"] == 300
+
+
+class TestDefaultDimensionFallbacks:
+    """Tests for default dimension assignment branches."""
+
+    def test_default_width_with_center_x_only(self) -> None:
+        """Test default width used when only center_x specified."""
+        layout = ConstraintLayout(width=800, height=600)
+        panel = Panel(width=123, height=200)
+        layout.add(panel, center_x=400, top=100, height=200)
+        pos = layout.get_position(panel)
+        assert pos is not None
+        assert pos["width"] == 123
+
+    def test_default_width_with_right_only(self) -> None:
+        """Test default width used when only right edge specified."""
+        layout = ConstraintLayout(width=800, height=600)
+        panel = Panel(width=150, height=200)
+        layout.add(panel, right=500, top=100, height=200)
+        pos = layout.get_position(panel)
+        assert pos is not None
+        assert pos["width"] == 150
+        assert pos["left"] == 350  # right - width
+
+    def test_default_width_with_no_horizontal_constraints(self) -> None:
+        """Test default width when no horizontal constraints specified."""
+        layout = ConstraintLayout(width=800, height=600)
+        panel = Panel(width=175, height=200)
+        layout.add(panel, top=100, height=200)
+        pos = layout.get_position(panel)
+        assert pos is not None
+        assert pos["width"] == 175
+
+    def test_default_height_with_center_y_only(self) -> None:
+        """Test default height used when only center_y specified."""
+        layout = ConstraintLayout(width=800, height=600)
+        panel = Panel(width=200, height=234)
+        layout.add(panel, left=100, width=200, center_y=300)
+        pos = layout.get_position(panel)
+        assert pos is not None
+        assert pos["height"] == 234
+
+    def test_default_height_with_bottom_only(self) -> None:
+        """Test default height used when only bottom edge specified."""
+        layout = ConstraintLayout(width=800, height=600)
+        panel = Panel(width=200, height=180)
+        layout.add(panel, left=100, width=200, bottom=400)
+        pos = layout.get_position(panel)
+        assert pos is not None
+        assert pos["height"] == 180
+
+    def test_default_height_with_no_vertical_constraints(self) -> None:
+        """Test default height when no vertical constraints specified."""
+        layout = ConstraintLayout(width=800, height=600)
+        panel = Panel(width=200, height=190)
+        layout.add(panel, left=100, width=200)
+        pos = layout.get_position(panel)
+        assert pos is not None
+        assert pos["height"] == 190
+
+
+class TestDefaultPositionFallbacks:
+    """Tests for default position fallbacks when no constraints specified."""
+
+    def test_default_horizontal_position_at_container_left(self) -> None:
+        """Test element defaults to left edge when no horizontal constraint given."""
+        layout = ConstraintLayout(width=800, height=600, offset_x=50)
+        panel = Panel(width=200, height=100)
+        layout.add(panel, top=100, height=100)
+        pos = layout.get_position(panel)
+        assert pos is not None
+        assert pos["left"] == 50  # container left (with offset)
+
+    def test_default_vertical_position_at_container_top(self) -> None:
+        """Test element defaults to top edge when no vertical constraint given."""
+        layout = ConstraintLayout(width=800, height=600, offset_y=75)
+        panel = Panel(width=200, height=100)
+        layout.add(panel, left=100, width=200)
+        pos = layout.get_position(panel)
+        assert pos is not None
+        assert pos["top"] == 75  # container top (with offset)
+
+
+class TestBottomEdgePositioning:
+    """Tests for computing position from bottom edge and height."""
+
+    def test_position_from_bottom_and_height(self) -> None:
+        """Test computing position from bottom edge and height."""
+        layout = ConstraintLayout(width=800, height=600)
+        panel = Panel()
+        layout.add(panel, left=100, width=200, bottom=500, height=150)
+        pos = layout.get_position(panel)
+        assert pos is not None
+        assert pos["bottom"] == 500
+        assert pos["height"] == 150
+        assert pos["top"] == 350  # bottom - height
+        assert pos["center_y"] == 425  # top + height/2
+
+
+class TestCircularDependencies:
+    """Tests for circular dependency detection."""
+
+    def test_circular_dependency_resolves_with_defaults(self) -> None:
+        """Test that circular dependencies get resolved with defaults."""
+        # The implementation actually handles this gracefully by using defaults
+        # when progress can't be made
+        layout = ConstraintLayout(width=800, height=600)
+        p1 = Panel(width=200, height=100)
+        p2 = Panel(width=200, height=100)
+
+        # Create potential circular dependency: p1 depends on p2, p2 depends on p1
+        layout.add(p1, left=layout.ref(p2).right + 10, top=100, width=200, height=100)
+        layout.add(p2, left=layout.ref(p1).right + 10, top=100, width=200, height=100)
+
+        # The solver handles this by falling back to defaults
+        positions = layout.solve()
+        # Both elements should be resolved with some position
+        assert p1 in positions
+        assert p2 in positions
+
+
+class TestConstraintInvalidValueType:
+    """Tests for constraint resolution with invalid value types."""
+
+    def test_constraint_resolve_with_none_source(self) -> None:
+        """Test constraint resolution when source is None (absolute container)."""
+        from comix.layout.constraints import Constraint
+
+        constraint = Constraint(
+            target_property="left",
+            value=ConstraintValue(source=None, edge=EdgeType.LEFT),
+        )
+        container_bounds = {"left": 0, "width": 800, "height": 600}
+        result = constraint.resolve({}, container_bounds)
+        assert result == 0

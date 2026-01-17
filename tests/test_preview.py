@@ -479,3 +479,371 @@ class SecondComic(Page):
                     thread.join(timeout=2)
         finally:
             sock.close()
+
+
+class TestPollEndpoint:
+    """Tests for the /poll endpoint and hot-reload functionality."""
+
+    def _start_server_in_background(self, server: PreviewServer) -> threading.Thread:
+        """Helper to start server in background and wait for it to be ready."""
+        started = threading.Event()
+
+        def run_server():
+            server.start(blocking=False)
+            started.set()
+
+        thread = threading.Thread(target=run_server)
+        thread.start()
+        started.wait(timeout=5)
+        # Give server a moment to fully initialize
+        time.sleep(0.2)
+        return thread
+
+    def test_poll_endpoint_returns_json(self, tmp_path: Path) -> None:
+        """Test that /poll returns valid JSON response."""
+        script = tmp_path / "comic.py"
+        script.write_text("from comix import Page\npage = Page()")
+
+        server = PreviewServer(script, port=0, open_browser=False)
+
+        with patch("webbrowser.open"):
+            thread = self._start_server_in_background(server)
+
+            try:
+                # Make request with short timeout to not wait full 30s
+                conn = http.client.HTTPConnection("127.0.0.1", server.port, timeout=35)
+                conn.request("GET", "/poll")
+                response = conn.getresponse()
+                data = json.loads(response.read().decode())
+                conn.close()
+
+                assert response.status == 200
+                assert "version" in data
+                assert "changed" in data
+                assert isinstance(data["version"], int)
+                assert isinstance(data["changed"], bool)
+            finally:
+                server.stop()
+                thread.join(timeout=2)
+
+    def test_poll_endpoint_detects_file_change(self, tmp_path: Path) -> None:
+        """Test that /poll detects file changes."""
+        script = tmp_path / "comic.py"
+        script.write_text("from comix import Page\npage = Page()")
+
+        server = PreviewServer(script, port=0, open_browser=False)
+
+        with patch("webbrowser.open"):
+            thread = self._start_server_in_background(server)
+
+            try:
+                # Get initial version
+                conn = http.client.HTTPConnection("127.0.0.1", server.port, timeout=5)
+                conn.request("GET", "/version")
+                response = conn.getresponse()
+                initial_data = json.loads(response.read().decode())
+                conn.close()
+                initial_version = initial_data["version"]
+
+                # Modify file
+                time.sleep(0.1)
+                script.write_text("from comix import Page\npage = Page(width=500)")
+
+                # Poll should detect change
+                conn = http.client.HTTPConnection("127.0.0.1", server.port, timeout=35)
+                conn.request("GET", "/poll")
+                response = conn.getresponse()
+                poll_data = json.loads(response.read().decode())
+                conn.close()
+
+                assert poll_data["changed"] is True
+                assert poll_data["version"] > initial_version
+            finally:
+                server.stop()
+                thread.join(timeout=2)
+
+
+class TestRenderError:
+    """Tests for render error handling."""
+
+    def test_render_svg_with_build_error(self, tmp_path: Path) -> None:
+        """Test render_svg handles errors during page.build()."""
+        script = tmp_path / "comic.py"
+        script.write_text("""
+from comix import Page
+
+class BrokenPage(Page):
+    def build(self):
+        raise RuntimeError("Build failed!")
+""")
+        loader = ScriptLoader(script)
+        svg, error = loader.render_svg()
+
+        assert error is not None
+        assert "Render error" in error or "Build failed" in error
+        assert "<svg" in svg
+        assert "#cc0000" in svg  # error color
+
+    def test_render_svg_with_layout_error(self, tmp_path: Path) -> None:
+        """Test render_svg handles errors during auto_layout()."""
+        script = tmp_path / "comic.py"
+        script.write_text("""
+from comix import Page
+
+class BrokenPage(Page):
+    def auto_layout(self):
+        raise RuntimeError("Layout failed!")
+""")
+        loader = ScriptLoader(script)
+        svg, error = loader.render_svg()
+
+        assert error is not None
+        assert "Render error" in error or "Layout failed" in error
+        assert "<svg" in svg
+
+
+class TestHasFileChangedEdgeCases:
+    """Tests for has_file_changed edge cases."""
+
+    def test_has_file_changed_with_deleted_file(self, tmp_path: Path) -> None:
+        """Test has_file_changed when file is deleted."""
+        script = tmp_path / "comic.py"
+        script.write_text("from comix import Page\npage = Page()")
+        loader = ScriptLoader(script)
+
+        # Initial check
+        assert loader.has_file_changed() is True
+
+        # Delete file
+        script.unlink()
+
+        # Should return False when file doesn't exist (OSError caught)
+        assert loader.has_file_changed() is False
+
+
+class TestServerDoubleStart:
+    """Tests for server start edge cases."""
+
+    def test_start_when_already_running(self, tmp_path: Path) -> None:
+        """Test that starting server twice is a no-op."""
+        script = tmp_path / "comic.py"
+        script.write_text("from comix import Page\npage = Page()")
+
+        server = PreviewServer(script, port=0, open_browser=False)
+
+        started = threading.Event()
+
+        def run_server():
+            server.start(blocking=False)
+            started.set()
+
+        with patch("webbrowser.open"):
+            thread = threading.Thread(target=run_server)
+            thread.start()
+            started.wait(timeout=5)
+            time.sleep(0.2)
+
+            try:
+                assert server._running
+                first_port = server.port
+
+                # Try to start again - should be a no-op
+                server.start(blocking=False)
+
+                # Should still be running on same port
+                assert server._running
+                assert server.port == first_port
+            finally:
+                server.stop()
+                thread.join(timeout=2)
+
+
+class TestPortExhaustion:
+    """Tests for port binding failure."""
+
+    def test_port_exhaustion_raises_error(self, tmp_path: Path) -> None:
+        """Test that port exhaustion raises PreviewError."""
+        import socket
+
+        script = tmp_path / "comic.py"
+        script.write_text("from comix import Page\npage = Page()")
+
+        # Block ports 9990-9999 (10 ports)
+        sockets = []
+        try:
+            for port in range(9990, 10000):
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                sock.bind(("127.0.0.1", port))
+                sock.listen(1)
+                sockets.append(sock)
+
+            server = PreviewServer(script, port=9990, host="127.0.0.1", open_browser=False)
+
+            with pytest.raises(PreviewError, match="Could not find available port"):
+                server.start(blocking=False)
+        finally:
+            for sock in sockets:
+                sock.close()
+
+
+class TestBrowserOpening:
+    """Tests for browser opening functionality."""
+
+    def test_open_browser_true(self, tmp_path: Path) -> None:
+        """Test that browser opens when open_browser=True."""
+        script = tmp_path / "comic.py"
+        script.write_text("from comix import Page\npage = Page()")
+
+        server = PreviewServer(script, port=0, open_browser=True)
+
+        with patch("webbrowser.open") as mock_open:
+            started = threading.Event()
+
+            def run_server():
+                server.start(blocking=False)
+                started.set()
+
+            thread = threading.Thread(target=run_server)
+            thread.start()
+            started.wait(timeout=5)
+            time.sleep(0.2)
+
+            try:
+                # Browser should have been opened
+                mock_open.assert_called_once()
+                call_args = mock_open.call_args[0][0]
+                assert f"http://localhost:{server.port}" in call_args
+            finally:
+                server.stop()
+                thread.join(timeout=2)
+
+
+class TestSpecLoaderError:
+    """Tests for module spec loader edge cases."""
+
+    def test_spec_loader_none_error(self, tmp_path: Path) -> None:
+        """Test handling when spec_from_file_location returns None."""
+        script = tmp_path / "comic.py"
+        script.write_text("from comix import Page\npage = Page()")
+
+        loader = ScriptLoader(script)
+
+        with patch("importlib.util.spec_from_file_location", return_value=None):
+            with pytest.raises(PreviewError, match="Could not load script"):
+                loader.load_page()
+
+
+class TestWatchdogHandler:
+    """Tests for watchdog handler integration."""
+
+    @pytest.mark.skipif(not WATCHDOG_AVAILABLE, reason="watchdog not installed")
+    def test_watchdog_handler_debouncing(self, tmp_path: Path) -> None:
+        """Test that watchdog handler debounces rapid events."""
+        from comix.preview.server import ScriptChangeHandler
+
+        script = tmp_path / "comic.py"
+        script.write_text("from comix import Page\npage = Page()")
+
+        loader = ScriptLoader(script)
+        callback_count = 0
+
+        def callback():
+            nonlocal callback_count
+            callback_count += 1
+
+        handler = ScriptChangeHandler(loader, callback)
+
+        # Create a mock event with src_path matching our script
+        class MockEvent:
+            src_path = str(script)
+
+        # Fire multiple events rapidly
+        for _ in range(5):
+            handler.on_modified(MockEvent())
+
+        # Only one callback should have fired due to debouncing
+        assert callback_count == 1
+
+        # Wait for debounce period and fire again
+        time.sleep(0.15)
+        handler.on_modified(MockEvent())
+        assert callback_count == 2
+
+    @pytest.mark.skipif(not WATCHDOG_AVAILABLE, reason="watchdog not installed")
+    def test_watchdog_handler_ignores_other_files(self, tmp_path: Path) -> None:
+        """Test that watchdog handler ignores changes to other files."""
+        from comix.preview.server import ScriptChangeHandler
+
+        script = tmp_path / "comic.py"
+        script.write_text("from comix import Page\npage = Page()")
+
+        other_file = tmp_path / "other.py"
+        other_file.write_text("x = 1")
+
+        loader = ScriptLoader(script)
+        callback_count = 0
+
+        def callback():
+            nonlocal callback_count
+            callback_count += 1
+
+        handler = ScriptChangeHandler(loader, callback)
+
+        # Create event for other file
+        class MockEvent:
+            src_path = str(other_file)
+
+        handler.on_modified(MockEvent())
+
+        # Callback should not have fired
+        assert callback_count == 0
+
+    @pytest.mark.skipif(not WATCHDOG_AVAILABLE, reason="watchdog not installed")
+    def test_watchdog_handler_callback_none(self, tmp_path: Path) -> None:
+        """Test that watchdog handler works with no callback."""
+        from comix.preview.server import ScriptChangeHandler
+
+        script = tmp_path / "comic.py"
+        script.write_text("from comix import Page\npage = Page()")
+
+        loader = ScriptLoader(script)
+        handler = ScriptChangeHandler(loader, callback=None)
+
+        # Create a mock event
+        class MockEvent:
+            src_path = str(script)
+
+        # Should not raise even with no callback
+        handler.on_modified(MockEvent())
+
+
+class TestWatchdogSetup:
+    """Tests for watchdog setup."""
+
+    def test_watchdog_unavailable_skips_setup(self, tmp_path: Path) -> None:
+        """Test that missing watchdog skips setup gracefully."""
+        script = tmp_path / "comic.py"
+        script.write_text("from comix import Page\npage = Page()")
+
+        # Create server with watchdog disabled
+        server = PreviewServer(script, port=0, open_browser=False, use_watchdog=False)
+
+        started = threading.Event()
+
+        def run_server():
+            server.start(blocking=False)
+            started.set()
+
+        with patch("webbrowser.open"):
+            thread = threading.Thread(target=run_server)
+            thread.start()
+            started.wait(timeout=5)
+            time.sleep(0.2)
+
+            try:
+                assert server._running
+                assert server._observer is None
+            finally:
+                server.stop()
+                thread.join(timeout=2)

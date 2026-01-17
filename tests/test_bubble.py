@@ -381,6 +381,122 @@ class TestBubbleAutoPositioning:
         assert bubble.text == "Updated"
 
 
+class TestBubbleEdgeCases:
+    """Tests for bubble edge cases."""
+
+    def test_empty_text_bubble(self) -> None:
+        """Test bubble with empty text renders with minimum size (padding only).
+
+        As specified in speech-bubbles.md: "Empty text: Render bubble with minimum size"
+        """
+        bubble = SpeechBubble(text="")
+
+        # Bubble should have minimum size (60x40 as per implementation)
+        assert bubble.bubble_width >= 60.0
+        assert bubble.bubble_height >= 40.0
+
+        # Bubble should still have valid points for rendering
+        data = bubble.get_render_data()
+        assert "points" in data
+        assert len(data["points"]) > 0
+
+        # Text should be empty
+        assert bubble.text == ""
+        assert data["text"] == ""
+
+    def test_empty_text_bubble_types(self) -> None:
+        """Test all bubble types handle empty text correctly."""
+        bubble_classes = [
+            SpeechBubble,
+            ThoughtBubble,
+            ShoutBubble,
+            WhisperBubble,
+            NarratorBubble,
+        ]
+
+        for BubbleClass in bubble_classes:
+            bubble = BubbleClass(text="")
+            # All bubble types should render with minimum size
+            assert bubble.bubble_width >= 60.0
+            assert bubble.bubble_height >= 40.0
+            # Should have valid render data
+            data = bubble.get_render_data()
+            assert len(data["points"]) > 0
+
+    def test_very_long_text_bubble(self) -> None:
+        """Test bubble with very long text (1000+ chars) auto-wraps and expands.
+
+        As specified in speech-bubbles.md: "Very long text (1000+ chars):
+        Auto-wrap and expand bubble vertically"
+        """
+        # Create text with 1000+ characters (~250 words)
+        long_text = "word " * 250  # 1250 characters
+        bubble = SpeechBubble(text=long_text)
+
+        # Bubble should expand vertically for long text
+        # With auto-wrap at ~200px width and ~16px font size, expect many lines
+        assert bubble.bubble_height > 200.0
+
+        # Width should be constrained (not infinite)
+        # Auto-wrap kicks in at 200px text width + padding
+        assert bubble.bubble_width <= 300.0
+
+        # Should have valid render data
+        data = bubble.get_render_data()
+        assert "points" in data
+        assert data["text"] == long_text
+
+    def test_extremely_long_text_stability(self) -> None:
+        """Test bubble handles extremely long text (5000+ chars) without crashing."""
+        # Stress test with 5000+ characters
+        extreme_text = "a" * 5000
+        bubble = SpeechBubble(text=extreme_text)
+
+        # Should not crash, height should be very large
+        assert bubble.bubble_height > 0
+        assert bubble.bubble_width > 0
+
+        # Should still produce valid render data
+        data = bubble.get_render_data()
+        assert len(data["points"]) > 0
+
+    def test_text_with_explicit_newlines(self) -> None:
+        """Test bubble respects explicit line breaks in text."""
+        text_with_newlines = "Line 1\nLine 2\nLine 3"
+        bubble = SpeechBubble(text=text_with_newlines)
+
+        # Text should be preserved exactly
+        assert bubble.text == text_with_newlines
+        data = bubble.get_render_data()
+        assert data["text"] == text_with_newlines
+
+        # Height should accommodate multiple lines (implicitly via renderer)
+        # The bubble itself stores the text; actual rendering handles newlines
+        assert bubble.bubble_height > 40.0
+
+    def test_single_character_text(self) -> None:
+        """Test bubble handles single character text."""
+        bubble = SpeechBubble(text="!")
+
+        # Should still have valid minimum dimensions
+        assert bubble.bubble_width >= 60.0
+        assert bubble.bubble_height >= 40.0
+
+        data = bubble.get_render_data()
+        assert data["text"] == "!"
+
+    def test_whitespace_only_text(self) -> None:
+        """Test bubble handles whitespace-only text."""
+        bubble = SpeechBubble(text="   ")
+
+        # Should render with minimum size like empty text
+        assert bubble.bubble_width >= 60.0
+        assert bubble.bubble_height >= 40.0
+
+        data = bubble.get_render_data()
+        assert data["text"] == "   "
+
+
 class TestAutoPosotionBubbles:
     """Tests for auto_position_bubbles utility function."""
 

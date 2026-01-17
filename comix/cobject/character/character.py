@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any, Self
 
 import numpy as np
@@ -10,6 +11,8 @@ from comix.cobject.cobject import CObject
 
 if TYPE_CHECKING:
     from comix.cobject.bubble.bubble import Bubble
+
+logger = logging.getLogger(__name__)
 
 
 class Expression:
@@ -49,7 +52,11 @@ class Expression:
 
     @classmethod
     def from_name(cls, name: str) -> Expression:
-        """Create expression from preset name."""
+        """Create expression from preset name.
+
+        If the name is not found in presets, logs a warning and returns
+        the default neutral expression.
+        """
         presets = {
             # Standard expressions
             "neutral": cls("neutral", "normal", "normal", "normal"),
@@ -65,7 +72,15 @@ class Expression:
             "smirk": cls("smirk", "normal", "smirk", "asymmetric"),
             "crying": cls("crying", "tears", "frown", "worried"),
         }
-        return presets.get(name, cls())
+        if name not in presets:
+            logger.warning(
+                "Unknown expression '%s', falling back to 'neutral'. "
+                "Valid expressions: %s",
+                name,
+                ", ".join(sorted(presets.keys())),
+            )
+            return cls()
+        return presets[name]
 
 
 class Pose:
@@ -110,7 +125,11 @@ class Pose:
 
     @classmethod
     def from_name(cls, name: str) -> Pose:
-        """Create pose from preset name."""
+        """Create pose from preset name.
+
+        If the name is not found in presets, logs a warning and returns
+        the default standing pose.
+        """
         presets = {
             # Standard poses
             "standing": cls("standing", -15, 15, 0, 0, 0),
@@ -127,7 +146,15 @@ class Pose:
             "cheering": cls("cheering", -150, -150, 0, 0, -5),  # Both arms raised high
             "thinking": cls("thinking", 60, 15, 0, 0, 0),  # Hand on chin pose
         }
-        return presets.get(name, cls())
+        if name not in presets:
+            logger.warning(
+                "Unknown pose '%s', falling back to 'standing'. "
+                "Valid poses: %s",
+                name,
+                ", ".join(sorted(presets.keys())),
+            )
+            return cls()
+        return presets[name]
 
 
 class Character(CObject):

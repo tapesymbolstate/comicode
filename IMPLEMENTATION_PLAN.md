@@ -4,7 +4,7 @@
 
 **Current Git Tag: v0.1.11**
 
-All 5 phases have been implemented with **1507 tests passing** (1 skipped), ruff clean, and mypy passing. Current version: **v0.1.0**.
+All 5 phases have been implemented with **1517 tests passing** (1 skipped), ruff clean, and mypy passing. Current version: **v0.1.0**.
 
 ### Completed Phases Summary
 
@@ -174,6 +174,9 @@ All 5 phases have been implemented with **1507 tests passing** (1 skipped), ruff
   - All examples execute without errors and produce PNG output
   - Includes examples/README.md with usage instructions
 - **Character Height Validation**: Added validation for positive height requirement. `Character(height=0)` or negative heights now raise `ValueError` with descriptive message. Also fixed parser/expression consistency by removing invalid "smug" expression (4 new tests).
+- **Bubble Edge Case Tests**: Added 7 edge case tests for empty text, very long text (1000+ chars), explicit newlines, single character, and whitespace-only text
+- **Warning Logging for Unknown Expressions/Poses**: Expression.from_name() and Pose.from_name() now log warnings when unknown names are provided, listing valid options to help users fix typos
+- **Spec Updates**: Updated character-basics.md and getting-started.md to reflect implementation status (character styles, expressions, poses exceed original scope)
 
 ### Technical Stack
 

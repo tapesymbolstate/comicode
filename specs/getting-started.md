@@ -25,11 +25,11 @@ Users need a clear, working starting point to understand how to use the Comix li
 - [x] Helpful error messages when required parameters are missing
 - [x] Default values make sense (reasonable panel sizes, font sizes, bubble padding)
 
-### Won't Have (This Iteration)
-- [x] Complex layouts beyond simple grid (defer to `page-layouts.md`) - *Implemented: GridLayout, FlowLayout, ConstraintLayout*
-- [x] Custom character styles beyond Stickman (defer to future specs) - *Implemented: 8 character types*
-- [x] Animation or effects (defer to `effects.md`) - *Implemented: 6 effect types*
-- [x] Parser/DSL syntax (defer to `parser.md`) - *Implemented: Full parser*
+### Implemented Beyond Original Scope
+- [x] Complex layouts: GridLayout, FlowLayout, ConstraintLayout
+- [x] 8 character styles: Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon
+- [x] 6 effect types: AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect
+- [x] Full parser for DSL markup syntax
 
 ## Context
 

@@ -31,10 +31,13 @@ Without working character rendering, comics appear broken or incomplete.
 - [x] Character color can be customized
 - [x] Character has a name property for debugging
 
-### Won't Have (This Iteration)
-- [x] Detailed character styles beyond Stickman - *Implemented: 8 character types (Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon)*
-- [x] Complex poses beyond 3 basic presets - *Implemented: 12 poses*
-- [ ] Custom body part proportions
+### Implemented Beyond Original Scope
+- [x] 8 character styles: Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon
+- [x] 11 expressions: neutral, happy, sad, angry, surprised, confused, sleepy, excited, scared, smirk, crying
+- [x] 12 poses: standing, sitting, waving, pointing, walking, running, jumping, dancing, lying, kneeling, cheering, thinking
+
+### Won't Have
+- [ ] Custom body part proportions (beyond character style presets)
 - [ ] Clothing or accessories
 - [ ] Shadows or 3D effects
 
@@ -68,14 +71,8 @@ Without working character rendering, comics appear broken or incomplete.
 
 ### Implementation Notes
 
-**Current Issue Identified**: Stickman rendering appears incomplete (only head renders).
-This suggests:
-1. `generate_points()` may not be called or incomplete
-2. Renderer may not be processing all body parts
-3. Body parts may be rendered outside visible bounds
-
-**Expected Behavior**:
-- Head: Circle at top (15% of height)
+**Character Proportions** (implemented):
+- Head: Circle at top (15% of height for Stickman, varies by style)
 - Body: Vertical line from head to pelvis (50% of height)
 - Arms: Two lines from shoulders (30% down from head)
 - Legs: Two lines from pelvis to feet (35% of height)
@@ -220,11 +217,6 @@ From acceptance criteria, tests must verify:
    - Test: `.set_pose("waving")` changes arm positions
    - Test: Unknown expression falls back to "neutral" without error
 
-## Bug Fixes Required
+## Implementation Status
 
-Based on current diagnosis (only head renders):
-
-1. **Investigate** `Stickman.generate_points()` - ensure all body parts generate points
-2. **Investigate** SVG/Cairo renderers - ensure they process all point arrays
-3. **Verify** coordinate system - body parts may be positioned off-screen
-4. **Add tests** for complete rendering (currently tests may not catch this)
+All character rendering issues have been resolved. Full expression and pose rendering is implemented in both SVG and Cairo renderers. See `IMPLEMENTATION_PLAN.md` for details on bug fixes and test coverage.

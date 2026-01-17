@@ -34,10 +34,30 @@ class TestExpression:
         assert expr.name == "happy"
         assert expr.mouth == "smile"
 
-    def test_unknown_name(self):
-        """Test unknown expression name returns default."""
-        expr = Expression.from_name("unknown")
+    def test_unknown_name(self, caplog: pytest.LogCaptureFixture):
+        """Test unknown expression name returns default and logs warning."""
+        import logging
+
+        with caplog.at_level(logging.WARNING, logger="comix.cobject.character.character"):
+            expr = Expression.from_name("unknown")
+
         assert expr.name == "neutral"
+        # Verify warning was logged
+        assert len(caplog.records) == 1
+        assert "Unknown expression 'unknown'" in caplog.text
+        assert "falling back to 'neutral'" in caplog.text
+        assert "Valid expressions:" in caplog.text
+
+    def test_unknown_expression_typo(self, caplog: pytest.LogCaptureFixture):
+        """Test common typo in expression name logs helpful warning."""
+        import logging
+
+        with caplog.at_level(logging.WARNING, logger="comix.cobject.character.character"):
+            expr = Expression.from_name("hapy")  # Common typo for "happy"
+
+        assert expr.name == "neutral"
+        # Warning should include valid expressions for user reference
+        assert "happy" in caplog.text  # Help user find correct spelling
 
     def test_sleepy_expression(self):
         """Test sleepy expression preset."""
@@ -101,6 +121,31 @@ class TestPose:
         pose = Pose.from_name("waving")
         assert pose.name == "waving"
         assert pose.left_arm == -135
+
+    def test_unknown_pose_name(self, caplog: pytest.LogCaptureFixture):
+        """Test unknown pose name returns default and logs warning."""
+        import logging
+
+        with caplog.at_level(logging.WARNING, logger="comix.cobject.character.character"):
+            pose = Pose.from_name("unknown_pose")
+
+        assert pose.name == "standing"
+        # Verify warning was logged
+        assert len(caplog.records) == 1
+        assert "Unknown pose 'unknown_pose'" in caplog.text
+        assert "falling back to 'standing'" in caplog.text
+        assert "Valid poses:" in caplog.text
+
+    def test_unknown_pose_typo(self, caplog: pytest.LogCaptureFixture):
+        """Test common typo in pose name logs helpful warning."""
+        import logging
+
+        with caplog.at_level(logging.WARNING, logger="comix.cobject.character.character"):
+            pose = Pose.from_name("waveing")  # Common typo for "waving"
+
+        assert pose.name == "standing"
+        # Warning should include valid poses for user reference
+        assert "waving" in caplog.text  # Help user find correct spelling
 
     def test_jumping_pose(self):
         """Test jumping pose preset."""

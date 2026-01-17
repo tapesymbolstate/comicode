@@ -101,6 +101,323 @@ class TestGridLayout:
         assert cell["center_y"] == 150.0
 
 
+class TestGridLayoutEdgeCases:
+    """Edge case tests for GridLayout class."""
+
+    def test_zero_rows_cols_enforces_minimum(self):
+        """Test that zero rows/cols are enforced to minimum of 1."""
+        layout = GridLayout(rows=0, cols=0)
+        assert layout.rows == 1
+        assert layout.cols == 1
+
+    def test_negative_rows_cols_enforces_minimum(self):
+        """Test that negative rows/cols are enforced to minimum of 1."""
+        layout = GridLayout(rows=-5, cols=-3)
+        assert layout.rows == 1
+        assert layout.cols == 1
+
+    def test_single_cell_grid_positioning(self):
+        """Test 1x1 grid positioning."""
+        layout = GridLayout(
+            rows=1,
+            cols=1,
+            width=200.0,
+            height=300.0,
+            gutter=0.0,
+        )
+        positions = layout.calculate_positions(1)
+
+        assert len(positions) == 1
+        assert positions[0]["center_x"] == 100.0
+        assert positions[0]["center_y"] == 150.0
+        assert positions[0]["width"] == 200.0
+        assert positions[0]["height"] == 300.0
+        assert positions[0]["row"] == 0
+        assert positions[0]["col"] == 0
+
+    def test_single_cell_with_gutter(self):
+        """Test 1x1 grid with gutter (gutter should not affect single cell)."""
+        layout = GridLayout(
+            rows=1,
+            cols=1,
+            width=200.0,
+            height=300.0,
+            gutter=50.0,
+        )
+        positions = layout.calculate_positions(1)
+
+        # Gutter only applies between cells, so single cell gets full size
+        assert positions[0]["width"] == 200.0
+        assert positions[0]["height"] == 300.0
+
+    def test_single_cell_with_offset(self):
+        """Test 1x1 grid with offsets."""
+        layout = GridLayout(
+            rows=1,
+            cols=1,
+            width=100.0,
+            height=100.0,
+            gutter=0.0,
+            offset_x=50.0,
+            offset_y=25.0,
+        )
+        positions = layout.calculate_positions(1)
+
+        assert positions[0]["center_x"] == 100.0  # 50 + 50
+        assert positions[0]["center_y"] == 75.0  # 25 + 50
+
+    def test_large_grid_dimensions(self):
+        """Test grid with many rows and columns (100x100)."""
+        layout = GridLayout(
+            rows=100,
+            cols=100,
+            width=10000.0,
+            height=10000.0,
+            gutter=0.0,
+        )
+        positions = layout.calculate_positions(100)  # Only first 100 cells
+
+        assert len(positions) == 100
+        # Cell size should be 100x100
+        assert positions[0]["width"] == 100.0
+        assert positions[0]["height"] == 100.0
+        # Last cell in first row
+        assert positions[99]["row"] == 0
+        assert positions[99]["col"] == 99
+
+    def test_very_large_grid_with_all_cells(self):
+        """Test grid with 50x50 = 2500 cells."""
+        layout = GridLayout(
+            rows=50,
+            cols=50,
+            width=5000.0,
+            height=5000.0,
+            gutter=0.0,
+        )
+        positions = layout.calculate_positions()  # All cells
+
+        assert len(positions) == 2500
+        # Verify last cell position
+        last = positions[-1]
+        assert last["row"] == 49
+        assert last["col"] == 49
+
+    def test_calculate_positions_zero_cells_treated_as_all(self):
+        """Test that zero num_cells is treated as falsy and returns all cells.
+
+        Note: The implementation uses `num_cells if num_cells else ...`,
+        so 0 is treated as None (falsy) and returns all cells.
+        """
+        layout = GridLayout(rows=3, cols=3, width=300.0, height=300.0)
+        positions = layout.calculate_positions(0)
+
+        # 0 is falsy, so treated same as None - returns all 9 cells
+        assert len(positions) == 9
+
+    def test_calculate_positions_none_returns_all(self):
+        """Test None num_cells returns all cells."""
+        layout = GridLayout(rows=2, cols=3, width=300.0, height=200.0, gutter=0.0)
+        positions = layout.calculate_positions(None)
+
+        assert len(positions) == 6
+
+    def test_calculate_positions_more_than_available(self):
+        """Test requesting more cells than available stops at grid bounds."""
+        layout = GridLayout(rows=2, cols=2, width=200.0, height=200.0, gutter=0.0)
+        positions = layout.calculate_positions(10)  # Only 4 cells exist
+
+        assert len(positions) == 4
+
+    def test_very_small_dimensions(self):
+        """Test grid with very small dimensions."""
+        layout = GridLayout(
+            rows=2,
+            cols=2,
+            width=4.0,
+            height=4.0,
+            gutter=0.0,
+        )
+        positions = layout.calculate_positions(4)
+
+        assert len(positions) == 4
+        assert positions[0]["width"] == 2.0
+        assert positions[0]["height"] == 2.0
+
+    def test_zero_gutter(self):
+        """Test grid with explicit zero gutter."""
+        layout = GridLayout(
+            rows=2,
+            cols=2,
+            width=200.0,
+            height=200.0,
+            gutter=0.0,
+        )
+        positions = layout.calculate_positions(4)
+
+        # Cells should touch with no gap
+        assert positions[0]["width"] == 100.0
+        assert positions[1]["center_x"] - positions[0]["center_x"] == 100.0
+
+    def test_large_gutter_relative_to_size(self):
+        """Test grid where gutter is large relative to total size."""
+        layout = GridLayout(
+            rows=3,
+            cols=3,
+            width=100.0,
+            height=100.0,
+            gutter=20.0,  # 2 gutters = 40px, leaving 60px for 3 cells
+        )
+        positions = layout.calculate_positions(9)
+
+        # Cell width = (100 - 40) / 3 = 20
+        assert positions[0]["width"] == 20.0
+        assert positions[0]["height"] == 20.0
+
+    def test_negative_offset(self):
+        """Test grid with negative offsets."""
+        layout = GridLayout(
+            rows=1,
+            cols=1,
+            width=100.0,
+            height=100.0,
+            gutter=0.0,
+            offset_x=-50.0,
+            offset_y=-25.0,
+        )
+        positions = layout.calculate_positions(1)
+
+        assert positions[0]["center_x"] == 0.0  # -50 + 50
+        assert positions[0]["center_y"] == 25.0  # -25 + 50
+
+    def test_large_offset(self):
+        """Test grid with offsets larger than page dimensions."""
+        layout = GridLayout(
+            rows=1,
+            cols=1,
+            width=100.0,
+            height=100.0,
+            gutter=0.0,
+            offset_x=500.0,
+            offset_y=300.0,
+        )
+        positions = layout.calculate_positions(1)
+
+        # Cell will be positioned outside original bounds
+        assert positions[0]["center_x"] == 550.0  # 500 + 50
+        assert positions[0]["center_y"] == 350.0  # 300 + 50
+
+    def test_get_cell_first_cell(self):
+        """Test get_cell for first cell (0,0)."""
+        layout = GridLayout(rows=3, cols=3, width=300.0, height=300.0, gutter=0.0)
+        cell = layout.get_cell(0, 0)
+
+        assert cell["row"] == 0
+        assert cell["col"] == 0
+        assert cell["center_x"] == 50.0
+        assert cell["center_y"] == 50.0
+
+    def test_get_cell_last_cell(self):
+        """Test get_cell for last cell."""
+        layout = GridLayout(rows=3, cols=3, width=300.0, height=300.0, gutter=0.0)
+        cell = layout.get_cell(2, 2)
+
+        assert cell["row"] == 2
+        assert cell["col"] == 2
+        assert cell["center_x"] == 250.0
+        assert cell["center_y"] == 250.0
+
+    def test_get_cell_with_gutter(self):
+        """Test get_cell with gutters."""
+        layout = GridLayout(
+            rows=2,
+            cols=2,
+            width=210.0,
+            height=210.0,
+            gutter=10.0,
+        )
+        # Cell size = (210-10)/2 = 100
+        cell = layout.get_cell(1, 1)
+
+        assert cell["width"] == 100.0
+        # center_x = 0 + 1*(100+10) + 50 = 160
+        assert cell["center_x"] == 160.0
+
+    def test_get_cell_out_of_bounds(self):
+        """Test get_cell with indices beyond grid bounds (no validation)."""
+        layout = GridLayout(rows=2, cols=2, width=200.0, height=200.0, gutter=0.0)
+        # Note: GridLayout doesn't validate bounds, it calculates position anyway
+        cell = layout.get_cell(5, 5)
+
+        # Position will be calculated even though it's outside the grid
+        assert cell["row"] == 5
+        assert cell["col"] == 5
+
+    def test_extreme_aspect_ratio_wide(self):
+        """Test grid with extreme width:height ratio."""
+        layout = GridLayout(
+            rows=1,
+            cols=10,
+            width=1000.0,
+            height=10.0,
+            gutter=0.0,
+        )
+        positions = layout.calculate_positions(10)
+
+        assert len(positions) == 10
+        # Each cell: 100x10
+        assert positions[0]["width"] == 100.0
+        assert positions[0]["height"] == 10.0
+
+    def test_extreme_aspect_ratio_tall(self):
+        """Test grid with extreme height:width ratio."""
+        layout = GridLayout(
+            rows=10,
+            cols=1,
+            width=10.0,
+            height=1000.0,
+            gutter=0.0,
+        )
+        positions = layout.calculate_positions(10)
+
+        assert len(positions) == 10
+        # Each cell: 10x100
+        assert positions[0]["width"] == 10.0
+        assert positions[0]["height"] == 100.0
+
+    def test_floating_point_dimensions(self):
+        """Test grid with non-integer dimensions."""
+        layout = GridLayout(
+            rows=3,
+            cols=3,
+            width=100.7,
+            height=100.3,
+            gutter=0.5,
+        )
+        positions = layout.calculate_positions(9)
+
+        assert len(positions) == 9
+        # Cell width = (100.7 - 1.0) / 3 = 33.233...
+        assert positions[0]["width"] == pytest.approx(33.2333, rel=1e-3)
+
+    def test_cell_position_consistency(self):
+        """Test that calculate_positions and get_cell return consistent results."""
+        layout = GridLayout(
+            rows=3,
+            cols=4,
+            width=400.0,
+            height=300.0,
+            gutter=5.0,
+        )
+        positions = layout.calculate_positions(12)
+
+        for pos in positions:
+            cell = layout.get_cell(pos["row"], pos["col"])
+            assert cell["center_x"] == pytest.approx(pos["center_x"])
+            assert cell["center_y"] == pytest.approx(pos["center_y"])
+            assert cell["width"] == pytest.approx(pos["width"])
+            assert cell["height"] == pytest.approx(pos["height"])
+
+
 class TestFlowLayout:
     """Tests for FlowLayout class."""
 

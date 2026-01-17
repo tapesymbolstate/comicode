@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-All 5 phases have been implemented with **1370 tests passing** (1 skipped), ruff clean, and mypy passing (8 unused type:ignore warnings). Current version: **v0.1.0**.
+All 5 phases have been implemented with **1460 tests passing** (1 skipped), ruff clean, and mypy passing (8 unused type:ignore warnings). Current version: **v0.1.0**.
 
 ### Completed Phases Summary
 
@@ -189,25 +189,36 @@ All 5 phases have been implemented with **1370 tests passing** (1 skipped), ruff
 
 2. **Fix parser/character expression inconsistency** - COMPLETE: Removed "smug" from parser's EXPRESSIONS set. Parser now has 11 expressions matching Expression class.
 
-### P2 - Medium (Test coverage improvements)
+### Completed P2 Items
 
-These items improve reliability and catch edge case bugs:
+3. **Expand bezier utility test coverage** - COMPLETE: Added 42 edge case tests in `tests/test_utils.py::TestBezierUtilsExtendedEdgeCases`. Tests cover:
+   - Bezier curve edge cases (large num_points, identical control points, large coordinates, float precision)
+   - Bubble path dimension edge cases (very small/large dimensions, extreme aspect ratios)
+   - Corner radius edge cases (zero, very small, equal to half min dimension, mixed)
+   - Points per segment edge cases (1, 2, 100+ points)
+   - Wobble edge cases (extreme, tiny, unknown mode)
+   - Tail points edge cases (small/large bubbles, wide/narrow tips, zero tip width)
+   - Style-specific tests (shout, thought, narrator dimensions)
+   - Numerical stability tests (closed loops, no NaN/inf values)
 
-3. **Expand bezier utility test coverage** - The bezier module has 309 lines of code with limited dedicated testing:
-   - Add tests for edge cases in curve calculations
-   - Test boundary conditions for bubble path generation
-   - Location: `comix/utils/bezier.py`
+4. **Add GridLayout edge case tests** - COMPLETE: Added 23 edge case tests in `tests/test_layout.py::TestGridLayoutEdgeCases`. Tests cover:
+   - Zero/negative rows/cols enforcement to minimum
+   - Single cell grid positioning
+   - Large grid dimensions (100x100, 50x50 = 2500 cells)
+   - Zero cells, None num_cells, more than available cells
+   - Very small dimensions, extreme aspect ratios
+   - Large gutter relative to size
+   - Negative/large offsets
+   - get_cell edge cases (first, last, out of bounds)
+   - Floating point dimensions
+   - Consistency between calculate_positions and get_cell
 
-4. **Add GridLayout edge case tests** - GridLayout needs tests for:
-   - Empty grid scenarios
-   - Single cell grids
-   - Very large grid dimensions
-   - Items that don't fit in cells
-
-5. **Add constraint solver edge case tests** - ConstraintLayout solver needs additional tests for:
-   - Complex circular dependency detection
-   - Priority conflict resolution
-   - Constraints with no solution
+5. **Add constraint solver edge case tests** - COMPLETE: Added 25 edge case tests in `tests/test_constraints.py`. Tests cover:
+   - Complex circular dependencies (3-way, 5-element chains, mixed resolvable/circular)
+   - Priority conflict resolution (documented actual behavior: later constraints override)
+   - Constraints with no solution (conflicting left/right/width, negative dimensions, out of bounds)
+   - Solver iteration limits (custom max_iterations)
+   - Arithmetic edge cases (divide by zero, negative multiplier, float precision, chained operations)
 
 ### P3 - Low (Minor improvements)
 

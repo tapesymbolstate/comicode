@@ -15,25 +15,25 @@ Without visible bubble borders and proper attachment, dialogue appears as floati
 ## Acceptance Criteria
 
 ### Must Have
-- [ ] SpeechBubble renders with visible border (stroke around bubble)
-- [ ] SpeechBubble renders with white/light background (fill color)
-- [ ] SpeechBubble displays text inside the bubble boundaries
-- [ ] SpeechBubble has a tail pointing toward attached character
-- [ ] SpeechBubble auto-sizes width and height to fit text
-- [ ] Long text automatically wraps to multiple lines
-- [ ] `character.say("text")` creates and attaches bubble automatically
-- [ ] Bubble can be manually positioned with `.move_to(x, y)` if needed
+- [x] SpeechBubble renders with visible border (stroke around bubble)
+- [x] SpeechBubble renders with white/light background (fill color)
+- [x] SpeechBubble displays text inside the bubble boundaries
+- [x] SpeechBubble has a tail pointing toward attached character
+- [x] SpeechBubble auto-sizes width and height to fit text
+- [x] Long text automatically wraps to multiple lines
+- [x] `character.say("text")` creates and attaches bubble automatically
+- [x] Bubble can be manually positioned with `.move_to(x, y)` if needed
 
 ### Should Have
-- [ ] Bubble supports different types: Speech, Thought, Shout, Whisper, Narrator
-- [ ] ThoughtBubble has cloud-like border (rounded/wavy)
-- [ ] ShoutBubble has jagged/spiky border
-- [ ] WhisperBubble has dashed border
-- [ ] NarratorBubble has rectangular border with no tail
-- [ ] `character.think("text")` creates ThoughtBubble
-- [ ] `character.shout("text")` creates ShoutBubble
-- [ ] Bubble padding can be customized
-- [ ] Text alignment can be set (left, center, right)
+- [x] Bubble supports different types: Speech, Thought, Shout, Whisper, Narrator
+- [x] ThoughtBubble has cloud-like border (rounded/wavy)
+- [x] ShoutBubble has jagged/spiky border
+- [x] WhisperBubble has dashed border
+- [x] NarratorBubble has rectangular border with no tail
+- [x] `character.think("text")` creates ThoughtBubble
+- [x] `character.shout("text")` creates ShoutBubble
+- [x] Bubble padding can be customized
+- [x] Text alignment can be set (left, center, right)
 
 ### Won't Have (This Iteration)
 - [ ] Bubbles with multiple tails (pointing to multiple characters)

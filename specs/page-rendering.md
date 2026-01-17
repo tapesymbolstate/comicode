@@ -15,23 +15,23 @@ Without working rendering, all the comic creation work produces no usable output
 ## Acceptance Criteria
 
 ### Must Have
-- [ ] `page.render("output.png")` creates PNG file with visible comic content
-- [ ] `page.render("output.pdf", format="pdf")` creates PDF file (requires pycairo)
-- [ ] PNG rendering works without pycairo (SVG fallback)
-- [ ] Rendered output matches specified page dimensions (width x height)
-- [ ] Rendered output includes all panels, characters, bubbles, and text
-- [ ] SVG renderer always available as baseline
-- [ ] Clear error if pycairo not installed when PDF requested
-- [ ] File overwrites existing file at same path
+- [x] `page.render("output.png")` creates PNG file with visible comic content
+- [x] `page.render("output.pdf", format="pdf")` creates PDF file (requires pycairo)
+- [x] PNG rendering works without pycairo (SVG fallback)
+- [x] Rendered output matches specified page dimensions (width x height)
+- [x] Rendered output includes all panels, characters, bubbles, and text
+- [x] SVG renderer always available as baseline
+- [x] Clear error if pycairo not installed when PDF requested
+- [x] File overwrites existing file at same path
 
 ### Should Have
-- [ ] Quality parameter: "low", "medium" (default), "high"
-- [ ] Low quality renders faster (72 DPI, simplified)
-- [ ] High quality renders slower (300 DPI, full detail)
-- [ ] DPI parameter can be explicitly set for PNG output
-- [ ] Multi-page PDF support via Book class
+- [x] Quality parameter: "low", "medium" (default), "high"
+- [x] Low quality renders faster (72 DPI, simplified)
+- [x] High quality renders slower (300 DPI, full detail)
+- [x] DPI parameter can be explicitly set for PNG output
+- [x] Multi-page PDF support via Book class
 - [ ] Progress callback for long-running renders
-- [ ] Render returns path to created file
+- [x] Render returns path to created file
 
 ### Won't Have (This Iteration)
 - [ ] Animated GIF output (defer to future)

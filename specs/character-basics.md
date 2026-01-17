@@ -15,25 +15,25 @@ Without working character rendering, comics appear broken or incomplete.
 ## Acceptance Criteria
 
 ### Must Have
-- [ ] Stickman character renders completely (head circle, body line, 2 arms, 2 legs)
-- [ ] Character can be positioned using `.move_to(x, y)`
-- [ ] Character can be positioned relative to other objects using `.next_to(other)`
-- [ ] Character height can be specified and affects all body parts proportionally
-- [ ] Character defaults to facing right, can face left with `.face("left")`
-- [ ] Character has default "neutral" expression
-- [ ] Character can be created with simple code: `char = Stickman()`
+- [x] Stickman character renders completely (head circle, body line, 2 arms, 2 legs)
+- [x] Character can be positioned using `.move_to(x, y)`
+- [x] Character can be positioned relative to other objects using `.next_to(other)`
+- [x] Character height can be specified and affects all body parts proportionally
+- [x] Character defaults to facing right, can face left with `.face("left")`
+- [x] Character has default "neutral" expression
+- [x] Character can be created with simple code: `char = Stickman()`
 
 ### Should Have
-- [ ] Character supports basic expressions: neutral, happy, sad, angry, surprised
-- [ ] Character supports basic poses: standing, sitting, waving
-- [ ] Character.say() method returns SpeechBubble that auto-attaches
-- [ ] Character.think() method returns ThoughtBubble that auto-attaches
-- [ ] Character color can be customized
-- [ ] Character has a name property for debugging
+- [x] Character supports basic expressions: neutral, happy, sad, angry, surprised - *Implemented: 11 expressions*
+- [x] Character supports basic poses: standing, sitting, waving - *Implemented: 12 poses*
+- [x] Character.say() method returns SpeechBubble that auto-attaches
+- [x] Character.think() method returns ThoughtBubble that auto-attaches
+- [x] Character color can be customized
+- [x] Character has a name property for debugging
 
 ### Won't Have (This Iteration)
-- [ ] Detailed character styles beyond Stickman (SimpleFace, Robot, etc. exist but not required for basic workflow)
-- [ ] Complex poses beyond 3 basic presets
+- [x] Detailed character styles beyond Stickman - *Implemented: 8 character types (Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon)*
+- [x] Complex poses beyond 3 basic presets - *Implemented: 12 poses*
 - [ ] Custom body part proportions
 - [ ] Clothing or accessories
 - [ ] Shadows or 3D effects
@@ -193,7 +193,7 @@ panel.add_content(char)
 - [x] Should characters have default fill color or just stroke? **Decision**: Stroke only by default, optional fill
 - [x] Should `.face()` mirror the geometry or just track direction? **Decision**: Mirror geometry
 - [x] What's the default character height? **Decision**: 100 pixels
-- [ ] Should character support `.copy()` for creating duplicates? **Decision needed**
+- [x] Should character support `.copy()` for creating duplicates? **Decision**: Yes, implemented via `CObject.copy()`
 
 ## Test Requirements
 

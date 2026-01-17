@@ -9,27 +9,27 @@ Users need a clear, working starting point to understand how to use the Comix li
 ## Acceptance Criteria
 
 ### Must Have
-- [ ] Developer can create a Page object with default or custom dimensions
-- [ ] Developer can add Panel objects to a Page
-- [ ] Developer can create Stickman characters and position them in panels
-- [ ] Developer can add SpeechBubble to characters using `.say()` method
-- [ ] Developer can render the page to PNG format
-- [ ] The rendered output displays complete stick figures (head, body, arms, legs)
-- [ ] The rendered output displays speech bubbles with text inside bordered boxes
-- [ ] The entire workflow completes in under 10 lines of code for a simple comic
-- [ ] Font fallback works automatically if specified font is unavailable
+- [x] Developer can create a Page object with default or custom dimensions
+- [x] Developer can add Panel objects to a Page
+- [x] Developer can create Stickman characters and position them in panels
+- [x] Developer can add SpeechBubble to characters using `.say()` method
+- [x] Developer can render the page to PNG format
+- [x] The rendered output displays complete stick figures (head, body, arms, legs)
+- [x] The rendered output displays speech bubbles with text inside bordered boxes
+- [x] The entire workflow completes in under 10 lines of code for a simple comic
+- [x] Font fallback works automatically if specified font is unavailable
 
 ### Should Have
-- [ ] Developer can render to PDF format in addition to PNG
-- [ ] Developer can manually position speech bubbles with `.move_to()` if automatic attachment doesn't fit
-- [ ] Helpful error messages when required parameters are missing
-- [ ] Default values make sense (reasonable panel sizes, font sizes, bubble padding)
+- [x] Developer can render to PDF format in addition to PNG
+- [x] Developer can manually position speech bubbles with `.move_to()` if automatic attachment doesn't fit
+- [x] Helpful error messages when required parameters are missing
+- [x] Default values make sense (reasonable panel sizes, font sizes, bubble padding)
 
 ### Won't Have (This Iteration)
-- [ ] Complex layouts beyond simple grid (defer to `page-layouts.md`)
-- [ ] Custom character styles beyond Stickman (defer to future specs)
-- [ ] Animation or effects (defer to `effects.md`)
-- [ ] Parser/DSL syntax (defer to `parser.md`)
+- [x] Complex layouts beyond simple grid (defer to `page-layouts.md`) - *Implemented: GridLayout, FlowLayout, ConstraintLayout*
+- [x] Custom character styles beyond Stickman (defer to future specs) - *Implemented: 8 character types*
+- [x] Animation or effects (defer to `effects.md`) - *Implemented: 6 effect types*
+- [x] Parser/DSL syntax (defer to `parser.md`) - *Implemented: Full parser*
 
 ## Context
 
@@ -147,7 +147,7 @@ except IOError as e:
 - [x] Should `Page.render()` create parent directories if they don't exist? **Decision**: No, fail fast with clear error
 - [x] Should speech bubbles auto-size based on text length? **Decision**: Yes, with optional fixed width
 - [x] What's the default DPI for PNG rendering? **Decision**: 150 DPI (balance between quality and file size)
-- [ ] Should there be a `Page.show()` method for quick preview in browser? **Decision needed**
+- [x] Should there be a `Page.show()` method for quick preview in browser? **Decision**: Yes, implemented with auto-cleanup on exit
 
 ## Success Metrics
 

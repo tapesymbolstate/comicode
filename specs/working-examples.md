@@ -16,25 +16,25 @@ Without working examples, developers struggle to bridge the gap from API documen
 ## Acceptance Criteria
 
 ### Must Have
-- [ ] Example 1: Two-panel dialogue (2 stick figures talking)
-- [ ] Example 2: Four-panel comic (4koma style story)
-- [ ] Example 3: Single panel with multiple characters
-- [ ] Example 4: Character expressions showcase (happy, sad, angry, etc.)
-- [ ] Example 5: Different bubble types (speech, thought, shout)
-- [ ] All examples execute without errors using `uv run python example_name.py`
-- [ ] All examples produce visible PNG output showing complete comic
-- [ ] All examples are under 50 lines of code
-- [ ] Each example has clear comments explaining each step
+- [x] Example 1: Two-panel dialogue (2 stick figures talking)
+- [x] Example 2: Four-panel comic (4koma style story)
+- [x] Example 3: Single panel with multiple characters
+- [x] Example 4: Character expressions showcase (happy, sad, angry, etc.)
+- [x] Example 5: Different bubble types (speech, thought, shout)
+- [x] All examples execute without errors using `uv run python example_name.py`
+- [x] All examples produce visible PNG output showing complete comic
+- [x] All examples are under 50 lines of code
+- [x] Each example has clear comments explaining each step
 
 ### Should Have
-- [ ] Example 6: Multi-page PDF comic
-- [ ] Example 7: Custom page layout (3x2 grid)
-- [ ] Example 8: Manual positioning and styling
-- [ ] Example 9: Using templates (FourKoma, TwoByTwo, etc.)
-- [ ] Example 10: Error handling and fallbacks
-- [ ] examples/ directory in project root
-- [ ] README in examples/ explaining how to run them
-- [ ] Output PNG files committed to examples/output/ for preview
+- [x] Example 6: Multi-page PDF comic
+- [x] Example 7: Custom page layout (3x2 grid)
+- [x] Example 8: Manual positioning and styling
+- [x] Example 9: Using templates (FourKoma, TwoByTwo, etc.)
+- [x] Example 10: Error handling and fallbacks
+- [x] examples/ directory in project root
+- [x] README in examples/ explaining how to run them
+- [x] Output PNG files committed to examples/output/ for preview
 
 ### Won't Have (This Iteration)
 - [ ] Complex multi-page stories (defer to tutorials)
@@ -360,10 +360,10 @@ Feel free to modify these examples to experiment:
 
 ## Open Questions
 
-- [ ] Should examples be run as part of CI/CD tests? **Decision needed**
-- [ ] Should example output PNG files be committed to repo? **Decision**: Yes, for preview
-- [ ] Should examples support command-line arguments? **Decision**: No, keep simple
-- [ ] Should there be an index.html to preview all examples? **Decision needed** (nice to have)
+- [x] Should examples be run as part of CI/CD tests? **Decision**: Deferred - examples are tested via manual verification during development
+- [x] Should example output PNG files be committed to repo? **Decision**: Yes, for preview
+- [x] Should examples support command-line arguments? **Decision**: No, keep simple
+- [x] Should there be an index.html to preview all examples? **Decision**: Deferred - nice to have for future
 
 ## Success Metrics
 

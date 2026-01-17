@@ -78,6 +78,7 @@ from comix.page.templates import (
 )
 from comix.parser import parse_markup, MarkupParser, ParseError
 from comix.renderer.svg_renderer import SVGRenderer
+from comix.renderer.html_renderer import HTMLRenderer
 from comix.style.style import (
     Style,
     MANGA_STYLE,
@@ -231,6 +232,7 @@ __all__ = [
     # Renderers
     "SVGRenderer",
     "CairoRenderer",
+    "HTMLRenderer",
     # Style
     "Style",
     "MANGA_STYLE",

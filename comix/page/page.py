@@ -186,13 +186,21 @@ class Page:
         output_path: str = "output.svg",
         format: str | None = None,
         quality: str = "medium",
+        **html_options: object,
     ) -> str:
         """Render the page to a file.
 
         Args:
             output_path: Output file path.
-            format: Output format ("svg", "png", "pdf"). Auto-detected from path if None.
+            format: Output format ("svg", "png", "pdf", "html"). Auto-detected from path if None.
             quality: Rendering quality ("low", "medium", "high").
+            **html_options: Additional options for HTML rendering:
+                - title: HTML document title
+                - theme: Initial theme ("light" or "dark")
+                - enable_zoom: Enable zoom functionality (default True)
+                - enable_pan: Enable pan functionality (default True)
+                - enable_hover: Enable hover effects (default True)
+                - enable_fullscreen: Enable fullscreen mode (default True)
 
         Returns:
             Path to the rendered file.
@@ -213,6 +221,11 @@ class Page:
 
             cairo_renderer = CairoRenderer(self)
             return cairo_renderer.render(output_path, format=format, quality=quality)  # type: ignore[arg-type]
+        elif format in ("html", "htm"):
+            from comix.renderer.html_renderer import HTMLRenderer
+
+            html_renderer = HTMLRenderer(self, **html_options)  # type: ignore[arg-type]
+            return html_renderer.render(output_path)
         else:
             raise NotImplementedError(f"Format '{format}' not yet implemented")
 

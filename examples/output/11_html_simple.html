@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Comic Demo</title>
+    <meta name="generator" content="Comix - Python Comic Creation Library">
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --bg-tertiary: #e5e5e5;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --border: #d4d4d4;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-dark {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #404040;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent: #60a5fa;
+            --accent-hover: #93c5fd;
+            --border: #404040;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .comic-viewer {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 16px;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .toolbar-left, .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .page-indicator {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            min-width: 36px;
+            height: 36px;
+        }
+
+        .btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-icon {
+            padding: 6px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 4px;
+        }
+
+        .zoom-display {
+            min-width: 60px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .canvas-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background: var(--bg-tertiary);
+            cursor: grab;
+        }
+
+        .canvas-container:active {
+            cursor: grabbing;
+        }
+
+        .canvas {
+            position: absolute;
+            transform-origin: 0 0;
+            transition: none;
+        }
+
+        .canvas.animating {
+            transition: transform 0.3s ease-out;
+        }
+
+        .svg-container {
+            background: white;
+            box-shadow: 0 4px 20px var(--shadow);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .svg-container svg {
+            display: block;
+        }
+
+        /* Hover effects for panels */
+        .svg-container.hover-enabled svg g[data-panel] {
+            transition: filter 0.2s ease, transform 0.2s ease;
+            transform-origin: center;
+        }
+
+        .svg-container.hover-enabled svg g[data-panel]:hover {
+            filter: brightness(1.02);
+            cursor: pointer;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 50%;
+            transform: translateY(50%);
+            z-index: 50;
+        }
+
+        .navigation.prev {
+            left: 16px;
+        }
+
+        .navigation.next {
+            right: 16px;
+        }
+
+        .nav-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: all 0.15s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-btn:disabled:hover {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-color: var(--border);
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 16px;
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .separator {
+            color: var(--border);
+        }
+
+        /* Fullscreen mode */
+        .comic-viewer:fullscreen {
+            background: var(--bg-secondary);
+        }
+
+        .comic-viewer:fullscreen .toolbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .comic-viewer:fullscreen:hover .toolbar {
+            opacity: 1;
+        }
+
+        .comic-viewer:fullscreen .status-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .comic-viewer:fullscreen:hover .status-bar {
+            opacity: 1;
+        }
+
+        /* Hide elements based on config */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .toolbar {
+                padding: 8px 12px;
+            }
+
+            .toolbar-left, .toolbar-right {
+                gap: 8px;
+            }
+
+            .title {
+                font-size: 14px;
+            }
+
+            .btn {
+                min-width: 32px;
+                height: 32px;
+                padding: 4px 8px;
+            }
+
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+            }
+
+            .navigation.prev {
+                left: 8px;
+            }
+
+            .navigation.next {
+                right: 8px;
+            }
+        }
+
+    </style>
+</head>
+<body class="theme-light">
+    <div class="comic-viewer" id="viewer">
+        <header class="toolbar">
+            <div class="toolbar-left">
+                <span class="title">Interactive Comic Demo</span>
+                
+            </div>
+            <div class="toolbar-right">
+                
+                <div class="btn-group zoom-controls">
+                    <button class="btn btn-icon" id="zoomOut" title="Zoom out (-)">−</button>
+                    <span class="btn zoom-display" id="zoomDisplay">100%</span>
+                    <button class="btn btn-icon" id="zoomIn" title="Zoom in (+)">+</button>
+                    <button class="btn" id="zoomFit" title="Fit to screen (0)">Fit</button>
+                </div>
+                
+                <button class="btn btn-icon" id="themeToggle" title="Toggle theme (T)">
+                    <span id="themeIcon">☀️</span>
+                </button>
+                
+                <button class="btn btn-icon" id="fullscreenBtn" title="Fullscreen (F)">⛶</button>
+            </div>
+        </header>
+
+        <main class="canvas-container" id="canvasContainer">
+            <div class="canvas" id="canvas">
+                <div class="svg-container" id="svgContainer">
+                    <!-- SVG will be inserted here -->
+                </div>
+            </div>
+        </main>
+
+        
+
+        <footer class="status-bar">
+            <span id="zoomLevel">100%</span>
+            <span class="separator">|</span>
+            <span id="instructions">Scroll to zoom • Drag to pan • Double-click to reset</span>
+        </footer>
+    </div>
+
+    <script>
+        const svgPages = ["<svg baseProfile=\"full\" height=\"400px\" version=\"1.1\" width=\"800px\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:ev=\"http://www.w3.org/2001/xml-events\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><defs /><rect fill=\"#FFFFFF\" height=\"400\" width=\"800\" x=\"0\" y=\"0\" /><g opacity=\"1.0\"><rect fill=\"#FFFFFF\" height=\"360.0\" stroke=\"#000000\" stroke-width=\"2.0\" width=\"375.0\" x=\"20.0\" y=\"20.0\" /><g opacity=\"1.0\"><polygon fill=\"none\" points=\"192.0,228.0 190.9625454917112,232.8808397169096 188.0295672763063,236.91773790572873 183.70820393249937,239.41267819554184 178.74565844078816,239.93426274441927 174.0,238.39230484541326 170.29179606750063,235.05342302750967 168.26222879119433,230.49494028981312 168.26222879119433,225.50505971018688 170.29179606750063,220.94657697249033 174.0,217.60769515458674 178.74565844078816,216.06573725558073 183.70820393249937,216.58732180445816 188.0295672763063,219.08226209427127 190.9625454917112,223.1191602830904 192.0,228.0\" stroke=\"#E91E63\" stroke-width=\"2\" /><circle cx=\"176.55\" cy=\"226.2\" fill=\"#E91E63\" r=\"1.44\" /><circle cx=\"184.95\" cy=\"226.2\" fill=\"#E91E63\" r=\"1.44\" /><line stroke=\"#E91E63\" stroke-width=\"2\" x1=\"176.55\" x2=\"184.95\" y1=\"232.2\" y2=\"232.2\" /><line stroke=\"#E91E63\" stroke-width=\"2\" x1=\"180.0\" x2=\"180.0\" y1=\"216.0\" y2=\"188.0\" /><line stroke=\"#E91E63\" stroke-width=\"2\" x1=\"180.0\" x2=\"160.68148347421862\" y1=\"210.4\" y2=\"215.5763809020504\" /><line stroke=\"#E91E63\" stroke-width=\"2\" x1=\"180.0\" x2=\"199.31851652578138\" y1=\"210.4\" y2=\"205.22361909794958\" /><line stroke=\"#E91E63\" stroke-width=\"2\" x1=\"180.0\" x2=\"180.0\" y1=\"188.0\" y2=\"168.0\" /><line stroke=\"#E91E63\" stroke-width=\"2\" x1=\"180.0\" x2=\"180.0\" y1=\"188.0\" y2=\"168.0\" /></g><g opacity=\"1.0\"><polygon fill=\"#FFFFFF\" points=\"280.0,259.9342627444193 284.4504186791263,260.4357045007828 288.6776747823512,261.9148853863709 292.46979603717466,264.2976330950587 295.6366296493606,267.4644667072446 298.01937735804836,271.2565879620681 299.49855824363647,275.483844065293 300.0,279.9342627444193 300.0,314.73426274441925 299.49855824363647,319.18468142354556 298.01937735804836,323.41193752677043 295.6366296493606,327.204058781594 292.46979603717466,330.37089239377985 288.6776747823512,332.75364010246767 284.4504186791263,334.2328209880558 280.0,334.73426274441925 80.0,334.73426274441925 75.54958132087371,334.2328209880558 71.32232521764884,332.75364010246767 67.53020396282533,330.37089239377985 64.3633703506394,327.204058781594 61.98062264195161,323.41193752677043 60.50144175636353,319.18468142354556 60.0,314.73426274441925 60.0,279.9342627444193 60.50144175636353,275.483844065293 61.98062264195161,271.2565879620681 64.3633703506394,267.4644667072446 67.53020396282533,264.2976330950587 71.32232521764884,261.9148853863709 75.54958132087371,260.4357045007828 80.0,259.9342627444193 280.0,259.9342627444193\" stroke=\"#000000\" stroke-width=\"2.0\" /><polygon fill=\"#FFFFFF\" points=\"170.0,259.9342627444193 180.0,229.93426274441927 190.0,259.9342627444193\" stroke=\"#000000\" stroke-width=\"2.0\" /><text dominant-baseline=\"central\" fill=\"#000000\" font-family=\"sans-serif\" font-size=\"16.0\" text-anchor=\"middle\" x=\"180.0\" y=\"297.3342627444193\">Try zooming with\nyour mouse wheel!</text></g></g><g opacity=\"1.0\"><rect fill=\"#FFFFFF\" height=\"360.0\" stroke=\"#000000\" stroke-width=\"2.0\" width=\"375.0\" x=\"405.0\" y=\"20.0\" /><g opacity=\"1.0\"><polygon fill=\"none\" points=\"192.0,228.0 190.9625454917112,232.8808397169096 188.0295672763063,236.91773790572873 183.70820393249937,239.41267819554184 178.74565844078816,239.93426274441927 174.0,238.39230484541326 170.29179606750063,235.05342302750967 168.26222879119433,230.49494028981312 168.26222879119433,225.50505971018688 170.29179606750063,220.94657697249033 174.0,217.60769515458674 178.74565844078816,216.06573725558073 183.70820393249937,216.58732180445816 188.0295672763063,219.08226209427127 190.9625454917112,223.1191602830904 192.0,228.0\" stroke=\"#2196F3\" stroke-width=\"2\" /><circle cx=\"176.55\" cy=\"226.2\" fill=\"#2196F3\" r=\"1.44\" /><circle cx=\"184.95\" cy=\"226.2\" fill=\"#2196F3\" r=\"1.44\" /><line stroke=\"#2196F3\" stroke-width=\"2\" x1=\"176.55\" x2=\"184.95\" y1=\"232.2\" y2=\"232.2\" /><line stroke=\"#2196F3\" stroke-width=\"2\" x1=\"180.0\" x2=\"180.0\" y1=\"216.0\" y2=\"188.0\" /><line stroke=\"#2196F3\" stroke-width=\"2\" x1=\"180.0\" x2=\"160.68148347421862\" y1=\"210.4\" y2=\"215.5763809020504\" /><line stroke=\"#2196F3\" stroke-width=\"2\" x1=\"180.0\" x2=\"199.31851652578138\" y1=\"210.4\" y2=\"205.22361909794958\" /><line stroke=\"#2196F3\" stroke-width=\"2\" x1=\"180.0\" x2=\"180.0\" y1=\"188.0\" y2=\"168.0\" /><line stroke=\"#2196F3\" stroke-width=\"2\" x1=\"180.0\" x2=\"180.0\" y1=\"188.0\" y2=\"168.0\" /></g><g opacity=\"1.0\"><polygon fill=\"#FFFFFF\" points=\"280.0,259.9342627444193 284.4504186791263,260.4357045007828 288.6776747823512,261.9148853863709 292.46979603717466,264.2976330950587 295.6366296493606,267.4644667072446 298.01937735804836,271.2565879620681 299.49855824363647,275.483844065293 300.0,279.9342627444193 300.0,314.73426274441925 299.49855824363647,319.18468142354556 298.01937735804836,323.41193752677043 295.6366296493606,327.204058781594 292.46979603717466,330.37089239377985 288.6776747823512,332.75364010246767 284.4504186791263,334.2328209880558 280.0,334.73426274441925 80.0,334.73426274441925 75.54958132087371,334.2328209880558 71.32232521764884,332.75364010246767 67.53020396282533,330.37089239377985 64.3633703506394,327.204058781594 61.98062264195161,323.41193752677043 60.50144175636353,319.18468142354556 60.0,314.73426274441925 60.0,279.9342627444193 60.50144175636353,275.483844065293 61.98062264195161,271.2565879620681 64.3633703506394,267.4644667072446 67.53020396282533,264.2976330950587 71.32232521764884,261.9148853863709 75.54958132087371,260.4357045007828 80.0,259.9342627444193 280.0,259.9342627444193\" stroke=\"#000000\" stroke-width=\"2.0\" /><polygon fill=\"#FFFFFF\" points=\"170.0,259.9342627444193 180.0,229.93426274441927 190.0,259.9342627444193\" stroke=\"#000000\" stroke-width=\"2.0\" /><text dominant-baseline=\"central\" fill=\"#000000\" font-family=\"sans-serif\" font-size=\"16.0\" text-anchor=\"middle\" x=\"180.0\" y=\"297.3342627444193\">Or drag to pan\naround the comic!</text></g></g></svg>"];
+        const config = {"enableZoom": true, "enablePan": true, "enableHover": true, "enableFullscreen": true, "minZoom": 0.5, "maxZoom": 4.0, "theme": "light", "isBook": false, "pageCount": 1};
+
+        // State
+        let currentPage = 0;
+        let zoom = 1;
+        let panX = 0;
+        let panY = 0;
+        let isPanning = false;
+        let startX = 0;
+        let startY = 0;
+        let startPanX = 0;
+        let startPanY = 0;
+
+        // Elements
+        const viewer = document.getElementById('viewer');
+        const container = document.getElementById('canvasContainer');
+        const canvas = document.getElementById('canvas');
+        const svgContainer = document.getElementById('svgContainer');
+        const zoomDisplay = document.getElementById('zoomDisplay');
+        const zoomLevel = document.getElementById('zoomLevel');
+
+        // Initialize
+        function init() {
+            loadPage(0);
+            updateZoomDisplay();
+            centerCanvas();
+            setupEventListeners();
+            updateThemeIcon();
+
+            if (config.enableHover) {
+                svgContainer.classList.add('hover-enabled');
+            }
+
+            // Update page count
+            const totalPagesEl = document.getElementById('totalPages');
+            if (totalPagesEl) {
+                totalPagesEl.textContent = config.pageCount;
+            }
+        }
+
+        function loadPage(index) {
+            if (index < 0 || index >= svgPages.length) return;
+            currentPage = index;
+            svgContainer.innerHTML = svgPages[index];
+
+            // Update page indicator
+            const currentPageEl = document.getElementById('currentPage');
+            if (currentPageEl) {
+                currentPageEl.textContent = index + 1;
+            }
+
+            // Update nav buttons
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+            if (prevBtn) prevBtn.disabled = index === 0;
+            if (nextBtn) nextBtn.disabled = index === svgPages.length - 1;
+
+            // Add data attributes to panels for hover effects
+            const panels = svgContainer.querySelectorAll('g');
+            panels.forEach((g, i) => {
+                if (g.querySelector('rect')) {
+                    g.setAttribute('data-panel', i);
+                }
+            });
+
+            centerCanvas();
+        }
+
+        function updateZoomDisplay() {
+            const percent = Math.round(zoom * 100) + '%';
+            if (zoomDisplay) zoomDisplay.textContent = percent;
+            if (zoomLevel) zoomLevel.textContent = percent;
+        }
+
+        function setZoom(newZoom, centerX, centerY) {
+            if (!config.enableZoom) return;
+
+            const oldZoom = zoom;
+            zoom = Math.max(config.minZoom, Math.min(config.maxZoom, newZoom));
+
+            if (centerX !== undefined && centerY !== undefined) {
+                // Zoom toward cursor position
+                const rect = container.getBoundingClientRect();
+                const mouseX = centerX - rect.left;
+                const mouseY = centerY - rect.top;
+
+                panX = mouseX - (mouseX - panX) * (zoom / oldZoom);
+                panY = mouseY - (mouseY - panY) * (zoom / oldZoom);
+            }
+
+            updateTransform();
+            updateZoomDisplay();
+        }
+
+        function updateTransform() {
+            canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+        }
+
+        function centerCanvas() {
+            const containerRect = container.getBoundingClientRect();
+            const svg = svgContainer.querySelector('svg');
+            if (!svg) return;
+
+            const svgWidth = parseFloat(svg.getAttribute('width') || svg.viewBox?.baseVal?.width || 800);
+            const svgHeight = parseFloat(svg.getAttribute('height') || svg.viewBox?.baseVal?.height || 600);
+
+            // Calculate zoom to fit
+            const fitZoom = Math.min(
+                (containerRect.width - 40) / svgWidth,
+                (containerRect.height - 40) / svgHeight,
+                1
+            );
+
+            zoom = fitZoom;
+            panX = (containerRect.width - svgWidth * zoom) / 2;
+            panY = (containerRect.height - svgHeight * zoom) / 2;
+
+            canvas.classList.add('animating');
+            updateTransform();
+            updateZoomDisplay();
+
+            setTimeout(() => canvas.classList.remove('animating'), 300);
+        }
+
+        function setupEventListeners() {
+            // Zoom controls
+            const zoomInBtn = document.getElementById('zoomIn');
+            const zoomOutBtn = document.getElementById('zoomOut');
+            const zoomFitBtn = document.getElementById('zoomFit');
+
+            if (zoomInBtn) zoomInBtn.addEventListener('click', () => setZoom(zoom * 1.25));
+            if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => setZoom(zoom / 1.25));
+            if (zoomFitBtn) zoomFitBtn.addEventListener('click', centerCanvas);
+
+            // Mouse wheel zoom
+            if (config.enableZoom) {
+                container.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                    setZoom(zoom * delta, e.clientX, e.clientY);
+                }, { passive: false });
+            }
+
+            // Pan
+            if (config.enablePan) {
+                container.addEventListener('mousedown', (e) => {
+                    if (e.button !== 0) return;
+                    isPanning = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    startPanX = panX;
+                    startPanY = panY;
+                    container.style.cursor = 'grabbing';
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isPanning) return;
+                    panX = startPanX + (e.clientX - startX);
+                    panY = startPanY + (e.clientY - startY);
+                    updateTransform();
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isPanning = false;
+                    container.style.cursor = 'grab';
+                });
+            }
+
+            // Double-click to reset
+            container.addEventListener('dblclick', centerCanvas);
+
+            // Theme toggle
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', toggleTheme);
+            }
+
+            // Fullscreen
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            if (fullscreenBtn && config.enableFullscreen) {
+                fullscreenBtn.addEventListener('click', toggleFullscreen);
+            }
+
+            // Page navigation
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+            if (prevBtn) prevBtn.addEventListener('click', () => loadPage(currentPage - 1));
+            if (nextBtn) nextBtn.addEventListener('click', () => loadPage(currentPage + 1));
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT') return;
+
+                switch (e.key) {
+                    case '+':
+                    case '=':
+                        if (config.enableZoom) setZoom(zoom * 1.25);
+                        break;
+                    case '-':
+                        if (config.enableZoom) setZoom(zoom / 1.25);
+                        break;
+                    case '0':
+                        centerCanvas();
+                        break;
+                    case 'f':
+                    case 'F':
+                        if (config.enableFullscreen) toggleFullscreen();
+                        break;
+                    case 't':
+                    case 'T':
+                        toggleTheme();
+                        break;
+                    case 'ArrowLeft':
+                        if (config.isBook) loadPage(currentPage - 1);
+                        break;
+                    case 'ArrowRight':
+                        if (config.isBook) loadPage(currentPage + 1);
+                        break;
+                    case 'Home':
+                        if (config.isBook) loadPage(0);
+                        break;
+                    case 'End':
+                        if (config.isBook) loadPage(svgPages.length - 1);
+                        break;
+                }
+            });
+
+            // Window resize
+            window.addEventListener('resize', () => {
+                centerCanvas();
+            });
+
+            // Touch support for mobile
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchStartPanX = 0;
+            let touchStartPanY = 0;
+            let lastTouchDistance = 0;
+
+            container.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    touchStartPanX = panX;
+                    touchStartPanY = panY;
+                } else if (e.touches.length === 2) {
+                    lastTouchDistance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                }
+            }, { passive: true });
+
+            container.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && config.enablePan) {
+                    panX = touchStartPanX + (e.touches[0].clientX - touchStartX);
+                    panY = touchStartPanY + (e.touches[0].clientY - touchStartY);
+                    updateTransform();
+                } else if (e.touches.length === 2 && config.enableZoom) {
+                    const distance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    const delta = distance / lastTouchDistance;
+                    lastTouchDistance = distance;
+
+                    const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                    const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                    setZoom(zoom * delta, centerX, centerY);
+                }
+            }, { passive: true });
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const isDark = body.classList.contains('theme-dark');
+            body.classList.remove('theme-dark', 'theme-light');
+            body.classList.add(isDark ? 'theme-light' : 'theme-dark');
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                const isDark = document.body.classList.contains('theme-dark');
+                icon.textContent = isDark ? '🌙' : '☀️';
+            }
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                viewer.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        }
+
+        // Start
+        init();
+
+    </script>
+</body>
+</html>

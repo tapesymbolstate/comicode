@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Interactive HTML Export
 
-**Current Git Tag: v0.1.30**
+**Current Git Tag: v0.1.31**
 
 All 5 phases plus Interactive HTML Export have been implemented with **1607 tests passing**, ruff clean, and mypy passing.
 
@@ -55,3 +55,9 @@ None currently tracked.
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
+
+---
+
+## Note: PRD Update (v0.1.31)
+
+The PRD (Product Requirements Document) was updated to reflect the completion of the Interactive HTML Export feature with version v0.1.31. This includes comprehensive documentation of all 13 working examples, rendering capabilities, and feature specifications.

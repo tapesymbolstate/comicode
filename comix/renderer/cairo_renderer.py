@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import math
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Literal, Sequence
@@ -1109,7 +1110,6 @@ class CairoRenderer:
 
         elif hair_style == "spiky":
             # Spiky anime-style hair with several pointed tufts
-            import math
             spikes = [(-0.6, 1.3), (-0.3, 1.4), (0, 1.5), (0.3, 1.4), (0.6, 1.3)]
             for angle, length in spikes:
                 spike_base_x = cx + head_radius * 0.7 * math.sin(angle)
@@ -1208,7 +1208,6 @@ class CairoRenderer:
         """Render large chibi-style eyes with highlights using Cairo."""
         ctx = self._ctx
         assert ctx is not None
-        import math
 
         left_x = head_pos[0] - eye_offset
         right_x = head_pos[0] + eye_offset
@@ -1350,7 +1349,6 @@ class CairoRenderer:
         """Render small cute chibi mouth using Cairo."""
         ctx = self._ctx
         assert ctx is not None
-        import math
 
         cx, cy = head_pos
         mouth_y = cy + head_radius * 0.35
@@ -1438,7 +1436,6 @@ class CairoRenderer:
         """Render cute blush marks on cheeks using Cairo."""
         ctx = self._ctx
         assert ctx is not None
-        import math
 
         blush_y = eye_y + head_radius * 0.3
         blush_x_offset = eye_offset + head_radius * 0.15
@@ -1821,7 +1818,6 @@ class CairoRenderer:
 
         if base64_data:
             try:
-                import base64
                 import io
 
                 try:
@@ -3215,7 +3211,6 @@ class CairoRenderer:
         nose_y = cy + head_radius * 0.1
         nose_radius = head_radius * 0.08
 
-        import math
         ctx.new_path()
         ctx.arc(cx, nose_y, nose_radius, 0, 2 * math.pi)
         self._set_color(outline_color)

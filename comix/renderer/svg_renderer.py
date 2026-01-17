@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+import math
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -260,9 +262,6 @@ class SVGRenderer:
             radius: Corner radius for clipping.
             group: SVG group to add the image to.
         """
-        import base64
-        from pathlib import Path
-
         assert self._dwg is not None
 
         # Try to load and encode the image
@@ -1125,7 +1124,6 @@ class SVGRenderer:
                 (-0.6, 1.3), (-0.3, 1.4), (0, 1.5), (0.3, 1.4), (0.6, 1.3),
             ]
             for angle, length in spikes:
-                import math
                 spike_base_x = cx + head_radius * 0.7 * math.sin(angle)
                 spike_base_y = cy - head_radius * 0.6
                 spike_tip_x = cx + head_radius * length * math.sin(angle)
@@ -1271,7 +1269,6 @@ class SVGRenderer:
             # Sparkly star eyes
             for x in [left_x, right_x]:
                 # Draw star shape
-                import math
                 star_points = []
                 for i in range(10):
                     angle = math.pi / 2 + i * math.pi / 5
@@ -2370,7 +2367,6 @@ class SVGRenderer:
                 # Outer star shape
                 star_size = eye_radius * 0.8
                 for angle in [0, 45, 90, 135]:
-                    import math
                     rad = math.radians(angle)
                     line = SVGLine(
                         start=(x - star_size * math.cos(rad), eye_y - star_size * math.sin(rad)),
@@ -2830,7 +2826,6 @@ class SVGRenderer:
         """Render chest emblem based on type."""
         if emblem_type == "star":
             # 5-pointed star
-            import math
             star_points = []
             for i in range(10):
                 angle = math.radians(-90 + i * 36)

@@ -2,7 +2,7 @@
 
 ## What
 
-Export comic pages with timeline-based animations to animated GIF files, with support for multiple animation types, 27 easing functions, and precise timing control.
+Export comic pages with timeline-based animations to animated GIF files, with support for multiple animation types, 28 easing functions, and precise timing control.
 
 ## Why
 
@@ -23,7 +23,7 @@ Static comics are great for print, but animated sequences can bring panels to li
 - [x] EffectAnimation with 7 pre-built patterns (pulse, fade_in, fade_out, grow, shrink, shake_intensify, zoom_burst)
 - [x] ObjectAnimation for CObject properties (position, scale, rotation, opacity)
 - [x] AnimationGroup for parallel and sequential composition
-- [x] 27 easing functions (linear, quad, cubic, quart, sine, expo, elastic, back, bounce - with in/out/inOut variants)
+- [x] 28 easing functions (linear, quad, cubic, quart, sine, expo, elastic, back, bounce - with in/out/inOut variants, plus convenience aliases)
 - [x] GIFRenderer class for animated GIF output
 - [x] Configurable FPS (1-60), duration, and quality settings
 - [x] Loop control (infinite or specific count)
@@ -76,7 +76,7 @@ Timeline
 
 ### Easing Functions
 
-All 27 easing functions follow the standard pattern:
+All 28 easing functions follow the standard pattern:
 
 | Category | In | Out | InOut |
 |----------|-----|-----|-------|
@@ -310,7 +310,7 @@ animation = ObjectAnimation(char, duration=1.0).set_easing("wobble")
    - Test: Duration property returns max end time
 
 7. **Easing Functions**:
-   - Test: All 27 built-in easings return valid values
+   - Test: All 28 built-in easings return valid values
    - Test: Custom easing registration works
    - Test: Invalid easing name raises ValueError
 

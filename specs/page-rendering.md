@@ -34,8 +34,8 @@ Without working rendering, all the comic creation work produces no usable output
 - [x] Render returns path to created file
 
 ### Won't Have (This Iteration)
-- [ ] Animated GIF output (defer to future)
-- [ ] HTML/Canvas output (defer to future)
+- [x] ~~Animated GIF output~~ → Now available via [Animation Export](animation-export.md)
+- [x] ~~HTML/Canvas output~~ → Now available via [HTML Export](html-export.md)
 - [ ] Streaming/progressive rendering
 - [ ] Render to clipboard
 - [ ] Background/async rendering

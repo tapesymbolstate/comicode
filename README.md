@@ -10,7 +10,7 @@ A code-based comic creation framework inspired by [Manim](https://www.manim.comm
 - **5 Bubble Types**: Speech, Thought, Shout, Whisper, Narrator
 - **7 Page Templates**: FourKoma, TwoByTwo, SplashPage, WebComic, ThreeRowLayout, MangaPage, ActionPage
 - **6 Visual Effects**: AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect
-- **Animation System**: Timeline-based animations with 29 easing functions and GIF/Video export
+- **Animation System**: Timeline-based animations with 28 easing functions and GIF/Video export
 - **Multiple Output Formats**: SVG (always available), PNG/PDF (with optional Cairo), HTML (interactive), GIF (animated), MP4/WebM (video)
 
 ## Installation

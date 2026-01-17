@@ -1439,7 +1439,7 @@ page.render("output.png")
 
 ## 6. 개발 로드맵
 
-> **Note**: All 8 phases are complete as of v0.1.45. See IMPLEMENTATION_PLAN.md for details.
+> **Note**: All 8 phases are complete as of v0.1.46. See IMPLEMENTATION_PLAN.md for details.
 > Current status: 1743 tests (1739 pass + 4 skip), mypy clean, ruff clean, 15 working examples.
 
 ### Phase 1: 코어 (MVP) ✅
@@ -1487,7 +1487,7 @@ page.render("output.png")
 - [x] Touch/mobile 지원
 
 ### Phase 7: Animation Export ✅
-- [x] Animation 시스템 (Timeline, 29 easing functions)
+- [x] Animation 시스템 (Timeline, 28 easing functions)
 - [x] PropertyAnimation (opacity, position, scale, rotation)
 - [x] EffectAnimation (intensity, radius, pattern: pulse/blink/fade)
 - [x] ObjectAnimation (multiple properties simultaneously)

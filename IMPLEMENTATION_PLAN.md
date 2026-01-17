@@ -27,7 +27,7 @@ All 8 phases have been implemented with **1743 tests** (1739 pass + 4 skip), ruf
 - **Layout**: GridLayout, FlowLayout, ConstraintLayout with priority-based solving
 - **Renderers**: SVG (always available), Cairo PNG/PDF (optional), HTML (interactive), GIF (animated), Video (MP4/WebM)
 - **Effects**: 6 types (AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect)
-- **Animation System**: Timeline-based animation with 29 easing functions, effect and object animations
+- **Animation System**: Timeline-based animation with 28 easing functions, effect and object animations
 - **Video Export**: MP4 and WebM video output with quality settings, progress callbacks, frame extraction, and audio track support
 - **Parser**: DSL markup for rapid comic creation, with multi-page book support via `parse_book_markup()`
 - **AI Images**: OpenAI DALL-E and Replicate integration

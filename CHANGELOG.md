@@ -36,7 +36,7 @@ All notable changes to this project are documented in this file.
 - **Animation Export System** (Phase 7 Complete):
   - Added `GIFRenderer` class for animated GIF output
   - `Timeline` class for orchestrating animations with precise timing
-  - `Animation` base class with 29 easing functions (linear, quad, cubic, quart, quint, sine, expo, circ, elastic, bounce, back - each with in/out/inOut variants)
+  - `Animation` base class with 28 easing functions (linear, quad, cubic, quart, sine, expo, elastic, back, bounce - each with in/out/inOut variants, plus convenience aliases)
   - `EffectAnimation` for animating visual effects
   - `ObjectAnimation` for animating CObject properties (position, rotation, scale, opacity)
   - `PropertyAnimation` for generic property animation

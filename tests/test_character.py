@@ -4,6 +4,7 @@ import numpy as np
 
 from comix.cobject.character.character import (
     Anime,
+    Cartoon,
     Character,
     Chibi,
     ChubbyStickman,
@@ -1131,3 +1132,222 @@ class TestSuperhero:
         assert data["costume_primary"] == "#1A1A1A"
         assert data["mask"] == "cowl"
         assert data["emblem"] == "shield"
+
+
+class TestCartoon:
+    """Tests for Cartoon character class."""
+
+    def test_default_init(self):
+        """Test default initialization."""
+        cartoon = Cartoon()
+        assert cartoon.name == "Cartoon"
+        assert cartoon.style == "cartoon"
+        assert cartoon.body_shape == "pear"
+        assert cartoon.skin_color == "#FFDAB9"
+        assert cartoon.outline_color == "#000000"
+        assert cartoon.outfit_color == "#4169E1"
+        assert cartoon.hair_color == "#8B4513"
+        assert cartoon.nose_type == "round"
+        assert cartoon.ear_size == "normal"
+        assert cartoon.gloves is True
+
+    def test_custom_name(self):
+        """Test custom character name."""
+        cartoon = Cartoon(name="ToonBoy")
+        assert cartoon.name == "ToonBoy"
+
+    def test_body_shapes(self):
+        """Test different body shapes."""
+        for body_shape in ["pear", "bean", "round"]:
+            cartoon = Cartoon(body_shape=body_shape)
+            assert cartoon.body_shape == body_shape
+            data = cartoon.get_render_data()
+            assert data["body_shape"] == body_shape
+
+    def test_custom_colors(self):
+        """Test custom colors."""
+        cartoon = Cartoon(
+            skin_color="#FFD700",
+            outline_color="#333333",
+            outfit_color="#FF6347",
+            hair_color="#000000",
+        )
+        assert cartoon.skin_color == "#FFD700"
+        assert cartoon.outline_color == "#333333"
+        assert cartoon.outfit_color == "#FF6347"
+        assert cartoon.hair_color == "#000000"
+
+    def test_nose_options(self):
+        """Test different nose options."""
+        for nose_type in ["round", "triangle", "long"]:
+            cartoon = Cartoon(nose_type=nose_type)
+            assert cartoon.nose_type == nose_type
+
+    def test_ear_size_options(self):
+        """Test different ear size options."""
+        for ear_size in ["small", "normal", "large"]:
+            cartoon = Cartoon(ear_size=ear_size)
+            assert cartoon.ear_size == ear_size
+
+    def test_gloves_option(self):
+        """Test gloves option."""
+        cartoon_with_gloves = Cartoon(gloves=True)
+        assert cartoon_with_gloves.gloves is True
+
+        cartoon_no_gloves = Cartoon(gloves=False)
+        assert cartoon_no_gloves.gloves is False
+
+    def test_generates_points(self):
+        """Test that cartoon generates outline points."""
+        cartoon = Cartoon()
+        # Should have: head(32) + body(20) + arms(26) + legs(22) = 100 points
+        assert len(cartoon._points) >= 32
+        assert cartoon._points.shape[1] == 2  # Each point has x, y
+
+    def test_facing_flips_points(self):
+        """Test that facing left flips x coordinates."""
+        cartoon_right = Cartoon(facing="right")
+        cartoon_left = Cartoon(facing="left")
+
+        # X coordinates should be flipped
+        assert not np.allclose(cartoon_right._points[:, 0], cartoon_left._points[:, 0])
+        # Y coordinates should be the same
+        assert np.allclose(cartoon_right._points[:, 1], cartoon_left._points[:, 1])
+
+    def test_custom_height(self):
+        """Test custom height parameter."""
+        cartoon = Cartoon(height=150)
+        assert cartoon.character_height == 150.0
+        data = cartoon.get_render_data()
+        assert data["character_height"] == 150.0
+
+    def test_get_render_data(self):
+        """Test render data includes cartoon-specific fields."""
+        cartoon = Cartoon()
+        data = cartoon.get_render_data()
+        assert data["style"] == "cartoon"
+        assert "body_shape" in data
+        assert data["body_shape"] == "pear"
+        assert "skin_color" in data
+        assert data["skin_color"] == "#FFDAB9"
+        assert "outline_color" in data
+        assert "outfit_color" in data
+        assert "hair_color" in data
+        assert "nose_type" in data
+        assert "ear_size" in data
+        assert "gloves" in data
+        assert data["gloves"] is True
+        assert "head_radius_ratio" in data
+        assert "body_height_ratio" in data
+        assert "hand_size" in data
+
+    def test_set_expression(self):
+        """Test setting expression."""
+        cartoon = Cartoon()
+        cartoon.set_expression("happy")
+        assert cartoon._expression.name == "happy"
+        assert cartoon._expression.mouth == "smile"
+
+    def test_set_pose(self):
+        """Test setting pose."""
+        cartoon = Cartoon()
+        cartoon.set_pose("waving")
+        assert cartoon._pose.name == "waving"
+
+    def test_say_creates_bubble(self):
+        """Test say method creates speech bubble."""
+        cartoon = Cartoon().move_to((100, 100))
+        bubble = cartoon.say("Zoinks!")
+        assert bubble.text == "Zoinks!"
+        assert bubble.bubble_type == "speech"
+
+    def test_think_creates_bubble(self):
+        """Test think method creates thought bubble."""
+        cartoon = Cartoon().move_to((100, 100))
+        bubble = cartoon.think("Hmm...")
+        assert bubble.text == "Hmm..."
+        assert bubble.bubble_type == "thought"
+
+    def test_shout_creates_bubble(self):
+        """Test shout method creates shout bubble."""
+        cartoon = Cartoon().move_to((100, 100))
+        bubble = cartoon.shout("BONK!")
+        assert bubble.text == "BONK!"
+        assert bubble.bubble_type == "shout"
+
+    def test_whisper_creates_bubble(self):
+        """Test whisper method creates whisper bubble."""
+        cartoon = Cartoon().move_to((100, 100))
+        bubble = cartoon.whisper("*psst*")
+        assert bubble.text == "*psst*"
+        assert bubble.bubble_type == "whisper"
+
+    def test_all_poses(self):
+        """Test cartoon with different poses."""
+        poses = ["standing", "sitting", "walking", "running", "pointing",
+                 "waving", "jumping", "dancing", "kneeling", "cheering", "thinking"]
+        for pose_name in poses:
+            cartoon = Cartoon(pose=pose_name)
+            assert cartoon._pose.name == pose_name
+            # Should still generate valid points
+            assert len(cartoon._points) >= 32
+
+    def test_all_expressions(self):
+        """Test cartoon with different expressions."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            cartoon = Cartoon(expression=expr_name)
+            assert cartoon._expression.name == expr_name
+            data = cartoon.get_render_data()
+            assert data["expression"]["name"] == expr_name
+
+    def test_default_fill_color_is_skin_color(self):
+        """Test default fill color matches skin color."""
+        cartoon = Cartoon()
+        assert cartoon.fill_color == "#FFDAB9"  # Default peach puff
+
+    def test_default_outline_color(self):
+        """Test default outline color."""
+        cartoon = Cartoon()
+        assert cartoon.color == "#000000"  # Black
+
+    def test_cartoon_proportions(self):
+        """Test cartoon character has correct proportions."""
+        cartoon = Cartoon(height=100)
+        data = cartoon.get_render_data()
+        # Large head for cartoon style (35% diameter = 0.175 radius ratio)
+        assert data["head_radius_ratio"] == 0.175
+        # Shorter limbs for cartoon style
+        assert data["arm_length_ratio"] == 0.20
+        assert data["leg_length_ratio"] == 0.18
+
+    def test_method_chaining(self):
+        """Test method chaining works correctly."""
+        cartoon = Cartoon()
+        result = cartoon.move_to((100, 100)).set_expression("happy").set_pose("waving")
+        assert result is cartoon
+        assert np.allclose(cartoon.position, (100, 100))
+        assert cartoon._expression.name == "happy"
+        assert cartoon._pose.name == "waving"
+
+    def test_full_customization(self):
+        """Test full customization."""
+        cartoon = Cartoon(
+            name="MickeyLike",
+            body_shape="round",
+            skin_color="#FFE4B5",
+            outline_color="#000000",
+            outfit_color="#FF0000",
+            hair_color="#000000",
+            nose_type="round",
+            ear_size="large",
+            gloves=True,
+        )
+        assert cartoon.body_shape == "round"
+        assert cartoon.outfit_color == "#FF0000"
+        assert cartoon.ear_size == "large"
+        data = cartoon.get_render_data()
+        assert data["body_shape"] == "round"
+        assert data["outfit_color"] == "#FF0000"
+        assert data["ear_size"] == "large"

@@ -507,6 +507,8 @@ class CairoRenderer:
             self._render_anime(data, pos)
         elif style == "superhero":
             self._render_superhero(data, pos)
+        elif style == "cartoon":
+            self._render_cartoon(data, pos)
         else:
             self._render_generic(data)
 
@@ -3099,3 +3101,178 @@ class CairoRenderer:
         ctx.stroke()
 
         ctx.restore()
+
+    def _render_cartoon(self, data: dict[str, Any], pos: list[float]) -> None:
+        """Render a classic Western cartoon character.
+
+        Renders a character with cartoon aesthetics:
+        - Large round head with exaggerated features
+        - Pear/bean/round body shape
+        - Big expressive eyes with thick outlines
+        - Mitten-style hands (optional white gloves)
+        - Bold thick outlines characteristic of classic animation
+        """
+        ctx = self._ctx
+        assert ctx is not None
+        ctx.save()
+
+        points = data.get("points", [])
+        outline_color = data.get("outline_color", "#000000")
+        skin_color = data.get("skin_color", "#FFDAB9")
+        fill_color = data.get("fill_color", skin_color)
+        outfit_color = data.get("outfit_color", "#4169E1")
+        has_gloves = data.get("gloves", True)
+        glove_color = "#FFFFFF" if has_gloves else fill_color
+        stroke_width = 3  # Thick cartoon outlines
+        height = data.get("character_height", 100)
+
+        if len(points) < 32:
+            ctx.restore()
+            return
+
+        # Head points (first 32 points - large circle)
+        head_points = points[:32]
+        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
+
+        # Calculate head center for features
+        head_center_x = sum(p[0] for p in head_points) / len(head_points)
+        head_center_y = sum(p[1] for p in head_points) / len(head_points)
+        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_radius = height * 0.175
+
+        # Draw head
+        self._polygon_path(translated_head)
+        self._set_color(fill_color)
+        ctx.fill_preserve()
+        self._set_color(outline_color)
+        ctx.set_line_width(stroke_width)
+        ctx.stroke()
+
+        # Render cartoon face features
+        expression = data.get("expression", {})
+        self._render_cartoon_face_cairo(head_pos, head_radius, expression, outline_color)
+
+        # Body points (next 20 points)
+        body_start = 32
+        body_end = body_start + 20
+        if len(points) >= body_end:
+            body_points = points[body_start:body_end]
+            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
+            self._polygon_path(translated_body)
+            self._set_color(outfit_color)
+            ctx.fill_preserve()
+            self._set_color(outline_color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+
+        # Arms and hands
+        # Left arm: 3 position points + 10 hand points = 13 points starting at 52
+        arm_start = 52
+        self._render_cartoon_limb_cairo(
+            points, pos, arm_start, 13, 10,
+            fill_color, glove_color, outline_color, stroke_width
+        )
+
+        # Right arm: 3 position points + 10 hand points = 13 points starting at 65
+        arm_start_right = 65
+        self._render_cartoon_limb_cairo(
+            points, pos, arm_start_right, 13, 10,
+            fill_color, glove_color, outline_color, stroke_width
+        )
+
+        # Legs and feet
+        # Left leg: 3 position points + 8 foot points = 11 points starting at 78
+        leg_start = 78
+        self._render_cartoon_limb_cairo(
+            points, pos, leg_start, 11, 8,
+            outfit_color, outline_color, outline_color, stroke_width
+        )
+
+        # Right leg: 3 position points + 8 foot points = 11 points starting at 89
+        leg_start_right = 89
+        self._render_cartoon_limb_cairo(
+            points, pos, leg_start_right, 11, 8,
+            outfit_color, outline_color, outline_color, stroke_width
+        )
+
+        ctx.restore()
+
+    def _render_cartoon_face_cairo(
+        self, head_pos: list[float], head_radius: float,
+        expression: dict[str, str], outline_color: str
+    ) -> None:
+        """Render cartoon face features using Cairo."""
+        ctx = self._ctx
+        assert ctx is not None
+
+        cx, cy = head_pos
+        eye_type = expression.get("eyes", "normal")
+        mouth_type = expression.get("mouth", "normal")
+        eyebrow_type = expression.get("eyebrows", "normal")
+
+        # Cartoon eyes are bigger and more expressive
+        eye_y = cy - head_radius * 0.1
+        eye_offset = head_radius * 0.35
+        eye_radius = head_radius * 0.18  # Bigger eyes for cartoon
+
+        # Render eyes using the shared Cairo face methods
+        self._render_face_eyes_cairo(head_pos, head_radius, eye_y, eye_offset, eye_radius, eye_type, outline_color)
+        self._render_face_eyebrows_cairo(head_pos, head_radius, eye_y, eye_offset, eyebrow_type, outline_color)
+        self._render_face_mouth_cairo(head_pos, head_radius, mouth_type, outline_color)
+
+        # Add cartoon nose (simple round dot)
+        nose_y = cy + head_radius * 0.1
+        nose_radius = head_radius * 0.08
+
+        import math
+        ctx.new_path()
+        ctx.arc(cx, nose_y, nose_radius, 0, 2 * math.pi)
+        self._set_color(outline_color)
+        ctx.fill()
+
+    def _render_cartoon_limb_cairo(
+        self, points: list[list[float]], pos: list[float],
+        start_idx: int, total_points: int, end_points: int,
+        limb_color: str, end_color: str, outline_color: str, stroke_width: float
+    ) -> None:
+        """Render a cartoon limb (arm or leg) with rounded end (hand or foot)."""
+        ctx = self._ctx
+        assert ctx is not None
+
+        if start_idx + total_points > len(points):
+            return
+
+        # Draw limb segments (first 3 points: shoulder/hip, elbow/knee, hand/foot position)
+        segment_points = 3
+        for i in range(segment_points - 1):
+            if start_idx + i + 1 < len(points):
+                p1 = points[start_idx + i]
+                p2 = points[start_idx + i + 1]
+
+                # Draw thicker inner line (limb color)
+                ctx.new_path()
+                ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
+                ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+                self._set_color(limb_color)
+                ctx.set_line_width(stroke_width + 2)
+                ctx.stroke()
+
+                # Draw outline
+                ctx.new_path()
+                ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
+                ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+                self._set_color(outline_color)
+                ctx.set_line_width(stroke_width)
+                ctx.stroke()
+
+        # Draw rounded end (hand/foot) from remaining points
+        end_start = start_idx + segment_points
+        if end_start + end_points <= len(points):
+            end_pts = points[end_start:end_start + end_points]
+            translated_end = [(p[0] + pos[0], p[1] + pos[1]) for p in end_pts]
+            self._polygon_path(translated_end)
+            self._set_color(end_color)
+            ctx.fill_preserve()
+            self._set_color(outline_color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()

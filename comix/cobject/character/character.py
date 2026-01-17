@@ -1032,6 +1032,232 @@ class Anime(Character):
         return data
 
 
+class Cartoon(Character):
+    """Classic Western cartoon character with exaggerated features.
+
+    A character with classic cartoon aesthetics inspired by Tex Avery, Disney,
+    and classic animation studios:
+    - Large round head with exaggerated features
+    - Pear-shaped or bean-shaped body
+    - Big expressive eyes with thick outlines
+    - Simple hands (mitten-style or 4-finger)
+    - Squash-and-stretch friendly proportions
+    - Bold, thick outlines characteristic of classic animation
+
+    Suitable for comedy comics, children's content, and classic Western-style comics.
+    """
+
+    def __init__(
+        self,
+        name: str = "Cartoon",
+        body_shape: str = "pear",  # "pear", "bean", "round"
+        skin_color: str = "#FFDAB9",  # Peach puff
+        outline_color: str = "#000000",
+        outfit_color: str = "#4169E1",  # Royal blue
+        hair_color: str = "#8B4513",  # Saddle brown
+        nose_type: str = "round",  # "round", "triangle", "long"
+        ear_size: str = "normal",  # "small", "normal", "large"
+        gloves: bool = True,  # Classic cartoon gloves
+        **kwargs: Any,
+    ) -> None:
+        """Initialize Cartoon character.
+
+        Args:
+            name: Character name
+            body_shape: Body shape type ("pear", "bean", "round")
+            skin_color: Skin/body color (default peach)
+            outline_color: Outline color (default black)
+            outfit_color: Color for outfit/clothes (default royal blue)
+            hair_color: Color for hair
+            nose_type: Nose shape ("round", "triangle", "long")
+            ear_size: Ear size ("small", "normal", "large")
+            gloves: Whether to draw classic white cartoon gloves
+            **kwargs: Additional Character parameters
+        """
+        kwargs.setdefault("style", "cartoon")
+        kwargs.setdefault("color", outline_color)
+        kwargs.setdefault("fill_color", skin_color)
+        self.body_shape = body_shape
+        self.skin_color = skin_color
+        self.outline_color = outline_color
+        self.outfit_color = outfit_color
+        self.hair_color = hair_color
+        self.nose_type = nose_type
+        self.ear_size = ear_size
+        self.gloves = gloves
+        super().__init__(name=name, **kwargs)
+
+    def generate_points(self) -> None:
+        """Generate cartoon figure points.
+
+        Structure:
+        - Head: Large circle (35% of height)
+        - Body: Pear/bean/round shape based on body_shape
+        - Arms: Simple curved limbs with mitten hands
+        - Legs: Short stubby legs with rounded feet
+        """
+        h = self.character_height
+
+        # Cartoon proportions: big head, small body
+        head_radius = h * 0.175  # 35% diameter for head
+        body_height = h * 0.32
+        body_width_top = h * 0.12
+        body_width_bottom = h * 0.16 if self.body_shape == "pear" else h * 0.12
+        arm_length = h * 0.20
+        hand_size = h * 0.05  # Mitten hand size
+        leg_length = h * 0.18
+        foot_width = h * 0.06
+        foot_height = h * 0.03
+
+        points = []
+
+        # Calculate vertical positions
+        head_top = h / 2
+        head_center_y = head_top - head_radius
+        head_bottom = head_top - head_radius * 2
+        neck_y = head_bottom
+        body_top = neck_y - h * 0.01  # Small gap
+        body_bottom = body_top - body_height
+        hip_y = body_bottom
+
+        # Generate large head circle (32 points for smooth circle)
+        for angle in np.linspace(0, 2 * np.pi, 32):
+            points.append([
+                head_radius * np.cos(angle),
+                head_center_y + head_radius * np.sin(angle)
+            ])
+
+        # Generate body shape based on body_shape parameter
+        body_center_y = (body_top + body_bottom) / 2
+
+        if self.body_shape == "pear":
+            # Pear shape: narrow top, wider bottom
+            for i, angle in enumerate(np.linspace(0, 2 * np.pi, 20)):
+                # Interpolate width from top to bottom
+                t = (np.sin(angle) + 1) / 2  # 0 at top, 1 at bottom
+                width = body_width_top + (body_width_bottom - body_width_top) * t
+                points.append([
+                    width * np.cos(angle),
+                    body_center_y + (body_height / 2) * np.sin(angle)
+                ])
+        elif self.body_shape == "bean":
+            # Bean shape: slight S-curve body
+            for angle in np.linspace(0, 2 * np.pi, 20):
+                width_mod = 1.0 + 0.1 * np.sin(2 * angle)
+                avg_width = (body_width_top + body_width_bottom) / 2
+                points.append([
+                    avg_width * width_mod * np.cos(angle),
+                    body_center_y + (body_height / 2) * np.sin(angle)
+                ])
+        else:  # round
+            # Simple oval body
+            avg_width = (body_width_top + body_width_bottom) / 2
+            for angle in np.linspace(0, 2 * np.pi, 20):
+                points.append([
+                    avg_width * np.cos(angle),
+                    body_center_y + (body_height / 2) * np.sin(angle)
+                ])
+
+        # Arms - cartoon style with rounded ends
+        arm_y = body_top - body_height * 0.15
+        shoulder_offset = body_width_top * 0.9
+
+        # Left arm
+        left_arm_angle = np.radians(self._pose.left_arm)
+        left_elbow_x = -shoulder_offset - arm_length * 0.5 * np.cos(left_arm_angle)
+        left_elbow_y = arm_y - arm_length * 0.5 * np.sin(left_arm_angle)
+        left_hand_x = -shoulder_offset - arm_length * np.cos(left_arm_angle)
+        left_hand_y = arm_y - arm_length * np.sin(left_arm_angle)
+
+        points.append([-shoulder_offset, arm_y])  # Shoulder
+        points.append([left_elbow_x, left_elbow_y])  # Elbow
+        points.append([left_hand_x, left_hand_y])  # Hand position
+        # Mitten hand shape (circle/oval)
+        for angle in np.linspace(0, 2 * np.pi, 10):
+            points.append([
+                left_hand_x + hand_size * np.cos(angle),
+                left_hand_y + hand_size * 0.8 * np.sin(angle)
+            ])
+
+        # Right arm
+        right_arm_angle = np.radians(self._pose.right_arm)
+        right_elbow_x = shoulder_offset + arm_length * 0.5 * np.cos(right_arm_angle)
+        right_elbow_y = arm_y - arm_length * 0.5 * np.sin(right_arm_angle)
+        right_hand_x = shoulder_offset + arm_length * np.cos(right_arm_angle)
+        right_hand_y = arm_y - arm_length * np.sin(right_arm_angle)
+
+        points.append([shoulder_offset, arm_y])  # Shoulder
+        points.append([right_elbow_x, right_elbow_y])  # Elbow
+        points.append([right_hand_x, right_hand_y])  # Hand position
+        # Mitten hand shape
+        for angle in np.linspace(0, 2 * np.pi, 10):
+            points.append([
+                right_hand_x + hand_size * np.cos(angle),
+                right_hand_y + hand_size * 0.8 * np.sin(angle)
+            ])
+
+        # Legs - short and stubby, cartoon style
+        leg_gap = body_width_bottom * 0.3
+
+        # Left leg
+        left_leg_angle = np.radians(90 + self._pose.left_leg)
+        left_knee_x = -leg_gap - leg_length * 0.5 * np.cos(left_leg_angle)
+        left_knee_y = hip_y - leg_length * 0.5 * np.sin(left_leg_angle)
+        left_foot_x = -leg_gap - leg_length * np.cos(left_leg_angle)
+        left_foot_y = hip_y - leg_length * np.sin(left_leg_angle)
+
+        points.append([-leg_gap, hip_y])  # Hip
+        points.append([left_knee_x, left_knee_y])  # Knee
+        points.append([left_foot_x, left_foot_y])  # Foot position
+        # Cartoon shoe/foot (oval)
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                left_foot_x + foot_width * np.cos(angle),
+                left_foot_y + foot_height * np.sin(angle)
+            ])
+
+        # Right leg
+        right_leg_angle = np.radians(90 + self._pose.right_leg)
+        right_knee_x = leg_gap + leg_length * 0.5 * np.cos(right_leg_angle)
+        right_knee_y = hip_y - leg_length * 0.5 * np.sin(right_leg_angle)
+        right_foot_x = leg_gap + leg_length * np.cos(right_leg_angle)
+        right_foot_y = hip_y - leg_length * np.sin(right_leg_angle)
+
+        points.append([leg_gap, hip_y])  # Hip
+        points.append([right_knee_x, right_knee_y])  # Knee
+        points.append([right_foot_x, right_foot_y])  # Foot position
+        # Cartoon shoe/foot (oval)
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                right_foot_x + foot_width * np.cos(angle),
+                right_foot_y + foot_height * np.sin(angle)
+            ])
+
+        self._points = np.array(points, dtype=np.float64)
+
+        if self.facing == "left":
+            self._points[:, 0] *= -1
+
+    def get_render_data(self) -> dict[str, Any]:
+        """Get data for rendering."""
+        data = super().get_render_data()
+        # Add cartoon-specific render info
+        data["body_shape"] = self.body_shape
+        data["skin_color"] = self.skin_color
+        data["outline_color"] = self.outline_color
+        data["outfit_color"] = self.outfit_color
+        data["hair_color"] = self.hair_color
+        data["nose_type"] = self.nose_type
+        data["ear_size"] = self.ear_size
+        data["gloves"] = self.gloves
+        data["head_radius_ratio"] = 0.175  # 35% diameter
+        data["body_height_ratio"] = 0.32
+        data["arm_length_ratio"] = 0.20
+        data["leg_length_ratio"] = 0.18
+        data["hand_size"] = self.character_height * 0.05
+        return data
+
+
 class Superhero(Character):
     """Superhero character with heroic proportions and costume details.
 

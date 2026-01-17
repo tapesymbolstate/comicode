@@ -181,7 +181,7 @@ class SVGRenderer:
             self._render_bubble(data, group)
         elif obj_type in ("Text", "StyledText", "SFX"):
             self._render_text(data, group)
-        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Robot", "Chibi", "Character"):
+        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Robot", "Chibi", "Cartoon", "Character"):
             self._render_character(data, group)
         elif obj_type == "Rectangle":
             self._render_rectangle(data, group)
@@ -476,6 +476,8 @@ class SVGRenderer:
             self._render_anime(data, group, pos, points)
         elif style == "superhero":
             self._render_superhero(data, group, pos, points)
+        elif style == "cartoon":
+            self._render_cartoon(data, group, pos, points)
         else:
             self._render_generic(data, group)
 
@@ -2950,3 +2952,185 @@ class SVGRenderer:
             stroke_width=1.5,
         )
         group.add(cowl)
+
+    def _render_cartoon(
+        self, data: dict[str, Any], group: Group, pos: list[float], points: list[list[float]]
+    ) -> None:
+        """Render a classic Western cartoon character.
+
+        Renders a character with cartoon aesthetics:
+        - Large round head with exaggerated features
+        - Pear/bean/round body shape
+        - Big expressive eyes with thick outlines
+        - Mitten-style hands (optional white gloves)
+        - Bold thick outlines characteristic of classic animation
+        """
+        outline_color = data.get("outline_color", "#000000")
+        skin_color = data.get("skin_color", "#FFDAB9")
+        fill_color = data.get("fill_color", skin_color)
+        outfit_color = data.get("outfit_color", "#4169E1")
+        has_gloves = data.get("gloves", True)
+        glove_color = "#FFFFFF" if has_gloves else fill_color
+        stroke_width = 3  # Thick cartoon outlines
+
+        if len(points) < 32:
+            return
+
+        height = data.get("character_height", 100)
+
+        # Head points (first 32 points - large circle)
+        head_points = points[:32]
+        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
+
+        # Calculate head center for features
+        head_center_x = sum(p[0] for p in head_points) / len(head_points)
+        head_center_y = sum(p[1] for p in head_points) / len(head_points)
+        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_radius = height * 0.175  # 35% diameter
+
+        # Draw head with skin color
+        head = Polygon(
+            points=translated_head,
+            fill=fill_color,
+            stroke=outline_color,
+            stroke_width=stroke_width,
+        )
+        group.add(head)
+
+        # Render cartoon face features
+        expression = data.get("expression", {})
+        self._render_cartoon_face(
+            group, head_pos, head_radius, expression,
+            outline_color, fill_color
+        )
+
+        # Body points (next 20 points)
+        body_start = 32
+        body_end = body_start + 20
+        if len(points) >= body_end:
+            body_points = points[body_start:body_end]
+            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
+            body = Polygon(
+                points=translated_body,
+                fill=outfit_color,
+                stroke=outline_color,
+                stroke_width=stroke_width,
+            )
+            group.add(body)
+
+        # Arms and hands
+        # Left arm: 3 position points + 10 hand points = 13 points starting at 52
+        arm_start = 52
+        self._render_cartoon_limb(
+            group, points, pos, arm_start, 13, 10,
+            fill_color, glove_color, outline_color, stroke_width
+        )
+
+        # Right arm: 3 position points + 10 hand points = 13 points starting at 65
+        arm_start_right = 65
+        self._render_cartoon_limb(
+            group, points, pos, arm_start_right, 13, 10,
+            fill_color, glove_color, outline_color, stroke_width
+        )
+
+        # Legs and feet
+        # Left leg: 3 position points + 8 foot points = 11 points starting at 78
+        leg_start = 78
+        self._render_cartoon_limb(
+            group, points, pos, leg_start, 11, 8,
+            outfit_color, outline_color, outline_color, stroke_width
+        )
+
+        # Right leg: 3 position points + 8 foot points = 11 points starting at 89
+        leg_start_right = 89
+        self._render_cartoon_limb(
+            group, points, pos, leg_start_right, 11, 8,
+            outfit_color, outline_color, outline_color, stroke_width
+        )
+
+    def _render_cartoon_face(
+        self, group: Group, head_pos: list[float], head_radius: float,
+        expression: dict[str, str], outline_color: str, fill_color: str
+    ) -> None:
+        """Render cartoon face features - big eyes, simple nose, expressive mouth."""
+        cx, cy = head_pos
+        eye_type = expression.get("eyes", "normal")
+        mouth_type = expression.get("mouth", "normal")
+        eyebrow_type = expression.get("eyebrows", "normal")
+
+        # Cartoon eyes are bigger and more expressive
+        eye_y = cy - head_radius * 0.1
+        eye_offset = head_radius * 0.35
+        eye_radius = head_radius * 0.18  # Bigger eyes for cartoon
+
+        # Render eyes using the shared face feature methods
+        self._render_face_eyes(
+            group, head_pos, head_radius, eye_y, eye_offset,
+            eye_radius, eye_type, outline_color
+        )
+
+        # Render eyebrows
+        self._render_face_eyebrows(
+            group, head_pos, head_radius, eye_y, eye_offset,
+            eyebrow_type, outline_color
+        )
+
+        # Render mouth
+        self._render_face_mouth(
+            group, head_pos, head_radius, mouth_type, outline_color
+        )
+
+        # Add cartoon nose (simple round dot or triangle)
+        nose_y = cy + head_radius * 0.1
+        nose_radius = head_radius * 0.08
+        nose = SVGCircle(
+            center=(cx, nose_y),
+            r=nose_radius,
+            fill=outline_color,
+            stroke="none",
+        )
+        group.add(nose)
+
+    def _render_cartoon_limb(
+        self, group: Group, points: list[list[float]], pos: list[float],
+        start_idx: int, total_points: int, end_points: int,
+        limb_color: str, end_color: str, outline_color: str, stroke_width: float
+    ) -> None:
+        """Render a cartoon limb (arm or leg) with rounded end (hand or foot)."""
+        if start_idx + total_points > len(points):
+            return
+
+        # Draw limb segments (first 3 points: shoulder/hip, elbow/knee, hand/foot position)
+        segment_points = 3
+        for i in range(segment_points - 1):
+            if start_idx + i + 1 < len(points):
+                p1 = points[start_idx + i]
+                p2 = points[start_idx + i + 1]
+                line = SVGLine(
+                    start=(p1[0] + pos[0], p1[1] + pos[1]),
+                    end=(p2[0] + pos[0], p2[1] + pos[1]),
+                    stroke=limb_color,
+                    stroke_width=stroke_width + 2,  # Thicker limbs for cartoon
+                )
+                group.add(line)
+                # Add outline
+                outline_line = SVGLine(
+                    start=(p1[0] + pos[0], p1[1] + pos[1]),
+                    end=(p2[0] + pos[0], p2[1] + pos[1]),
+                    stroke=outline_color,
+                    stroke_width=stroke_width,
+                )
+                group.add(outline_line)
+
+        # Draw rounded end (hand/foot) from remaining points
+        end_start = start_idx + segment_points
+        if end_start + end_points <= len(points):
+            end_pts = points[end_start:end_start + end_points]
+            translated_end = [(p[0] + pos[0], p[1] + pos[1]) for p in end_pts]
+            end_shape = Polygon(
+                points=translated_end,
+                fill=end_color,
+                stroke=outline_color,
+                stroke_width=stroke_width,
+            )
+            group.add(end_shape)

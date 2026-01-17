@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.11**
+**Current Git Tag: v0.1.12**
 
 All 5 phases have been implemented with **1517 tests passing** (1 skipped), ruff clean, and mypy passing. Current version: **v0.1.0**.
 

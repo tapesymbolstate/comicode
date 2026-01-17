@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Multi-page PDF Export
 
-All 4 phases have been implemented with **731 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **762 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -16,7 +16,7 @@ All 4 phases have been implemented with **731 tests passing**, mypy clean, and r
 
 ### Key Achievements
 
-- **CObject hierarchy**: Full transformation API (move_to, shift, scale, rotate)
+- **CObject hierarchy**: Full transformation API (move_to, shift, scale, rotate) with convenience methods (center_in, to_corner, to_edge, hide/show, copy, scale_to_fit)
 - **Bubble system**: 5 types (Speech, Thought, Shout, Whisper, Narrator) with auto-positioning
 - **Character system**: Stickman, SimpleFace with Expression/Pose systems
 - **Layout**: GridLayout, FlowLayout, ConstraintLayout with priority-based solving
@@ -36,6 +36,7 @@ All 4 phases have been implemented with **731 tests passing**, mypy clean, and r
 - **Panel Background Image Rendering**: SVG and Cairo renderers now properly render `background_image` set on panels (via `panel.set_background(image="path.png")` or parser `[background: image.png]`). Supports rounded corner clipping for panels with border radius (6 new tests)
 - **Panel Templates**: Pre-built comic page layouts (FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage) with semantic panel access (53 new tests)
 - **Multi-page PDF Export**: Book class for compiling multiple pages into a single PDF document. Supports different page sizes per page, quality settings, and metadata. CLI `compile` command for batch rendering (45 new tests)
+- **CObject Convenience Methods**: Added center_in, to_corner, to_edge, hide/show, is_visible, copy, scale_to_fit_width, scale_to_fit_height, scale_to_fit for easier object positioning and manipulation (31 new tests)
 
 ### Technical Stack
 

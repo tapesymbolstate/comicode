@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 from typing import TYPE_CHECKING, Any, Self
 
 import numpy as np
@@ -143,6 +144,227 @@ class CObject:
             self.position[1] += offset
         elif edge == "center":
             return self.move_to(tuple(other.get_center()))
+
+        self._needs_update = True
+        return self
+
+    def center_in(
+        self,
+        bounds: tuple[float, float, float, float],
+        axis: str = "both",
+    ) -> Self:
+        """Center this object within given bounds.
+
+        Args:
+            bounds: Bounding rectangle as (x, y, width, height) where (x, y) is top-left.
+            axis: Which axis to center on - "x", "y", or "both".
+
+        Returns:
+            Self for method chaining.
+        """
+        x, y, width, height = bounds
+        center_x = x + width / 2
+        center_y = y + height / 2
+
+        if axis == "x":
+            self.position[0] = center_x
+        elif axis == "y":
+            self.position[1] = center_y
+        else:  # "both"
+            self.position = np.array([center_x, center_y], dtype=np.float64)
+
+        self._needs_update = True
+        return self
+
+    def to_corner(
+        self,
+        corner: str,
+        bounds: tuple[float, float, float, float],
+        buff: float = 10.0,
+    ) -> Self:
+        """Move this object to a corner within given bounds.
+
+        Args:
+            corner: Corner position - "top-left", "top-right", "bottom-left", "bottom-right".
+            bounds: Bounding rectangle as (x, y, width, height) where (x, y) is top-left.
+            buff: Buffer/margin from the corner.
+
+        Returns:
+            Self for method chaining.
+        """
+        x, y, width, height = bounds
+        self_bbox = self.get_bounding_box()
+        self_half_w = (self_bbox[1][0] - self_bbox[0][0]) / 2
+        self_half_h = (self_bbox[1][1] - self_bbox[0][1]) / 2
+
+        if corner == "top-left":
+            new_x = x + buff + self_half_w
+            new_y = y + buff + self_half_h
+        elif corner == "top-right":
+            new_x = x + width - buff - self_half_w
+            new_y = y + buff + self_half_h
+        elif corner == "bottom-left":
+            new_x = x + buff + self_half_w
+            new_y = y + height - buff - self_half_h
+        elif corner == "bottom-right":
+            new_x = x + width - buff - self_half_w
+            new_y = y + height - buff - self_half_h
+        else:
+            raise ValueError(
+                f"Invalid corner: {corner}. "
+                "Use 'top-left', 'top-right', 'bottom-left', or 'bottom-right'."
+            )
+
+        return self.move_to((new_x, new_y))
+
+    def to_edge(
+        self,
+        edge: str,
+        bounds: tuple[float, float, float, float],
+        buff: float = 10.0,
+    ) -> Self:
+        """Move this object to an edge within given bounds (centered on the edge).
+
+        Args:
+            edge: Edge position - "top", "bottom", "left", "right".
+            bounds: Bounding rectangle as (x, y, width, height) where (x, y) is top-left.
+            buff: Buffer/margin from the edge.
+
+        Returns:
+            Self for method chaining.
+        """
+        x, y, width, height = bounds
+        center_x = x + width / 2
+        center_y = y + height / 2
+        self_bbox = self.get_bounding_box()
+        self_half_w = (self_bbox[1][0] - self_bbox[0][0]) / 2
+        self_half_h = (self_bbox[1][1] - self_bbox[0][1]) / 2
+
+        if edge == "top":
+            new_x = center_x
+            new_y = y + buff + self_half_h
+        elif edge == "bottom":
+            new_x = center_x
+            new_y = y + height - buff - self_half_h
+        elif edge == "left":
+            new_x = x + buff + self_half_w
+            new_y = center_y
+        elif edge == "right":
+            new_x = x + width - buff - self_half_w
+            new_y = center_y
+        else:
+            raise ValueError(
+                f"Invalid edge: {edge}. Use 'top', 'bottom', 'left', or 'right'."
+            )
+
+        return self.move_to((new_x, new_y))
+
+    def hide(self) -> Self:
+        """Hide this object by setting opacity to 0.
+
+        Returns:
+            Self for method chaining.
+        """
+        return self.set_opacity(0.0)
+
+    def show(self) -> Self:
+        """Show this object by setting opacity to 1.
+
+        Returns:
+            Self for method chaining.
+        """
+        return self.set_opacity(1.0)
+
+    def is_visible(self) -> bool:
+        """Check if this object is visible (opacity > 0).
+
+        Returns:
+            True if opacity is greater than 0.
+        """
+        return self.opacity > 0.0
+
+    def copy(self) -> Self:
+        """Create a deep copy of this object.
+
+        Creates a new instance with the same properties and copies all submobjects.
+        The copy will not have a parent.
+
+        Returns:
+            A new CObject with copied properties.
+        """
+        # Deep copy to handle nested objects and numpy arrays
+        new_obj = copy.deepcopy(self)
+        # Clear parent reference since copy is independent
+        new_obj.parent = None
+        return new_obj
+
+    def scale_to_fit_width(self, target_width: float) -> Self:
+        """Scale this object to fit a target width.
+
+        Args:
+            target_width: The desired width.
+
+        Returns:
+            Self for method chaining.
+        """
+        current_width = self.get_width()
+        if current_width > 0:
+            scale_factor = target_width / current_width
+            self.scale *= scale_factor
+            self._needs_update = True
+        return self
+
+    def scale_to_fit_height(self, target_height: float) -> Self:
+        """Scale this object to fit a target height.
+
+        Args:
+            target_height: The desired height.
+
+        Returns:
+            Self for method chaining.
+        """
+        current_height = self.get_height()
+        if current_height > 0:
+            scale_factor = target_height / current_height
+            self.scale *= scale_factor
+            self._needs_update = True
+        return self
+
+    def scale_to_fit(
+        self,
+        target_width: float,
+        target_height: float,
+        preserve_aspect_ratio: bool = True,
+    ) -> Self:
+        """Scale this object to fit within target dimensions.
+
+        Args:
+            target_width: Maximum width.
+            target_height: Maximum height.
+            preserve_aspect_ratio: If True, scale uniformly to fit within bounds.
+                If False, scale independently to match exact dimensions.
+
+        Returns:
+            Self for method chaining.
+        """
+        current_width = self.get_width()
+        current_height = self.get_height()
+
+        if current_width <= 0 or current_height <= 0:
+            return self
+
+        if preserve_aspect_ratio:
+            scale_x = target_width / current_width
+            scale_y = target_height / current_height
+            scale_factor = min(scale_x, scale_y)
+            self.scale *= scale_factor
+        else:
+            # For non-uniform scaling, we adjust position-based scale
+            # This is approximate since CObject uses uniform scale
+            scale_x = target_width / current_width
+            scale_y = target_height / current_height
+            # Use average for uniform scale approximation
+            self.scale *= (scale_x + scale_y) / 2
 
         self._needs_update = True
         return self

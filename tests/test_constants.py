@@ -1,7 +1,5 @@
 """Tests for the constants module."""
 
-import pytest
-
 from comix.constants import (
     VERSION,
     Colors,

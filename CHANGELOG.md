@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.18] - 2026-01-18
+
+### Documentation
+- Updated specs to document undocumented implementation features:
+  - specs/character-basics.md: Added shout() and whisper() convenience methods
+  - specs/speech-bubbles.md: Documented auto-positioning system (auto_attach_to, overlaps_with, auto_position_bubbles) and marked collision avoidance question as resolved
+  - specs/PRD.md: Added MINIMAL_STYLE preset definition
+
 ## [v0.1.17] - 2026-01-18
 
 ### Documentation

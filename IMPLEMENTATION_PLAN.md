@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.17**
+**Current Git Tag: v0.1.18**
 
 All 5 phases have been implemented with **1517 tests passing**, ruff clean, and mypy passing. Current version: **v0.1.0**.
 
@@ -177,6 +177,10 @@ All 5 phases have been implemented with **1517 tests passing**, ruff clean, and 
 - **Bubble Edge Case Tests**: Added 7 edge case tests for empty text, very long text (1000+ chars), explicit newlines, single character, and whitespace-only text
 - **Warning Logging for Unknown Expressions/Poses**: Expression.from_name() and Pose.from_name() now log warnings when unknown names are provided, listing valid options to help users fix typos
 - **Spec Updates**: Updated character-basics.md and getting-started.md to reflect implementation status (character styles, expressions, poses exceed original scope)
+- **Spec Documentation Sync (v0.1.18)**: Updated spec files to match implementation:
+  - character-basics.md: Added shout() and whisper() convenience methods
+  - speech-bubbles.md: Documented auto-positioning system (auto_attach_to, overlaps_with, auto_position_bubbles) and marked collision avoidance as complete
+  - PRD.md: Added MINIMAL_STYLE preset definition
 
 ### Technical Stack
 

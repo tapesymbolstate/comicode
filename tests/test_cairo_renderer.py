@@ -7,7 +7,7 @@ from pathlib import Path
 from comix.page.page import Page
 from comix.cobject.panel.panel import Panel
 from comix.cobject.bubble.bubble import SpeechBubble, ThoughtBubble
-from comix.cobject.character.character import Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime
+from comix.cobject.character.character import Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon
 from comix.cobject.text.text import Text, SFX
 from comix.cobject.shapes.shapes import Rectangle, Circle, Line
 from comix.cobject.panel.panel import Border
@@ -564,6 +564,302 @@ class TestCairoRenderer:
             eye_color="#FF00FF",
         ).move_to((200, 150))
         page.add(anime)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    # Superhero character tests
+    def test_render_superhero(self):
+        """Test rendering a superhero character."""
+        page = Page(width=400, height=300)
+        hero = Superhero(name="Captain Test").move_to((200, 150))
+        page.add(hero)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_superhero_with_expression(self):
+        """Test rendering a superhero with expression."""
+        page = Page(width=400, height=300)
+        hero = Superhero(name="HappyHero", expression="happy").move_to((200, 150))
+        page.add(hero)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_superhero_all_expressions(self):
+        """Test rendering superhero with all expression types."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            page = Page(width=400, height=300)
+            hero = Superhero(name="Expressive", expression=expr_name).move_to((200, 150))
+            page.add(hero)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_superhero_with_pose(self):
+        """Test rendering a superhero with different poses."""
+        for pose_name in ["standing", "waving", "jumping", "cheering"]:
+            page = Page(width=400, height=300)
+            hero = Superhero(name="Poser", pose=pose_name).move_to((200, 150))
+            page.add(hero)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_superhero_facing_left(self):
+        """Test rendering a superhero facing left."""
+        page = Page(width=400, height=300)
+        hero = Superhero(name="Lefty", facing="left").move_to((200, 150))
+        page.add(hero)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_superhero_with_cape(self):
+        """Test rendering a superhero with cape."""
+        page = Page(width=400, height=300)
+        hero = Superhero(name="CapedCrusader", cape=True).move_to((200, 150))
+        page.add(hero)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_superhero_masks(self):
+        """Test rendering a superhero with different mask types."""
+        for mask in ["domino", "cowl", "none"]:
+            page = Page(width=400, height=300)
+            hero = Superhero(name="MaskedHero", mask=mask).move_to((200, 150))
+            page.add(hero)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_superhero_emblems(self):
+        """Test rendering a superhero with different chest emblems."""
+        for emblem in ["star", "diamond", "circle", "shield", "none"]:
+            page = Page(width=400, height=300)
+            hero = Superhero(name="EmblemHero", emblem=emblem).move_to((200, 150))
+            page.add(hero)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_superhero_custom_colors(self):
+        """Test rendering a superhero with custom colors."""
+        page = Page(width=400, height=300)
+        hero = Superhero(
+            name="ColorHero",
+            color="#FF0000",
+            skin_color="#FFD700",
+            costume_primary="#0000FF",
+            costume_secondary="#00FF00",
+            cape_color="#FF00FF",
+        ).move_to((200, 150))
+        page.add(hero)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_superhero_full_costume(self):
+        """Test rendering a superhero with all costume options enabled."""
+        page = Page(width=400, height=300)
+        hero = Superhero(
+            name="FullHero",
+            cape=True,
+            mask="domino",
+            emblem="star",
+            boots=True,
+            gloves=True,
+        ).move_to((200, 150))
+        page.add(hero)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    # Cartoon character tests
+    def test_render_cartoon(self):
+        """Test rendering a cartoon character."""
+        page = Page(width=400, height=300)
+        toon = Cartoon(name="ToonyMcToonface").move_to((200, 150))
+        page.add(toon)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_cartoon_with_expression(self):
+        """Test rendering a cartoon with expression."""
+        page = Page(width=400, height=300)
+        toon = Cartoon(name="HappyToon", expression="happy").move_to((200, 150))
+        page.add(toon)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_cartoon_all_expressions(self):
+        """Test rendering cartoon with all expression types."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            page = Page(width=400, height=300)
+            toon = Cartoon(name="Expressive", expression=expr_name).move_to((200, 150))
+            page.add(toon)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_cartoon_with_pose(self):
+        """Test rendering a cartoon with different poses."""
+        for pose_name in ["standing", "waving", "jumping", "cheering"]:
+            page = Page(width=400, height=300)
+            toon = Cartoon(name="Poser", pose=pose_name).move_to((200, 150))
+            page.add(toon)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_cartoon_facing_left(self):
+        """Test rendering a cartoon facing left."""
+        page = Page(width=400, height=300)
+        toon = Cartoon(name="Lefty", facing="left").move_to((200, 150))
+        page.add(toon)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_cartoon_body_shapes(self):
+        """Test rendering a cartoon with different body shapes."""
+        for body_shape in ["pear", "bean", "round"]:
+            page = Page(width=400, height=300)
+            toon = Cartoon(name="ShapedToon", body_shape=body_shape).move_to((200, 150))
+            page.add(toon)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_cartoon_nose_types(self):
+        """Test rendering a cartoon with different nose types."""
+        for nose in ["round", "triangle", "long"]:
+            page = Page(width=400, height=300)
+            toon = Cartoon(name="NoseToon", nose_type=nose).move_to((200, 150))
+            page.add(toon)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_cartoon_ear_sizes(self):
+        """Test rendering a cartoon with different ear sizes."""
+        for ear_size in ["small", "normal", "large"]:
+            page = Page(width=400, height=300)
+            toon = Cartoon(name="EarToon", ear_size=ear_size).move_to((200, 150))
+            page.add(toon)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_cartoon_with_gloves(self):
+        """Test rendering a cartoon with and without gloves."""
+        for gloves in [True, False]:
+            page = Page(width=400, height=300)
+            toon = Cartoon(name="GloveToon", gloves=gloves).move_to((200, 150))
+            page.add(toon)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_cartoon_custom_colors(self):
+        """Test rendering a cartoon with custom colors."""
+        page = Page(width=400, height=300)
+        toon = Cartoon(
+            name="ColorToon",
+            color="#FF0000",
+            skin_color="#FFDAB9",
+            outline_color="#000000",
+            outfit_color="#4169E1",
+            hair_color="#FFD700",
+        ).move_to((200, 150))
+        page.add(toon)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_cartoon_full_options(self):
+        """Test rendering a cartoon with all options customized."""
+        page = Page(width=400, height=300)
+        toon = Cartoon(
+            name="FullToon",
+            body_shape="round",
+            nose_type="round",
+            ear_size="large",
+            gloves=True,
+            expression="happy",
+        ).move_to((200, 150))
+        page.add(toon)
 
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
             renderer = CairoRenderer(page)

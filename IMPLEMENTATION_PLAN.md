@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.6**
+**Current Git Tag: v0.1.8**
 
 All 5 phases have been implemented with **1502 tests passing** (1 skipped), ruff clean, and mypy passing. Current version: **v0.1.0**.
 
@@ -301,6 +301,13 @@ Files modified:
 - Removed accidental `book.pdf` artifact from repository root
 - Added `book.pdf` to `.gitignore` (it's the default output name for `comix compile`)
 - Examples output files in `examples/output/` remain tracked for documentation purposes
+
+### Type Stub Cleanup (v0.1.8)
+
+- Removed obsolete `# type: ignore` comments from fontTools, svgwrite, openai, and replicate imports
+- These packages now have proper type stubs and annotations
+- mypy now passes with 0 errors
+- Improved type checking coverage across the entire codebase
 
 ### Documentation Update (2026-01-18)
 

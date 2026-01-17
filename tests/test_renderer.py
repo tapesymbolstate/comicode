@@ -251,7 +251,7 @@ class TestSVGRenderer:
     def test_render_robot_all_expressions(self):
         """Test rendering robot with all expression types."""
         expressions = ["neutral", "happy", "sad", "angry", "surprised",
-                       "confused", "sleepy", "excited", "scared"]
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
         for expr_name in expressions:
             page = Page(width=400, height=300)
             robot = Robot(name="Expressive", expression=expr_name).move_to((200, 150))
@@ -572,7 +572,7 @@ class TestSVGRenderer:
 
     def test_render_superhero_masks(self):
         """Test rendering a superhero with different mask types."""
-        for mask in ["domino", "cowl", "none"]:
+        for mask in ["domino", "full", "cowl", "none"]:
             page = Page(width=400, height=300)
             hero = Superhero(name="MaskedHero", mask=mask).move_to((200, 150))
             page.add(hero)

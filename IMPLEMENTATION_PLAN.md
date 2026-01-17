@@ -145,6 +145,9 @@ All 4 phases have been implemented with **1328 tests passing**, mypy clean, and 
   - Both SVG and Cairo renderers fully support Cartoon rendering (24 new tests)
 - **Module Export Consistency**: Fixed character module exports (Cartoon, Superhero) and AI exception classes (AIProviderNotAvailableError, AIGenerationError) now properly exported in public API (3 new tests)
 - **Superhero/Cartoon Renderer Test Coverage**: Added comprehensive rendering tests for Superhero and Cartoon character types to both SVG and Cairo renderers. Tests cover all costume options (cape, masks, emblems, boots, gloves), body shapes, nose types, ear sizes, gloves, expressions, poses, facing directions, and custom colors (43 new tests)
+- **Parser Expression Support Fix**: Added all 11 expression types (including sleepy, excited, scared, smirk, crying) to parser's EXPRESSIONS set. Previously only 7 expressions were recognized. Extended parser tests to verify all expression names are parsed correctly (5 new expression tests)
+- **Superhero mask='full' Renderer Tests**: Added explicit tests for `mask="full"` option in both SVG and Cairo renderers (2 new tests)
+- **Robot Expression Renderer Tests**: Extended Robot expression tests in both SVG and Cairo renderers to include all 11 expressions (previously only 9 were tested, missing smirk and crying) (4 new tests)
 
 ### Technical Stack
 

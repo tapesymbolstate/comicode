@@ -601,7 +601,8 @@ class TestEdgeCases:
 
     def test_expression_names_are_valid(self):
         """Test all documented expression names."""
-        expressions = ["neutral", "happy", "sad", "angry", "surprised", "confused", "smug"]
+        expressions = ["neutral", "happy", "sad", "angry", "surprised", "confused", "smug",
+                       "sleepy", "excited", "scared", "smirk", "crying"]
         for expr in expressions:
             markup = f"""
             # panel 1

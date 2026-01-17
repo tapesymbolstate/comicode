@@ -106,7 +106,8 @@ NARRATOR_PATTERN = re.compile(r"^\s*narrator\s*:\s*[\"'](.+?)[\"']\s*$", re.IGNO
 BACKGROUND_PATTERN = re.compile(r"^\s*\[background\s*:\s*(.+?)\]\s*$", re.IGNORECASE)
 
 # Known modifiers
-EXPRESSIONS = {"neutral", "happy", "sad", "angry", "surprised", "confused", "smug"}
+EXPRESSIONS = {"neutral", "happy", "sad", "angry", "surprised", "confused", "smug",
+               "sleepy", "excited", "scared", "smirk", "crying"}
 POSITIONS = {"left", "right", "center", "closeup", "top", "bottom"}
 DIRECTIONS = {"left", "right", "front", "back"}
 BUBBLE_TYPES = {"speech", "thought", "think", "shout", "whisper"}

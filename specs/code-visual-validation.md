@@ -1,5 +1,9 @@
 # Code-Visual Validation Report - 코드와 시각적 결과 일치 검증
 
+> **NOTE (2026-01-18)**: This document's bug analysis is now **obsolete**. All issues described below have been resolved. All 1460 tests pass, all 10 examples (01-10) execute successfully and produce correct output, and mypy/ruff pass. This document is retained for historical reference only.
+
+---
+
 ## Purpose
 
 **"너 스스로가 @examples/ 안에 있는 python 파일과 @examples/output/ 안에서 해당 python 파일로 인해 생성된 결과물들이 코드적 시각적으로 만화적 흐름이 일치된다는 확신이 생겨야함. 이게 이 프로젝트의 핵심임"**

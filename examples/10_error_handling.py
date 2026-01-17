@@ -7,6 +7,7 @@ This example demonstrates graceful error handling:
 - Safe file operations
 """
 
+import importlib.util
 import os
 
 from comix import Page, Panel, Stickman
@@ -38,11 +39,10 @@ page.auto_layout()
 
 # Example 1: Check for Cairo availability before PDF rendering
 print("Example 1: Checking for Cairo...")
-try:
-    from comix.renderer import CairoRenderer
+if importlib.util.find_spec("cairo") is not None:
     print("  Cairo is available - PNG/PDF rendering supported")
     has_cairo = True
-except ImportError:
+else:
     print("  Cairo not available - using SVG fallback")
     has_cairo = False
 

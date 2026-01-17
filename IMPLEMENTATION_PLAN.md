@@ -220,6 +220,15 @@ All 5 phases have been implemented with **1460 tests passing** (1 skipped), ruff
    - Solver iteration limits (custom max_iterations)
    - Arithmetic edge cases (divide by zero, negative multiplier, float precision, chained operations)
 
+### Completed P3 Items
+
+7. **Implement remaining 5 examples (06-10)** - COMPLETE: All 10 examples now exist in `examples/` and execute successfully:
+   - 06_multi_page_pdf.py: Multi-page PDF comic using Book class
+   - 07_custom_layout.py: Custom 3x2 grid layout
+   - 08_manual_positioning.py: Manual positioning and styling
+   - 09_using_templates.py: Using built-in templates (FourKoma, TwoByTwo, ActionPage, WebComic)
+   - 10_error_handling.py: Error handling and fallbacks
+
 ### P3 - Low (Minor improvements)
 
 These items are nice-to-have cleanups:
@@ -227,13 +236,6 @@ These items are nice-to-have cleanups:
 6. **Clean up temporary files in Page.show()** - The `Page.show()` method creates temporary files that are never cleaned up:
    - Should use context manager or cleanup callback
    - Or document that temp files are user's responsibility
-
-7. **Implement remaining 5 examples (06-10)** - The `specs/working-examples.md` spec defines 10 examples but only 5 have code:
-   - 06: Multi-page PDF comic
-   - 07: Custom page layout (3x2 grid)
-   - 08: Manual positioning and styling
-   - 09: Using templates (FourKoma, TwoByTwo, etc.)
-   - 10: Error handling and fallbacks
 
 ## Future Enhancements (Ideas)
 

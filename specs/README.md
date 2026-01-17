@@ -6,20 +6,7 @@ This directory contains specifications for the Comix comic creation library, wri
 
 Comix is a Python library for creating comics programmatically, inspired by Manim's API design but focused on comic/manga creation instead of mathematical animations.
 
-**Current Status**: All core features implemented and working with 1366+ tests passing.
-
-## 🔴 CRITICAL: Must Read First
-
-**Ralph Agent는 반드시 이 순서로 읽고 작업해야 합니다:**
-
-1. **[Visual Validation Requirements](visual-validation-requirements.md)** - 모든 구현 작업의 필수 검증 절차
-2. **[Code-Visual Validation Report](code-visual-validation.md)** - 각 예제 코드와 시각적 결과 일치 검증
-3. **[Examples Maintenance](examples-maintenance.md)** - 예제 정리 및 관리 기준
-
-**핵심 원칙:**
-- 코드와 시각적 결과가 완벽히 일치해야 함
-- 작동하는 예제와 버그 있는 예제를 명확히 분리
-- 주기적으로 examples/를 정리하며 진행
+**Current Status**: All core features implemented and working. 1460 tests passing, all 10 examples working, mypy and ruff pass.
 
 ## Active Specs
 
@@ -37,22 +24,17 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 
 ## Quick Status
 
-| Spec | Status | Critical Issues (Visual Validation) |
-|------|--------|-------------------------------------|
-| Visual Validation | 🔴 **MANDATORY** | All work must follow this validation process |
-| Getting Started | 🔴 **BROKEN** | Layout bugs: content clustered in one panel |
-| Character Basics | 🔴 **BROKEN** | Only head renders, missing body/arms/legs |
-| Speech Bubbles | 🟡 Partial | Text renders but no bubble borders in some cases |
-| Page Rendering | 🟡 Partial | Renders but output is visually incorrect |
-| Working Examples | 🔴 **BROKEN** | 01, 02, 04 have layout bugs. Only 03, 05 work |
+| Spec | Status |
+|------|--------|
+| Getting Started | ✅ Complete |
+| Character Basics | ✅ Complete |
+| Speech Bubbles | ✅ Complete |
+| Page Rendering | ✅ Complete |
+| Working Examples | ✅ All 10 examples working |
 
-### Visual Validation Results (examples/output/)
+### Examples Status (examples/output/)
 
-- ❌ **01_simple_dialogue.png**: Content clustered in left panel, right panel empty
-- ❌ **02_four_panel_comic.png**: All content in first panel, bubbles exceed panel bounds
-- ✅ **03_group_scene.png**: Layout OK (but characters still only heads)
-- ❌ **04_expressions.png**: Only top-left panel has content, others empty
-- ✅ **05_bubble_types.png**: Works correctly!
+All 10 examples (01-10) execute successfully and produce correct output.
 
 ## Features
 

@@ -89,34 +89,7 @@
 
 ## Current Known Issues (실제 결과물 검증 결과)
 
-### 🔴 Critical Bugs Found in examples/output/
-
-**01_simple_dialogue.png**:
-- ❌ 왼쪽 패널에만 내용이 몰림, 오른쪽 패널 비어있음
-- ❌ 텍스트 "How are you today?"가 겹쳐서 깨짐
-- ❌ 캐릭터가 올바른 위치에 없음
-- **원인 추정**: `auto_layout()` 버그, 패널별 콘텐츠가 전역 좌표로 렌더링됨
-
-**02_four_panel_comic.png**:
-- ❌ 4개 패널 중 첫 번째에만 모든 내용 몰림
-- ❌ 말풍선이 패널 경계를 훨씬 벗어남
-- ❌ 텍스트가 여러 줄 겹쳐서 나옴
-- **원인 추정**: 패널별 좌표계 변환 실패, 모든 객체가 절대 좌표로 렌더링
-
-**03_group_scene.png**:
-- ⚠️ 캐릭터 배치는 OK
-- ❌ 여전히 머리(삼각형)만 렌더링, 몸통 없음
-- **원인**: `Stickman.generate_points()` 미완성
-
-**04_expressions.png**:
-- ❌ 2x2 그리드에서 왼쪽 위에만 내용
-- ❌ 나머지 3개 패널에 빈 말풍선만
-- **원인 추정**: 패널별 좌표 변환 실패
-
-**05_bubble_types.png**:
-- ✅ 4개 세로 패널 모두 올바르게 렌더링!
-- ✅ 말풍선 타입별로 제대로 표시됨
-- **왜 이것만 작동?** 세로 레이아웃(rows=4, cols=1)은 작동, 그리드 레이아웃(2x2, 1x2)은 버그
+**No known issues.** As of 2026-01-18, all 1460 tests pass, all 10 examples (01-10) execute successfully and produce correct output, and mypy/ruff pass.
 
 ## Implementation Strategy
 

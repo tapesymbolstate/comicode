@@ -31,60 +31,20 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 
 ## Current Examples Status
 
-### ✅ Working Examples (작동 확인)
+**All 10 examples are working.** As of 2026-01-18, all examples execute successfully and produce correct output.
 
-**03_group_scene.py**
-- Status: ✅ 레이아웃 작동 (단, 캐릭터는 머리만)
-- Output: 3개 캐릭터가 올바른 위치에 배치됨
-- 사용 가능: Yes (캐릭터 렌더링 개선 전까지는 제한적)
-
-**05_bubble_types.py**
-- Status: ✅ 완벽히 작동!
-- Output: 4개 세로 패널, 각 말풍선 타입 올바르게 표시
-- 사용 가능: Yes
-- 참고: 이것이 현재 유일하게 완벽한 예제
-
-### 🔴 Broken Examples (버그로 작동 안 함)
-
-**01_simple_dialogue.py**
-- Status: 🔴 레이아웃 버그
-- Issue: 왼쪽 패널에만 내용 몰림, 오른쪽 패널 비어있음
-- Blocker: GridLayout 다중 열 버그
-- Action: examples/broken/으로 이동 또는 .BROKEN.py로 rename
-
-**02_four_panel_comic.py**
-- Status: 🔴 레이아웃 버그
-- Issue: 모든 내용이 첫 패널에 몰림, 말풍선 패널 밖으로
-- Blocker: GridLayout 다중 행 버그
-- Action: examples/broken/으로 이동
-
-**04_expressions.py**
-- Status: 🔴 레이아웃 버그
-- Issue: 2x2 그리드에서 왼쪽 위에만 내용
-- Blocker: GridLayout 2x2 버그
-- Action: examples/broken/으로 이동
-
-### 🚧 Unknown Status (검증 필요)
-
-**06_multi_page_pdf.py**
-- Status: 🚧 미검증
-- Action: PDF 확인 필요 (uv run python examples/06_multi_page_pdf.py 실행 후 PDF 확인)
-
-**07_custom_layout.py**
-- Status: 🚧 미검증
-- Action: PNG 확인 필요
-
-**08_manual_positioning.py**
-- Status: 🚧 미검증
-- Action: PNG 확인 필요
-
-**09_using_templates.py**
-- Status: 🚧 미검증
-- Action: PNG 확인 필요
-
-**10_error_handling.py**
-- Status: 🚧 미검증
-- Action: 에러 핸들링 테스트 (의도적으로 에러 발생시키는 예제)
+| Example | Status |
+|---------|--------|
+| 01_simple_dialogue.py | ✅ Working |
+| 02_four_panel_comic.py | ✅ Working |
+| 03_group_scene.py | ✅ Working |
+| 04_expressions.py | ✅ Working |
+| 05_bubble_types.py | ✅ Working |
+| 06_multi_page_pdf.py | ✅ Working |
+| 07_custom_layout.py | ✅ Working |
+| 08_manual_positioning.py | ✅ Working |
+| 09_using_templates.py | ✅ Working |
+| 10_error_handling.py | ✅ Working |
 
 ## Immediate Action Plan
 

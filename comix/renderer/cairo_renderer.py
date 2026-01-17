@@ -228,7 +228,7 @@ class CairoRenderer:
             self._render_bubble(data)
         elif obj_type in ("Text", "StyledText", "SFX"):
             self._render_text(data)
-        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Robot", "Chibi", "Character"):
+        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Robot", "Chibi", "Anime", "Superhero", "Cartoon", "Character"):
             self._render_character(data)
         elif obj_type == "Rectangle":
             self._render_rectangle(data)

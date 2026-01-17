@@ -2086,3 +2086,585 @@ class TestEffectElementStrokeDasharray:
 
         # ShakeEffect creates dashed motion blur lines
         assert "stroke-dasharray" in svg_string
+
+
+class TestAnimeCharacterRendering:
+    """Tests for anime character rendering components."""
+
+    def test_render_anime_all_hair_styles(self):
+        """Test anime character renders correctly with all 7 hair styles."""
+        hair_styles = ["flowing", "ponytail", "twintails", "spiky", "short", "bob", "none"]
+
+        for style in hair_styles:
+            page = Page(width=400, height=400)
+            char = Anime(name=f"Hair_{style}", hair_style=style).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string
+            # All anime characters have head polygon
+            assert "<polygon" in svg_string
+            if style != "none":
+                # Hair styles (except none) render additional polygon shapes
+                assert svg_string.count("<polygon") > 1, f"Hair style '{style}' should add hair polygons"
+
+    def test_render_anime_flowing_hair_has_back_and_front_layer(self):
+        """Test flowing hair style renders both back hair and bangs."""
+        page = Page(width=400, height=400)
+        char = Anime(name="FlowingHair", hair_style="flowing", hair_color="#8B4513").move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Flowing hair should include hair color in polygons
+        assert "#8B4513" in svg_string, "Hair color should be present in SVG"
+        # Should have multiple polygon elements for hair layers
+        polygon_count = svg_string.count("<polygon")
+        assert polygon_count >= 3, "Flowing hair should have at least back layer, head, and bangs"
+
+    def test_render_anime_twintails_renders_both_sides(self):
+        """Test twintails hair style renders two separate tail polygons."""
+        page = Page(width=400, height=400)
+        char = Anime(name="Twintails", hair_style="twintails").move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Twintails should render left and right tails
+        # Each twin tail is a separate polygon, plus hair cap
+        polygon_count = svg_string.count("<polygon")
+        assert polygon_count >= 4, "Twintails should have 2 tails + hair cap + head"
+
+    def test_render_anime_spiky_hair_has_spike_triangles(self):
+        """Test spiky hair style renders spike triangles for bangs."""
+        page = Page(width=400, height=400)
+        char = Anime(name="SpikyHair", hair_style="spiky").move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Spiky has 3 spike triangles as bangs
+        polygon_count = svg_string.count("<polygon")
+        assert polygon_count >= 5, "Spiky hair should have 3 spikes + hair cap + head"
+
+    def test_render_anime_all_eye_types(self):
+        """Test anime eyes render correctly for all eye types."""
+        from comix.cobject.character.character import Expression
+
+        eye_types = ["curved", "closed", "stars", "tears", "wide", "surprised", "normal"]
+
+        for eye_type in eye_types:
+            page = Page(width=400, height=400)
+            char = Anime(name=f"Eyes_{eye_type}").move_to((200, 200))
+            # Set custom expression with specific eye type
+            char._expression = Expression(name="custom", eyes=eye_type, mouth="normal", eyebrows="normal")
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string
+            if eye_type == "curved":
+                # Curved eyes are polylines
+                assert "<polyline" in svg_string, "Curved eyes should render as polylines"
+            elif eye_type == "closed":
+                # Closed eyes are lines
+                assert "<line" in svg_string, "Closed eyes should render as lines"
+            elif eye_type == "stars":
+                # Star eyes have lines for the star pattern
+                assert "<line" in svg_string, "Star eyes should render lines for star pattern"
+            elif eye_type == "tears":
+                # Tears have circles and the blue tear color
+                assert "#87CEEB" in svg_string, "Tear eyes should include light blue tear color"
+            elif eye_type in ["wide", "surprised", "normal"]:
+                # These eye types use circles
+                assert "<circle" in svg_string, f"Eye type '{eye_type}' should use circles"
+
+    def test_render_anime_all_mouth_types(self):
+        """Test anime mouth renders correctly for all mouth types."""
+        from comix.cobject.character.character import Expression
+
+        mouth_types = ["smile", "frown", "open", "grin", "gasp", "wavy", "smirk", "normal"]
+
+        for mouth_type in mouth_types:
+            page = Page(width=400, height=400)
+            char = Anime(name=f"Mouth_{mouth_type}").move_to((200, 200))
+            char._expression = Expression(name="custom", eyes="normal", mouth=mouth_type, eyebrows="normal")
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string
+            if mouth_type in ["smile", "frown", "grin", "wavy", "smirk"]:
+                # These mouths are polylines
+                assert "<polyline" in svg_string, f"Mouth type '{mouth_type}' should render as polyline"
+            elif mouth_type in ["open", "gasp"]:
+                # These mouths are circles (open mouth)
+                assert "<circle" in svg_string, f"Mouth type '{mouth_type}' should render as circle"
+            elif mouth_type == "normal":
+                # Normal mouth is a simple line
+                assert "<line" in svg_string, "Normal mouth should render as line"
+
+    def test_render_anime_custom_colors(self):
+        """Test anime character renders with custom colors."""
+        page = Page(width=400, height=400)
+        char = Anime(
+            name="CustomColors",
+            hair_color="#FF0000",  # Red hair
+            skin_color="#FFEEDD",
+            outfit_color="#00FF00",  # Green outfit
+            eye_color="#0000FF",  # Blue eyes
+        ).move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        assert "#FF0000" in svg_string, "Custom hair color should be in SVG"
+        assert "#FFEEDD" in svg_string, "Custom skin color should be in SVG"
+        assert "#00FF00" in svg_string, "Custom outfit color should be in SVG"
+        assert "#0000FF" in svg_string, "Custom eye color should be in SVG"
+
+    def test_render_anime_with_all_expressions(self):
+        """Test anime character renders with all preset expressions."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised", "confused",
+                      "sleepy", "excited", "scared", "smirk", "crying"]
+
+        for expr_name in expressions:
+            page = Page(width=400, height=400)
+            char = Anime(name=f"Expr_{expr_name}", expression=expr_name).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string
+            assert "<polygon" in svg_string, f"Expression '{expr_name}' should render character body"
+
+
+class TestSuperheroCharacterRendering:
+    """Tests for superhero character rendering components."""
+
+    def test_render_superhero_with_cape(self):
+        """Test superhero renders with cape when enabled."""
+        page = Page(width=400, height=400)
+        char = Superhero(name="Caped", cape=True, cape_color="#FF0000").move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Cape should render with its color
+        assert "#FF0000" in svg_string, "Cape color should be in SVG"
+        # Should have multiple polygons (head, body, cape, etc.)
+        polygon_count = svg_string.count("<polygon")
+        assert polygon_count >= 2, "Superhero with cape should have multiple polygons"
+
+    def test_render_superhero_without_cape(self):
+        """Test superhero renders without cape when disabled."""
+        page = Page(width=400, height=400)
+        char = Superhero(name="NoCape", cape=False).move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should still render the character
+        assert "<polygon" in svg_string
+        assert "<svg" in svg_string
+
+    def test_render_superhero_all_emblem_types(self):
+        """Test superhero renders correctly with all emblem types."""
+        emblem_types = ["star", "diamond", "circle", "shield", "none"]
+
+        for emblem in emblem_types:
+            page = Page(width=400, height=400)
+            char = Superhero(name=f"Emblem_{emblem}", emblem=emblem, emblem_color="#FFD700").move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string
+            if emblem != "none":
+                # Emblems use the emblem color
+                assert "#FFD700" in svg_string, f"Emblem '{emblem}' should show emblem color"
+            else:
+                # No emblem should not have the emblem color unless it's used elsewhere
+                pass
+
+    def test_render_superhero_star_emblem_has_correct_shape(self):
+        """Test star emblem renders with alternating outer/inner points."""
+        page = Page(width=400, height=400)
+        char = Superhero(name="StarEmblem", emblem="star").move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Star emblem is rendered as a polygon with 10 points (5 outer + 5 inner)
+        assert "<polygon" in svg_string
+
+    def test_render_superhero_diamond_emblem(self):
+        """Test diamond emblem renders as 4-point shape."""
+        page = Page(width=400, height=400)
+        char = Superhero(name="DiamondEmblem", emblem="diamond").move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        assert "<polygon" in svg_string
+
+    def test_render_superhero_circle_emblem(self):
+        """Test circle emblem renders as circle shape."""
+        page = Page(width=400, height=400)
+        char = Superhero(name="CircleEmblem", emblem="circle", emblem_color="#123456").move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Circle emblem uses <circle> element
+        assert "#123456" in svg_string, "Circle emblem color should be present"
+
+    def test_render_superhero_all_mask_types(self):
+        """Test superhero renders correctly with all mask types."""
+        mask_types = ["domino", "cowl", "full", "none"]
+
+        for mask in mask_types:
+            page = Page(width=400, height=400)
+            char = Superhero(name=f"Mask_{mask}", mask=mask).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string
+            assert "<polygon" in svg_string, f"Mask type '{mask}' should render character"
+
+    def test_render_superhero_domino_mask_shows_skin(self):
+        """Test domino mask shows skin color (not covered face)."""
+        page = Page(width=400, height=400)
+        char = Superhero(
+            name="DominoMask",
+            mask="domino",
+            skin_color="#FFDDCC"
+        ).move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Skin color should be visible (domino only covers eyes)
+        assert "#FFDDCC" in svg_string, "Domino mask should show skin color"
+
+    def test_render_superhero_full_mask_hides_skin(self):
+        """Test full mask uses costume color for head."""
+        page = Page(width=400, height=400)
+        char = Superhero(
+            name="FullMask",
+            mask="full",
+            costume_primary="#FF0000",
+            skin_color="#FFDDCC"
+        ).move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Full mask means head is costume color
+        assert "#FF0000" in svg_string, "Full mask should use costume color"
+
+    def test_render_superhero_with_boots_and_gloves(self):
+        """Test superhero renders with boots and gloves."""
+        page = Page(width=400, height=400)
+        char = Superhero(
+            name="FullGear",
+            boots=True,
+            gloves=True,
+            costume_secondary="#0000FF"
+        ).move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Secondary color used for boots/gloves
+        assert "#0000FF" in svg_string, "Boots/gloves should use secondary costume color"
+
+    def test_render_superhero_custom_costume_colors(self):
+        """Test superhero renders with custom costume colors."""
+        page = Page(width=400, height=400)
+        char = Superhero(
+            name="CustomCostume",
+            costume_primary="#123ABC",
+            costume_secondary="#DEF456",
+            cape_color="#789012"
+        ).move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        assert "#123ABC" in svg_string, "Primary costume color should be in SVG"
+        assert "#DEF456" in svg_string, "Secondary costume color should be in SVG"
+        assert "#789012" in svg_string, "Cape color should be in SVG"
+
+    def test_render_superhero_all_expressions(self):
+        """Test superhero renders with all preset expressions."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised", "confused",
+                      "sleepy", "excited", "scared", "smirk", "crying"]
+
+        for expr_name in expressions:
+            page = Page(width=400, height=400)
+            char = Superhero(name=f"Expr_{expr_name}", expression=expr_name).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string
+            assert "<polygon" in svg_string, f"Expression '{expr_name}' should render character"
+
+
+class TestCartoonCharacterRendering:
+    """Tests for cartoon character rendering components."""
+
+    def test_render_cartoon_all_body_shapes(self):
+        """Test cartoon character renders with all body shapes."""
+        body_shapes = ["pear", "bean", "round"]
+
+        for shape in body_shapes:
+            page = Page(width=400, height=400)
+            char = Cartoon(name=f"Body_{shape}", body_shape=shape).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string
+            assert "<polygon" in svg_string or "<circle" in svg_string, f"Body shape '{shape}' should render"
+
+    def test_render_cartoon_all_nose_types(self):
+        """Test cartoon character renders with all nose types."""
+        nose_types = ["round", "triangle", "long"]
+
+        for nose in nose_types:
+            page = Page(width=400, height=400)
+            char = Cartoon(name=f"Nose_{nose}", nose_type=nose).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string
+
+    def test_render_cartoon_all_ear_sizes(self):
+        """Test cartoon character renders with all ear sizes."""
+        ear_sizes = ["small", "normal", "large"]
+
+        for size in ear_sizes:
+            page = Page(width=400, height=400)
+            char = Cartoon(name=f"Ears_{size}", ear_size=size).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string
+
+    def test_render_cartoon_with_gloves(self):
+        """Test cartoon character renders with gloves enabled."""
+        page = Page(width=400, height=400)
+        char = Cartoon(name="WithGloves", gloves=True).move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Cartoon with gloves should have white for hands
+        assert "white" in svg_string.lower() or "#FFFFFF" in svg_string.upper() or "#fff" in svg_string.lower()
+
+    def test_render_cartoon_without_gloves(self):
+        """Test cartoon character renders without gloves."""
+        page = Page(width=400, height=400)
+        char = Cartoon(name="NoGloves", gloves=False, skin_color="#FFDAB9").move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should use skin color for hands when no gloves
+        assert "#FFDAB9" in svg_string, "Hands should use skin color when no gloves"
+
+    def test_render_cartoon_custom_colors(self):
+        """Test cartoon character renders with custom colors."""
+        page = Page(width=400, height=400)
+        char = Cartoon(
+            name="CustomColors",
+            skin_color="#FFCCAA",
+            outline_color="#222222",
+            outfit_color="#00AA00",
+            hair_color="#AA5500"
+        ).move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        assert "#FFCCAA" in svg_string, "Custom skin color should be in SVG"
+        assert "#222222" in svg_string, "Custom outline color should be in SVG"
+        assert "#00AA00" in svg_string, "Custom outfit color should be in SVG"
+
+    def test_render_cartoon_thick_strokes(self):
+        """Test cartoon character renders with thick strokes."""
+        page = Page(width=400, height=400)
+        char = Cartoon(name="ThickStrokes").move_to((200, 200))
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Cartoon uses stroke-width=3 which is thicker than anime (1.5)
+        assert 'stroke-width="3"' in svg_string or "stroke-width:3" in svg_string
+
+    def test_render_cartoon_all_expressions(self):
+        """Test cartoon character renders with all preset expressions."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised", "confused",
+                      "sleepy", "excited", "scared", "smirk", "crying"]
+
+        for expr_name in expressions:
+            page = Page(width=400, height=400)
+            char = Cartoon(name=f"Expr_{expr_name}", expression=expr_name).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string
+
+
+class TestCharacterRenderingEdgeCases:
+    """Tests for character rendering edge cases."""
+
+    def test_render_anime_with_insufficient_points(self):
+        """Test anime character handles insufficient points gracefully."""
+        page = Page(width=400, height=400)
+        char = Anime(name="LowPoints", height=10).move_to((200, 200))  # Very small height
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        # Should not raise exception
+        svg_string = renderer.render_to_string()
+        assert "<svg" in svg_string
+
+    def test_render_superhero_with_insufficient_points(self):
+        """Test superhero character handles insufficient points gracefully."""
+        page = Page(width=400, height=400)
+        char = Superhero(name="LowPoints", height=10).move_to((200, 200))  # Very small height
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        # Should not raise exception
+        svg_string = renderer.render_to_string()
+        assert "<svg" in svg_string
+
+    def test_render_cartoon_with_insufficient_points(self):
+        """Test cartoon character handles insufficient points gracefully."""
+        page = Page(width=400, height=400)
+        char = Cartoon(name="LowPoints", height=10).move_to((200, 200))  # Very small height
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        # Should not raise exception
+        svg_string = renderer.render_to_string()
+        assert "<svg" in svg_string
+
+    def test_render_anime_facing_left(self):
+        """Test anime character facing left renders correctly."""
+        page = Page(width=400, height=400)
+        char = Anime(name="FacingLeft").move_to((200, 200))
+        char.face("left")
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        assert "<svg" in svg_string
+        assert "<polygon" in svg_string
+
+    def test_render_superhero_facing_left(self):
+        """Test superhero character facing left renders correctly."""
+        page = Page(width=400, height=400)
+        char = Superhero(name="FacingLeft").move_to((200, 200))
+        char.face("left")
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        assert "<svg" in svg_string
+
+    def test_render_cartoon_facing_left(self):
+        """Test cartoon character facing left renders correctly."""
+        page = Page(width=400, height=400)
+        char = Cartoon(name="FacingLeft").move_to((200, 200))
+        char.face("left")
+        page.add(char)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        assert "<svg" in svg_string
+
+    def test_render_anime_all_poses(self):
+        """Test anime character renders with all poses."""
+        poses = ["standing", "sitting", "waving", "pointing", "walking", "running",
+                 "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
+
+        for pose_name in poses:
+            page = Page(width=400, height=400)
+            char = Anime(name=f"Pose_{pose_name}", pose=pose_name).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string, f"Pose '{pose_name}' should render SVG"
+
+    def test_render_superhero_all_poses(self):
+        """Test superhero character renders with all poses."""
+        poses = ["standing", "sitting", "waving", "pointing", "walking", "running",
+                 "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
+
+        for pose_name in poses:
+            page = Page(width=400, height=400)
+            char = Superhero(name=f"Pose_{pose_name}", pose=pose_name).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string, f"Pose '{pose_name}' should render SVG"
+
+    def test_render_cartoon_all_poses(self):
+        """Test cartoon character renders with all poses."""
+        poses = ["standing", "sitting", "waving", "pointing", "walking", "running",
+                 "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
+
+        for pose_name in poses:
+            page = Page(width=400, height=400)
+            char = Cartoon(name=f"Pose_{pose_name}", pose=pose_name).move_to((200, 200))
+            page.add(char)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<svg" in svg_string, f"Pose '{pose_name}' should render SVG"

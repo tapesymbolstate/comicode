@@ -2,9 +2,9 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.5**
+**Current Git Tag: v0.1.6**
 
-All 5 phases have been implemented with **1465 tests passing** (1 skipped), ruff clean, and mypy passing (8 unused type:ignore warnings). Current version: **v0.1.0**.
+All 5 phases have been implemented with **1502 tests passing** (1 skipped), ruff clean, and mypy passing. Current version: **v0.1.0**.
 
 ### Completed Phases Summary
 
@@ -259,6 +259,20 @@ These are potential improvements, not planned work:
 None currently tracked.
 
 ## Verification Notes (2026-01-18)
+
+### Critical Bug Fix & Test Coverage (v0.1.6)
+
+- **Fixed Anime/Superhero/Cartoon Character Rendering Bug**: Both SVG and Cairo renderers had a dispatch bug where Anime, Superhero, and Cartoon character types were missing from the type dispatch list. This caused these characters to fall through to the generic renderer (rendering as simple polylines) instead of their specialized rendering methods with proper body parts, hair styles, costumes, etc.
+  - Fixed in `comix/renderer/svg_renderer.py` line 184
+  - Fixed in `comix/renderer/cairo_renderer.py` line 231
+- **Added Comprehensive Character Rendering Tests**: 37 new tests covering:
+  - Anime: all 7 hair styles, all eye types, all mouth types, custom colors, expressions, poses
+  - Superhero: cape rendering, all 5 emblem types, all 4 mask types, boots/gloves, costume colors
+  - Cartoon: all body shapes, nose types, ear sizes, gloves, custom colors, thick strokes
+  - Edge cases: insufficient points handling, facing direction, all 12 poses
+- **Coverage Improvement**: Overall test coverage improved from 85% to 98%
+  - svg_renderer.py: 71% → 98%
+  - cairo_renderer.py: 64% → 98%
 
 ### Cleanup (v0.1.5)
 

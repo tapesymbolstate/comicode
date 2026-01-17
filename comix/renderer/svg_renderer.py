@@ -181,7 +181,7 @@ class SVGRenderer:
             self._render_bubble(data, group)
         elif obj_type in ("Text", "StyledText", "SFX"):
             self._render_text(data, group)
-        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Robot", "Chibi", "Cartoon", "Character"):
+        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Robot", "Chibi", "Anime", "Superhero", "Cartoon", "Character"):
             self._render_character(data, group)
         elif obj_type == "Rectangle":
             self._render_rectangle(data, group)

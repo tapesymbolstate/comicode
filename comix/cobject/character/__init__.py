@@ -5,6 +5,7 @@ from comix.cobject.character.character import (
     ChubbyStickman,
     Expression,
     Pose,
+    Robot,
     SimpleFace,
     Stickman,
 )
@@ -14,6 +15,7 @@ __all__ = [
     "ChubbyStickman",
     "Expression",
     "Pose",
+    "Robot",
     "SimpleFace",
     "Stickman",
 ]

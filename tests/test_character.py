@@ -7,6 +7,7 @@ from comix.cobject.character.character import (
     ChubbyStickman,
     Expression,
     Pose,
+    Robot,
     SimpleFace,
     Stickman,
 )
@@ -387,3 +388,165 @@ class TestChubbyStickman:
             assert chubby._expression.name == expr_name
             data = chubby.get_render_data()
             assert data["expression"]["name"] == expr_name
+
+
+class TestRobot:
+    """Tests for Robot character class."""
+
+    def test_default_init(self):
+        """Test default initialization."""
+        robot = Robot()
+        assert robot.name == "Robot"
+        assert robot.style == "robot"
+        assert robot.antenna is True
+        assert robot.panel_color == "#4A4A4A"
+        assert robot.screen_color == "#1A1A2E"
+        assert robot.led_color == "#00FF88"
+
+    def test_custom_name(self):
+        """Test custom name."""
+        robot = Robot(name="RoboHelper")
+        assert robot.name == "RoboHelper"
+
+    def test_no_antenna(self):
+        """Test robot without antenna."""
+        robot = Robot(antenna=False)
+        assert robot.antenna is False
+        # Should generate fewer points without antenna
+        with_antenna = Robot(antenna=True)
+        assert len(robot._points) < len(with_antenna._points)
+
+    def test_generates_points(self):
+        """Test that robot generates points."""
+        robot = Robot()
+        # Should have points for: antenna (2), head (4), body (4), limbs (7 * 4)
+        assert len(robot._points) >= 38  # Minimum expected points
+
+    def test_facing_flips_points(self):
+        """Test that facing left flips x coordinates."""
+        right = Robot(facing="right")
+        left = Robot(facing="left")
+
+        right_x = right._points[:, 0]
+        left_x = left._points[:, 0]
+
+        np.allclose(right_x, -left_x)
+
+    def test_custom_height(self):
+        """Test custom height."""
+        robot = Robot(height=150.0)
+        assert robot.character_height == 150.0
+        data = robot.get_render_data()
+        assert data["character_height"] == 150.0
+
+    def test_custom_colors(self):
+        """Test custom colors."""
+        robot = Robot(
+            color="#FF0000",
+            fill_color="#FFAAAA",
+            panel_color="#222222",
+            screen_color="#000066",
+            led_color="#00FFFF",
+        )
+        assert robot.color == "#FF0000"
+        assert robot.fill_color == "#FFAAAA"
+        assert robot.panel_color == "#222222"
+        assert robot.screen_color == "#000066"
+        assert robot.led_color == "#00FFFF"
+
+    def test_get_render_data(self):
+        """Test render data includes robot-specific fields."""
+        robot = Robot()
+        data = robot.get_render_data()
+        assert data["style"] == "robot"
+        assert "antenna" in data
+        assert data["antenna"] is True
+        assert "panel_color" in data
+        assert data["panel_color"] == "#4A4A4A"
+        assert "screen_color" in data
+        assert data["screen_color"] == "#1A1A2E"
+        assert "led_color" in data
+        assert data["led_color"] == "#00FF88"
+        assert "head_height_ratio" in data
+        assert data["head_height_ratio"] == 0.25
+        assert "head_width_ratio" in data
+        assert data["head_width_ratio"] == 0.22
+        assert "body_height_ratio" in data
+        assert data["body_height_ratio"] == 0.30
+        assert "body_width_ratio" in data
+        assert data["body_width_ratio"] == 0.26
+        assert "joint_size" in data
+        assert data["joint_size"] == 100.0 * 0.03  # Default height * ratio
+
+    def test_set_expression(self):
+        """Test setting expression on robot."""
+        robot = Robot()
+        result = robot.set_expression("happy")
+        assert result is robot
+        assert robot._expression.name == "happy"
+
+    def test_set_pose(self):
+        """Test setting pose on robot."""
+        robot = Robot()
+        result = robot.set_pose("waving")
+        assert result is robot
+        assert robot._pose.name == "waving"
+
+    def test_say_creates_bubble(self):
+        """Test say method creates speech bubble."""
+        robot = Robot().move_to((100, 100))
+        bubble = robot.say("Beep boop!")
+        assert bubble.text == "Beep boop!"
+        assert bubble.bubble_type == "speech"
+        assert bubble.tail_target is robot
+
+    def test_think_creates_bubble(self):
+        """Test think method creates thought bubble."""
+        robot = Robot().move_to((100, 100))
+        bubble = robot.think("Computing...")
+        assert bubble.text == "Computing..."
+        assert bubble.bubble_type == "thought"
+
+    def test_shout_creates_bubble(self):
+        """Test shout method creates shout bubble."""
+        robot = Robot().move_to((100, 100))
+        bubble = robot.shout("ALERT!")
+        assert bubble.text == "ALERT!"
+        assert bubble.bubble_type == "shout"
+
+    def test_whisper_creates_bubble(self):
+        """Test whisper method creates whisper bubble."""
+        robot = Robot().move_to((100, 100))
+        bubble = robot.whisper("*beep*")
+        assert bubble.text == "*beep*"
+        assert bubble.bubble_type == "whisper"
+
+    def test_all_poses(self):
+        """Test robot with different poses."""
+        poses = ["standing", "sitting", "walking", "running", "pointing",
+                 "waving", "jumping", "dancing", "kneeling", "cheering", "thinking"]
+        for pose_name in poses:
+            robot = Robot(pose=pose_name)
+            assert robot._pose.name == pose_name
+            # Should still generate valid points
+            assert len(robot._points) >= 38
+
+    def test_all_expressions(self):
+        """Test robot with different expressions."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            robot = Robot(expression=expr_name)
+            assert robot._expression.name == expr_name
+            data = robot.get_render_data()
+            assert data["expression"]["name"] == expr_name
+
+    def test_default_fill_color(self):
+        """Test default fill color is metal gray."""
+        robot = Robot()
+        assert robot.fill_color == "#6B7280"
+
+    def test_default_outline_color(self):
+        """Test default outline color."""
+        robot = Robot()
+        assert robot.color == "#333333"

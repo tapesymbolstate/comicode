@@ -180,7 +180,7 @@ class SVGRenderer:
             self._render_bubble(data, group)
         elif obj_type in ("Text", "StyledText", "SFX"):
             self._render_text(data, group)
-        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Character"):
+        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Robot", "Character"):
             self._render_character(data, group)
         elif obj_type == "Rectangle":
             self._render_rectangle(data, group)
@@ -467,6 +467,8 @@ class SVGRenderer:
             self._render_simple_face(data, group, pos)
         elif style == "chubby":
             self._render_chubby_stickman(data, group, pos, points)
+        elif style == "robot":
+            self._render_robot(data, group, pos, points)
         else:
             self._render_generic(data, group)
 
@@ -645,6 +647,345 @@ class SVGRenderer:
         self._render_face_eyebrows(group, head_pos, head_radius, eye_y, eye_offset, eyebrow_type, color)
         # Render mouth
         self._render_face_mouth(group, head_pos, head_radius, mouth_type, color)
+
+    def _render_robot(
+        self, data: dict[str, Any], group: Group, pos: list[float], points: list[list[float]]
+    ) -> None:
+        """Render a robot character with mechanical/geometric design.
+
+        Renders a mechanical robot figure with:
+        - Optional antenna
+        - Square head with screen face display
+        - Rectangular body
+        - Jointed limbs with circular joint indicators
+        - LED-style eyes and digital display mouth
+        """
+        color = data.get("color", "#333333")
+        fill_color = data.get("fill_color", "#6B7280")
+        panel_color = data.get("panel_color", "#4A4A4A")
+        screen_color = data.get("screen_color", "#1A1A2E")
+        led_color = data.get("led_color", "#00FF88")
+        has_antenna = data.get("antenna", True)
+        stroke_width = 2
+
+        if len(points) < 10:
+            return
+
+        # Point indices depend on whether antenna is present
+        offset = 2 if has_antenna else 0
+
+        # Render antenna if present
+        if has_antenna and len(points) >= 2:
+            antenna_tip = points[0]
+            antenna_base = points[1]
+            # Antenna line
+            antenna_line = SVGLine(
+                start=(antenna_tip[0] + pos[0], antenna_tip[1] + pos[1]),
+                end=(antenna_base[0] + pos[0], antenna_base[1] + pos[1]),
+                stroke=color,
+                stroke_width=stroke_width,
+            )
+            group.add(antenna_line)
+            # Antenna ball at tip
+            antenna_ball = SVGCircle(
+                center=(antenna_tip[0] + pos[0], antenna_tip[1] + pos[1]),
+                r=data.get("character_height", 100) * 0.02,
+                fill=led_color,
+                stroke=color,
+                stroke_width=1,
+            )
+            group.add(antenna_ball)
+
+        # Head rectangle (4 points starting at offset)
+        head_start = offset
+        if len(points) > head_start + 3:
+            head_pts = points[head_start:head_start + 4]
+            translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_pts]
+            # Main head
+            head = Polygon(
+                points=translated_head,
+                fill=fill_color,
+                stroke=color,
+                stroke_width=stroke_width,
+            )
+            group.add(head)
+
+            # Screen face area (slightly inset rectangle)
+            head_center_x = sum(p[0] for p in head_pts) / 4 + pos[0]
+            head_center_y = sum(p[1] for p in head_pts) / 4 + pos[1]
+            head_width = abs(head_pts[1][0] - head_pts[0][0])
+            head_height = abs(head_pts[0][1] - head_pts[3][1])
+
+            screen_margin = head_width * 0.15
+            screen_rect = Rect(
+                insert=(head_center_x - head_width / 2 + screen_margin,
+                        head_center_y - head_height / 2 + screen_margin),
+                size=(head_width - screen_margin * 2, head_height - screen_margin * 2),
+                fill=screen_color,
+                stroke=color,
+                stroke_width=1,
+                rx=3,
+                ry=3,
+            )
+            group.add(screen_rect)
+
+            # Render robot face on the screen
+            self._render_robot_face(group, data, head_center_x, head_center_y, head_width, led_color)
+
+        # Body rectangle (4 points)
+        body_start = offset + 4
+        if len(points) > body_start + 3:
+            body_pts = points[body_start:body_start + 4]
+            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_pts]
+            # Main body
+            body = Polygon(
+                points=translated_body,
+                fill=fill_color,
+                stroke=color,
+                stroke_width=stroke_width,
+            )
+            group.add(body)
+
+            # Body panel detail (center line)
+            body_center_x = (body_pts[0][0] + body_pts[1][0]) / 2 + pos[0]
+            body_top_y = body_pts[0][1] + pos[1]
+            body_bottom_y = body_pts[2][1] + pos[1]
+            panel_line = SVGLine(
+                start=(body_center_x, body_top_y + 5),
+                end=(body_center_x, body_bottom_y - 5),
+                stroke=panel_color,
+                stroke_width=1,
+            )
+            group.add(panel_line)
+
+            # Chest light/indicator
+            chest_light = SVGCircle(
+                center=(body_center_x, (body_top_y + body_bottom_y) / 2 - 5),
+                r=data.get("character_height", 100) * 0.02,
+                fill=led_color,
+                stroke=color,
+                stroke_width=1,
+            )
+            group.add(chest_light)
+
+        # Limbs - each limb has: start, elbow/knee, end + 4 joint circle points
+        limb_start = offset + 8
+
+        def render_limb(start_idx: int) -> None:
+            """Render a limb segment with joint."""
+            if start_idx + 6 > len(points):
+                return
+
+            # Upper limb segment
+            p1 = points[start_idx]
+            p2 = points[start_idx + 1]
+            upper_limb = SVGLine(
+                start=(p1[0] + pos[0], p1[1] + pos[1]),
+                end=(p2[0] + pos[0], p2[1] + pos[1]),
+                stroke=color,
+                stroke_width=stroke_width + 1,
+            )
+            group.add(upper_limb)
+
+            # Lower limb segment
+            p3 = points[start_idx + 2]
+            lower_limb = SVGLine(
+                start=(p2[0] + pos[0], p2[1] + pos[1]),
+                end=(p3[0] + pos[0], p3[1] + pos[1]),
+                stroke=color,
+                stroke_width=stroke_width + 1,
+            )
+            group.add(lower_limb)
+
+            # Joint circle at elbow/knee (uses the 4 points to get center)
+            joint_pts = points[start_idx + 3:start_idx + 7]
+            if len(joint_pts) >= 4:
+                joint_center_x = sum(p[0] for p in joint_pts) / 4 + pos[0]
+                joint_center_y = sum(p[1] for p in joint_pts) / 4 + pos[1]
+                joint_radius = abs(joint_pts[0][0] - joint_pts[2][0]) / 2
+                joint = SVGCircle(
+                    center=(joint_center_x, joint_center_y),
+                    r=joint_radius,
+                    fill=panel_color,
+                    stroke=color,
+                    stroke_width=1,
+                )
+                group.add(joint)
+
+            # End effector (hand/foot) - small rectangle
+            end_x = p3[0] + pos[0]
+            end_y = p3[1] + pos[1]
+            effector_size = data.get("character_height", 100) * 0.035
+            effector = Rect(
+                insert=(end_x - effector_size, end_y - effector_size / 2),
+                size=(effector_size * 2, effector_size),
+                fill=fill_color,
+                stroke=color,
+                stroke_width=1,
+            )
+            group.add(effector)
+
+        # Render all 4 limbs (7 points each: start, elbow, end, + 4 joint points)
+        render_limb(limb_start)  # Left arm
+        render_limb(limb_start + 7)  # Right arm
+        render_limb(limb_start + 14)  # Left leg
+        render_limb(limb_start + 21)  # Right leg
+
+    def _render_robot_face(
+        self,
+        group: Group,
+        data: dict[str, Any],
+        center_x: float,
+        center_y: float,
+        head_width: float,
+        led_color: str,
+    ) -> None:
+        """Render robot face with LED-style eyes and digital display mouth."""
+        expression = data.get("expression", {})
+        eye_type = expression.get("eyes", "normal")
+        mouth_type = expression.get("mouth", "normal")
+
+        eye_y = center_y - head_width * 0.1
+        eye_offset = head_width * 0.2
+        eye_size = head_width * 0.08
+
+        # Robot eyes - LED style (rectangles or geometric shapes)
+        left_x = center_x - eye_offset
+        right_x = center_x + eye_offset
+
+        if eye_type == "curved":
+            # Happy: horizontal bars (upward slant)
+            for x in [left_x, right_x]:
+                eye = Rect(
+                    insert=(x - eye_size, eye_y - eye_size / 4),
+                    size=(eye_size * 2, eye_size / 2),
+                    fill=led_color,
+                    stroke="none",
+                )
+                group.add(eye)
+        elif eye_type == "narrow":
+            # Angry: narrow horizontal slits
+            for x in [left_x, right_x]:
+                eye = Rect(
+                    insert=(x - eye_size, eye_y - eye_size / 6),
+                    size=(eye_size * 2, eye_size / 3),
+                    fill="#FF4444",  # Red for angry
+                    stroke="none",
+                )
+                group.add(eye)
+        elif eye_type == "wide":
+            # Surprised: larger circles
+            for x in [left_x, right_x]:
+                eye = SVGCircle(
+                    center=(x, eye_y),
+                    r=eye_size * 1.2,
+                    fill=led_color,
+                    stroke="none",
+                )
+                group.add(eye)
+        elif eye_type == "closed":
+            # Sleepy: thin horizontal lines
+            for x in [left_x, right_x]:
+                eye = SVGLine(
+                    start=(x - eye_size, eye_y),
+                    end=(x + eye_size, eye_y),
+                    stroke=led_color,
+                    stroke_width=2,
+                )
+                group.add(eye)
+        elif eye_type == "stars":
+            # Excited: plus signs (cross pattern)
+            for x in [left_x, right_x]:
+                v_line = SVGLine(
+                    start=(x, eye_y - eye_size),
+                    end=(x, eye_y + eye_size),
+                    stroke=led_color,
+                    stroke_width=2,
+                )
+                group.add(v_line)
+                h_line = SVGLine(
+                    start=(x - eye_size, eye_y),
+                    end=(x + eye_size, eye_y),
+                    stroke=led_color,
+                    stroke_width=2,
+                )
+                group.add(h_line)
+        else:
+            # Normal: square LED eyes
+            for x in [left_x, right_x]:
+                eye = Rect(
+                    insert=(x - eye_size / 2, eye_y - eye_size / 2),
+                    size=(eye_size, eye_size),
+                    fill=led_color,
+                    stroke="none",
+                )
+                group.add(eye)
+
+        # Robot mouth - digital display style
+        mouth_y = center_y + head_width * 0.15
+        mouth_width = head_width * 0.3
+
+        if mouth_type in ("smile", "grin"):
+            # Happy: upward chevron or U shape
+            mouth = Polyline(
+                points=[
+                    (center_x - mouth_width / 2, mouth_y - head_width * 0.03),
+                    (center_x, mouth_y + head_width * 0.05),
+                    (center_x + mouth_width / 2, mouth_y - head_width * 0.03),
+                ],
+                fill="none",
+                stroke=led_color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+        elif mouth_type == "frown":
+            # Sad: downward chevron
+            mouth = Polyline(
+                points=[
+                    (center_x - mouth_width / 2, mouth_y + head_width * 0.03),
+                    (center_x, mouth_y - head_width * 0.05),
+                    (center_x + mouth_width / 2, mouth_y + head_width * 0.03),
+                ],
+                fill="none",
+                stroke=led_color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+        elif mouth_type in ("open", "gasp"):
+            # Surprised: circle
+            mouth = SVGCircle(
+                center=(center_x, mouth_y),
+                r=head_width * 0.06,
+                fill="none",
+                stroke=led_color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+        elif mouth_type == "wavy":
+            # Uncertain: zigzag line
+            segment = mouth_width / 4
+            mouth = Polyline(
+                points=[
+                    (center_x - mouth_width / 2, mouth_y),
+                    (center_x - segment, mouth_y - head_width * 0.02),
+                    (center_x, mouth_y + head_width * 0.02),
+                    (center_x + segment, mouth_y - head_width * 0.02),
+                    (center_x + mouth_width / 2, mouth_y),
+                ],
+                fill="none",
+                stroke=led_color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+        else:
+            # Normal: horizontal line
+            mouth = SVGLine(
+                start=(center_x - mouth_width / 2, mouth_y),
+                end=(center_x + mouth_width / 2, mouth_y),
+                stroke=led_color,
+                stroke_width=2,
+            )
+            group.add(mouth)
 
     def _render_simple_face(self, data: dict[str, Any], group: Group, pos: list[float]) -> None:
         """Render a simple face character with expression-based features.

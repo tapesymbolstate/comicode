@@ -472,3 +472,192 @@ class ChubbyStickman(Character):
         data["body_width_ratio"] = 0.18  # Body width ratio
         data["limb_thickness"] = self.character_height * 0.04
         return data
+
+
+class Robot(Character):
+    """Robot/mechanical character with geometric design.
+
+    A mechanical character with:
+    - Square head with screen-like face display
+    - Rectangular body with panel details
+    - Angular jointed limbs
+    - LED-style eyes and digital display expressions
+    - Optional antenna
+
+    Suitable for sci-fi comics, tech themes, and futuristic stories.
+    """
+
+    def __init__(
+        self,
+        name: str = "Robot",
+        antenna: bool = True,
+        panel_color: str = "#4A4A4A",
+        screen_color: str = "#1A1A2E",
+        led_color: str = "#00FF88",
+        **kwargs: Any,
+    ) -> None:
+        """Initialize Robot character.
+
+        Args:
+            name: Character name
+            antenna: Whether to draw antenna on head
+            panel_color: Color for body panels (default dark gray)
+            screen_color: Color for face screen background (default dark blue)
+            led_color: Color for LED elements like eyes (default green)
+            **kwargs: Additional Character parameters
+        """
+        kwargs.setdefault("style", "robot")
+        kwargs.setdefault("color", "#333333")
+        kwargs.setdefault("fill_color", "#6B7280")  # Metal gray
+        self.antenna = antenna
+        self.panel_color = panel_color
+        self.screen_color = screen_color
+        self.led_color = led_color
+        super().__init__(name=name, **kwargs)
+
+    def generate_points(self) -> None:
+        """Generate robot figure points.
+
+        Structure:
+        - Head: Rectangle with rounded corners (indicated by points)
+        - Body: Rectangle
+        - Arms: Two-segment limbs with joint indicators
+        - Legs: Two-segment limbs with joint indicators
+        """
+        h = self.character_height
+
+        # Proportions for robot
+        head_height = h * 0.25
+        head_width = h * 0.22
+        body_height = h * 0.30
+        body_width = h * 0.26
+        limb_length = h * 0.22
+        joint_size = h * 0.03
+        antenna_height = h * 0.08
+
+        points = []
+
+        # Calculate positions
+        head_top = h / 2
+        if self.antenna:
+            head_top -= antenna_height
+        head_bottom = head_top - head_height
+        neck_y = head_bottom
+        body_top = neck_y - h * 0.02  # Small gap for neck
+        body_bottom = body_top - body_height
+        hip_y = body_bottom
+
+        # Antenna (if enabled) - 2 points
+        if self.antenna:
+            points.append([0, head_top + antenna_height])  # Antenna tip
+            points.append([0, head_top])  # Antenna base
+
+        # Head rectangle - 4 corner points (clockwise from top-left)
+        points.append([-head_width / 2, head_top])  # Top-left
+        points.append([head_width / 2, head_top])   # Top-right
+        points.append([head_width / 2, head_bottom])  # Bottom-right
+        points.append([-head_width / 2, head_bottom])  # Bottom-left
+
+        # Body rectangle - 4 corner points
+        points.append([-body_width / 2, body_top])  # Top-left
+        points.append([body_width / 2, body_top])   # Top-right
+        points.append([body_width / 2, body_bottom])  # Bottom-right
+        points.append([-body_width / 2, body_bottom])  # Bottom-left
+
+        # Arms - each arm has: shoulder, elbow, hand positions + joint circle points
+        arm_y = body_top - body_height * 0.15
+
+        # Left arm
+        left_arm_angle = np.radians(self._pose.left_arm)
+        shoulder_left = [-body_width / 2, arm_y]
+        elbow_left_x = shoulder_left[0] - limb_length * 0.5 * np.cos(left_arm_angle)
+        elbow_left_y = arm_y - limb_length * 0.5 * np.sin(left_arm_angle)
+        hand_left_x = shoulder_left[0] - limb_length * np.cos(left_arm_angle)
+        hand_left_y = arm_y - limb_length * np.sin(left_arm_angle)
+
+        points.append(shoulder_left)
+        points.append([elbow_left_x, elbow_left_y])
+        points.append([hand_left_x, hand_left_y])
+        # Joint circle indicator (4 points around elbow)
+        for angle in [0, np.pi / 2, np.pi, 3 * np.pi / 2]:
+            points.append([
+                elbow_left_x + joint_size * np.cos(angle),
+                elbow_left_y + joint_size * np.sin(angle)
+            ])
+
+        # Right arm
+        right_arm_angle = np.radians(self._pose.right_arm)
+        shoulder_right = [body_width / 2, arm_y]
+        elbow_right_x = shoulder_right[0] + limb_length * 0.5 * np.cos(right_arm_angle)
+        elbow_right_y = arm_y - limb_length * 0.5 * np.sin(right_arm_angle)
+        hand_right_x = shoulder_right[0] + limb_length * np.cos(right_arm_angle)
+        hand_right_y = arm_y - limb_length * np.sin(right_arm_angle)
+
+        points.append(shoulder_right)
+        points.append([elbow_right_x, elbow_right_y])
+        points.append([hand_right_x, hand_right_y])
+        # Joint circle indicator
+        for angle in [0, np.pi / 2, np.pi, 3 * np.pi / 2]:
+            points.append([
+                elbow_right_x + joint_size * np.cos(angle),
+                elbow_right_y + joint_size * np.sin(angle)
+            ])
+
+        # Legs - similar structure
+        leg_start_y = hip_y
+
+        # Left leg
+        left_leg_angle = np.radians(90 + self._pose.left_leg)
+        hip_left = [-body_width / 4, leg_start_y]
+        knee_left_x = hip_left[0] - limb_length * 0.5 * np.cos(left_leg_angle)
+        knee_left_y = leg_start_y - limb_length * 0.5 * np.sin(left_leg_angle)
+        foot_left_x = hip_left[0] - limb_length * np.cos(left_leg_angle)
+        foot_left_y = leg_start_y - limb_length * np.sin(left_leg_angle)
+
+        points.append(hip_left)
+        points.append([knee_left_x, knee_left_y])
+        points.append([foot_left_x, foot_left_y])
+        # Knee joint indicator
+        for angle in [0, np.pi / 2, np.pi, 3 * np.pi / 2]:
+            points.append([
+                knee_left_x + joint_size * np.cos(angle),
+                knee_left_y + joint_size * np.sin(angle)
+            ])
+
+        # Right leg
+        right_leg_angle = np.radians(90 + self._pose.right_leg)
+        hip_right = [body_width / 4, leg_start_y]
+        knee_right_x = hip_right[0] + limb_length * 0.5 * np.cos(right_leg_angle)
+        knee_right_y = leg_start_y - limb_length * 0.5 * np.sin(right_leg_angle)
+        foot_right_x = hip_right[0] + limb_length * np.cos(right_leg_angle)
+        foot_right_y = leg_start_y - limb_length * np.sin(right_leg_angle)
+
+        points.append(hip_right)
+        points.append([knee_right_x, knee_right_y])
+        points.append([foot_right_x, foot_right_y])
+        # Knee joint indicator
+        for angle in [0, np.pi / 2, np.pi, 3 * np.pi / 2]:
+            points.append([
+                knee_right_x + joint_size * np.cos(angle),
+                knee_right_y + joint_size * np.sin(angle)
+            ])
+
+        self._points = np.array(points, dtype=np.float64)
+
+        if self.facing == "left":
+            self._points[:, 0] *= -1
+
+    def get_render_data(self) -> dict[str, Any]:
+        """Get data for rendering."""
+        data = super().get_render_data()
+        # Add robot-specific render info
+        data["antenna"] = self.antenna
+        data["panel_color"] = self.panel_color
+        data["screen_color"] = self.screen_color
+        data["led_color"] = self.led_color
+        data["head_height_ratio"] = 0.25
+        data["head_width_ratio"] = 0.22
+        data["body_height_ratio"] = 0.30
+        data["body_width_ratio"] = 0.26
+        data["joint_size"] = self.character_height * 0.03
+        return data

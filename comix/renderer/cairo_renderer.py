@@ -228,7 +228,7 @@ class CairoRenderer:
             self._render_bubble(data)
         elif obj_type in ("Text", "StyledText", "SFX"):
             self._render_text(data)
-        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Character"):
+        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Robot", "Character"):
             self._render_character(data)
         elif obj_type == "Rectangle":
             self._render_rectangle(data)
@@ -499,6 +499,8 @@ class CairoRenderer:
             self._render_simple_face(data, pos)
         elif style == "chubby":
             self._render_chubby_stickman(data, pos)
+        elif style == "robot":
+            self._render_robot(data, pos)
         else:
             self._render_generic(data)
 
@@ -664,6 +666,288 @@ class CairoRenderer:
         self._render_face_eyes_cairo(head_pos, head_radius, eye_y, eye_offset, eye_radius, eye_type, color)
         self._render_face_eyebrows_cairo(head_pos, head_radius, eye_y, eye_offset, eyebrow_type, color)
         self._render_face_mouth_cairo(head_pos, head_radius, mouth_type, color)
+
+    def _render_robot(self, data: dict[str, Any], pos: list[float]) -> None:
+        """Render a robot character with mechanical/geometric design.
+
+        Renders a mechanical robot figure with:
+        - Optional antenna
+        - Square head with screen face display
+        - Rectangular body
+        - Jointed limbs with circular joint indicators
+        - LED-style eyes and digital display mouth
+        """
+        ctx = self._ctx
+        assert ctx is not None
+
+        points = data.get("points", [])
+        color = data.get("color", "#333333")
+        fill_color = data.get("fill_color", "#6B7280")
+        panel_color = data.get("panel_color", "#4A4A4A")
+        screen_color = data.get("screen_color", "#1A1A2E")
+        led_color = data.get("led_color", "#00FF88")
+        has_antenna = data.get("antenna", True)
+        stroke_width = 2
+
+        if len(points) < 10:
+            return
+
+        # Point indices depend on whether antenna is present
+        offset = 2 if has_antenna else 0
+
+        # Render antenna if present
+        if has_antenna and len(points) >= 2:
+            antenna_tip = points[0]
+            antenna_base = points[1]
+            # Antenna line
+            ctx.move_to(antenna_tip[0] + pos[0], antenna_tip[1] + pos[1])
+            ctx.line_to(antenna_base[0] + pos[0], antenna_base[1] + pos[1])
+            self._set_color(color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+            # Antenna ball at tip
+            antenna_radius = data.get("character_height", 100) * 0.02
+            ctx.arc(antenna_tip[0] + pos[0], antenna_tip[1] + pos[1], antenna_radius, 0, 2 * math.pi)
+            self._set_color(led_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(1)
+            ctx.stroke()
+
+        # Head rectangle (4 points starting at offset)
+        head_start = offset
+        if len(points) > head_start + 3:
+            head_pts = points[head_start:head_start + 4]
+            translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_pts]
+            # Draw head rectangle
+            self._polygon_path(translated_head)
+            self._set_color(fill_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+
+            # Screen face area (slightly inset rectangle)
+            head_center_x = sum(p[0] for p in head_pts) / 4 + pos[0]
+            head_center_y = sum(p[1] for p in head_pts) / 4 + pos[1]
+            head_width = abs(head_pts[1][0] - head_pts[0][0])
+            head_height = abs(head_pts[0][1] - head_pts[3][1])
+
+            screen_margin = head_width * 0.15
+            screen_x = head_center_x - head_width / 2 + screen_margin
+            screen_y = head_center_y - head_height / 2 + screen_margin
+            screen_w = head_width - screen_margin * 2
+            screen_h = head_height - screen_margin * 2
+
+            # Draw rounded rectangle for screen
+            self._rounded_rect_path(screen_x, screen_y, screen_w, screen_h, 3)
+            self._set_color(screen_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(1)
+            ctx.stroke()
+
+            # Render robot face on the screen
+            self._render_robot_face_cairo(data, head_center_x, head_center_y, head_width, led_color)
+
+        # Body rectangle (4 points)
+        body_start = offset + 4
+        if len(points) > body_start + 3:
+            body_pts = points[body_start:body_start + 4]
+            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_pts]
+            # Draw body rectangle
+            self._polygon_path(translated_body)
+            self._set_color(fill_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+
+            # Body panel detail (center line)
+            body_center_x = (body_pts[0][0] + body_pts[1][0]) / 2 + pos[0]
+            body_top_y = body_pts[0][1] + pos[1]
+            body_bottom_y = body_pts[2][1] + pos[1]
+            ctx.move_to(body_center_x, body_top_y + 5)
+            ctx.line_to(body_center_x, body_bottom_y - 5)
+            self._set_color(panel_color)
+            ctx.set_line_width(1)
+            ctx.stroke()
+
+            # Chest light/indicator
+            chest_light_radius = data.get("character_height", 100) * 0.02
+            ctx.arc(body_center_x, (body_top_y + body_bottom_y) / 2 - 5, chest_light_radius, 0, 2 * math.pi)
+            self._set_color(led_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(1)
+            ctx.stroke()
+
+        # Limbs - each limb has: start, elbow/knee, end + 4 joint circle points
+        limb_start = offset + 8
+
+        def render_limb(start_idx: int) -> None:
+            """Render a limb segment with joint."""
+            if start_idx + 6 > len(points):
+                return
+
+            # Upper limb segment
+            p1 = points[start_idx]
+            p2 = points[start_idx + 1]
+            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
+            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            self._set_color(color)
+            ctx.set_line_width(stroke_width + 1)
+            ctx.stroke()
+
+            # Lower limb segment
+            p3 = points[start_idx + 2]
+            ctx.move_to(p2[0] + pos[0], p2[1] + pos[1])
+            ctx.line_to(p3[0] + pos[0], p3[1] + pos[1])
+            self._set_color(color)
+            ctx.set_line_width(stroke_width + 1)
+            ctx.stroke()
+
+            # Joint circle at elbow/knee
+            joint_pts = points[start_idx + 3:start_idx + 7]
+            if len(joint_pts) >= 4:
+                joint_center_x = sum(p[0] for p in joint_pts) / 4 + pos[0]
+                joint_center_y = sum(p[1] for p in joint_pts) / 4 + pos[1]
+                joint_radius = abs(joint_pts[0][0] - joint_pts[2][0]) / 2
+                ctx.arc(joint_center_x, joint_center_y, joint_radius, 0, 2 * math.pi)
+                self._set_color(panel_color)
+                ctx.fill_preserve()
+                self._set_color(color)
+                ctx.set_line_width(1)
+                ctx.stroke()
+
+            # End effector (hand/foot) - small rectangle
+            end_x = p3[0] + pos[0]
+            end_y = p3[1] + pos[1]
+            effector_size = data.get("character_height", 100) * 0.035
+            ctx.rectangle(end_x - effector_size, end_y - effector_size / 2, effector_size * 2, effector_size)
+            self._set_color(fill_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(1)
+            ctx.stroke()
+
+        # Render all 4 limbs (7 points each: start, elbow, end, + 4 joint points)
+        render_limb(limb_start)  # Left arm
+        render_limb(limb_start + 7)  # Right arm
+        render_limb(limb_start + 14)  # Left leg
+        render_limb(limb_start + 21)  # Right leg
+
+    def _render_robot_face_cairo(
+        self,
+        data: dict[str, Any],
+        center_x: float,
+        center_y: float,
+        head_width: float,
+        led_color: str,
+    ) -> None:
+        """Render robot face with LED-style eyes and digital display mouth."""
+        ctx = self._ctx
+        assert ctx is not None
+
+        expression = data.get("expression", {})
+        eye_type = expression.get("eyes", "normal")
+        mouth_type = expression.get("mouth", "normal")
+
+        eye_y = center_y - head_width * 0.1
+        eye_offset = head_width * 0.2
+        eye_size = head_width * 0.08
+
+        left_x = center_x - eye_offset
+        right_x = center_x + eye_offset
+
+        # Robot eyes - LED style
+        if eye_type == "curved":
+            # Happy: horizontal bars
+            for x in [left_x, right_x]:
+                ctx.rectangle(x - eye_size, eye_y - eye_size / 4, eye_size * 2, eye_size / 2)
+                self._set_color(led_color)
+                ctx.fill()
+        elif eye_type == "narrow":
+            # Angry: narrow red slits
+            for x in [left_x, right_x]:
+                ctx.rectangle(x - eye_size, eye_y - eye_size / 6, eye_size * 2, eye_size / 3)
+                self._set_color("#FF4444")
+                ctx.fill()
+        elif eye_type == "wide":
+            # Surprised: larger circles
+            for x in [left_x, right_x]:
+                ctx.arc(x, eye_y, eye_size * 1.2, 0, 2 * math.pi)
+                self._set_color(led_color)
+                ctx.fill()
+        elif eye_type == "closed":
+            # Sleepy: thin horizontal lines
+            for x in [left_x, right_x]:
+                ctx.move_to(x - eye_size, eye_y)
+                ctx.line_to(x + eye_size, eye_y)
+                self._set_color(led_color)
+                ctx.set_line_width(2)
+                ctx.stroke()
+        elif eye_type == "stars":
+            # Excited: plus signs
+            for x in [left_x, right_x]:
+                ctx.move_to(x, eye_y - eye_size)
+                ctx.line_to(x, eye_y + eye_size)
+                ctx.move_to(x - eye_size, eye_y)
+                ctx.line_to(x + eye_size, eye_y)
+                self._set_color(led_color)
+                ctx.set_line_width(2)
+                ctx.stroke()
+        else:
+            # Normal: square LED eyes
+            for x in [left_x, right_x]:
+                ctx.rectangle(x - eye_size / 2, eye_y - eye_size / 2, eye_size, eye_size)
+                self._set_color(led_color)
+                ctx.fill()
+
+        # Robot mouth - digital display style
+        mouth_y = center_y + head_width * 0.15
+        mouth_width = head_width * 0.3
+
+        if mouth_type in ("smile", "grin"):
+            # Happy: upward chevron
+            ctx.move_to(center_x - mouth_width / 2, mouth_y - head_width * 0.03)
+            ctx.line_to(center_x, mouth_y + head_width * 0.05)
+            ctx.line_to(center_x + mouth_width / 2, mouth_y - head_width * 0.03)
+            self._set_color(led_color)
+            ctx.set_line_width(2)
+            ctx.stroke()
+        elif mouth_type == "frown":
+            # Sad: downward chevron
+            ctx.move_to(center_x - mouth_width / 2, mouth_y + head_width * 0.03)
+            ctx.line_to(center_x, mouth_y - head_width * 0.05)
+            ctx.line_to(center_x + mouth_width / 2, mouth_y + head_width * 0.03)
+            self._set_color(led_color)
+            ctx.set_line_width(2)
+            ctx.stroke()
+        elif mouth_type in ("open", "gasp"):
+            # Surprised: circle
+            ctx.arc(center_x, mouth_y, head_width * 0.06, 0, 2 * math.pi)
+            self._set_color(led_color)
+            ctx.set_line_width(2)
+            ctx.stroke()
+        elif mouth_type == "wavy":
+            # Uncertain: zigzag line
+            segment = mouth_width / 4
+            ctx.move_to(center_x - mouth_width / 2, mouth_y)
+            ctx.line_to(center_x - segment, mouth_y - head_width * 0.02)
+            ctx.line_to(center_x, mouth_y + head_width * 0.02)
+            ctx.line_to(center_x + segment, mouth_y - head_width * 0.02)
+            ctx.line_to(center_x + mouth_width / 2, mouth_y)
+            self._set_color(led_color)
+            ctx.set_line_width(2)
+            ctx.stroke()
+        else:
+            # Normal: horizontal line
+            ctx.move_to(center_x - mouth_width / 2, mouth_y)
+            ctx.line_to(center_x + mouth_width / 2, mouth_y)
+            self._set_color(led_color)
+            ctx.set_line_width(2)
+            ctx.stroke()
 
     def _render_simple_face(self, data: dict[str, Any], pos: list[float]) -> None:
         """Render a simple face character with expression-based features.

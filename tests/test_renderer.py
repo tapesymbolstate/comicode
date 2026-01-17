@@ -6,7 +6,7 @@ from pathlib import Path
 from comix.page.page import Page
 from comix.cobject.panel.panel import Panel
 from comix.cobject.bubble.bubble import SpeechBubble
-from comix.cobject.character.character import Stickman, SimpleFace, ChubbyStickman
+from comix.cobject.character.character import Stickman, SimpleFace, ChubbyStickman, Robot
 from comix.cobject.text.text import Text, SFX
 from comix.cobject.shapes.shapes import Rectangle, Circle, Line
 from comix.renderer.svg_renderer import SVGRenderer
@@ -182,6 +182,106 @@ class TestSVGRenderer:
             output_path = page.render(f.name)
             content = Path(output_path).read_text()
             assert "<polygon" in content
+            Path(output_path).unlink()
+
+    def test_render_robot(self):
+        """Test rendering a robot character."""
+        page = Page(width=400, height=300)
+        robot = Robot(name="Robo").move_to((200, 150))
+        page.add(robot)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            # Robot has polygon and rect elements for head and body
+            assert "<polygon" in content or "<rect" in content
+            Path(output_path).unlink()
+
+    def test_render_robot_with_expression(self):
+        """Test rendering a robot with expression."""
+        page = Page(width=400, height=300)
+        robot = Robot(name="HappyBot", expression="happy").move_to((200, 150))
+        page.add(robot)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            assert "<polygon" in content or "<rect" in content
+            # Should have LED-style face features
+            assert "<rect" in content or "<polyline" in content
+            Path(output_path).unlink()
+
+    def test_render_robot_with_pose(self):
+        """Test rendering a robot with different poses."""
+        for pose_name in ["standing", "waving", "jumping", "cheering"]:
+            page = Page(width=400, height=300)
+            robot = Robot(name="Poser", pose=pose_name).move_to((200, 150))
+            page.add(robot)
+
+            with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+                output_path = page.render(f.name)
+                content = Path(output_path).read_text()
+                assert "<polygon" in content or "<rect" in content
+                Path(output_path).unlink()
+
+    def test_render_robot_facing_left(self):
+        """Test rendering a robot facing left."""
+        page = Page(width=400, height=300)
+        robot = Robot(name="Lefty", facing="left").move_to((200, 150))
+        page.add(robot)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            assert "<polygon" in content or "<rect" in content
+            Path(output_path).unlink()
+
+    def test_render_robot_without_antenna(self):
+        """Test rendering a robot without antenna."""
+        page = Page(width=400, height=300)
+        robot = Robot(name="NoAntenna", antenna=False).move_to((200, 150))
+        page.add(robot)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            assert "<polygon" in content or "<rect" in content
+            Path(output_path).unlink()
+
+    def test_render_robot_all_expressions(self):
+        """Test rendering robot with all expression types."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared"]
+        for expr_name in expressions:
+            page = Page(width=400, height=300)
+            robot = Robot(name="Expressive", expression=expr_name).move_to((200, 150))
+            page.add(robot)
+
+            with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+                output_path = page.render(f.name)
+                content = Path(output_path).read_text()
+                # Should render without errors
+                assert "svg" in content.lower()
+                Path(output_path).unlink()
+
+    def test_render_robot_custom_colors(self):
+        """Test rendering a robot with custom colors."""
+        page = Page(width=400, height=300)
+        robot = Robot(
+            name="ColorBot",
+            color="#FF0000",
+            fill_color="#00FF00",
+            panel_color="#0000FF",
+            screen_color="#FFFF00",
+            led_color="#FF00FF",
+        ).move_to((200, 150))
+        page.add(robot)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            # Custom colors should appear in the SVG
+            assert "#FF0000" in content or "#ff0000" in content.lower()
             Path(output_path).unlink()
 
     def test_render_shapes(self):

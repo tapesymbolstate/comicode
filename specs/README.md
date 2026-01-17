@@ -25,6 +25,8 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 - [AI Images](ai-images.md) - DALL-E and Replicate AI image generation
 - [Preview Server](preview-server.md) - Live reload development server
 - [HTML Export](html-export.md) - Interactive HTML export with zoom, pan, themes
+- [Animation Export](animation-export.md) - Timeline-based GIF animations with easing
+- [Video Export](video-export.md) - MP4/WebM video export with audio support
 
 ### Architecture (Reference)
 
@@ -44,6 +46,8 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 | AI Images | ✅ Complete |
 | Preview Server | ✅ Complete |
 | HTML Export | ✅ Complete |
+| Animation Export | ✅ Complete |
+| Video Export | ✅ Complete |
 
 ### Examples Status (examples/output/)
 

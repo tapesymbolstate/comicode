@@ -93,7 +93,7 @@
 
 ## Current Known Issues (실제 결과물 검증 결과)
 
-**No known issues.** As of 2026-01-18, all 1607 tests pass, all 11 examples (01-11) execute successfully and produce correct output, and mypy/ruff pass.
+**No known issues.** As of 2026-01-18, all 1607 tests pass, all 13 examples (01-13) execute successfully and produce correct output, and mypy/ruff pass.
 
 ## Implementation Strategy
 
@@ -194,7 +194,7 @@ page.render("test_grid.png")
 
 **이 스펙은 다음이 모두 충족될 때 성공:**
 
-1. ✅ 모든 예제(01-11)가 시각적으로 올바르게 렌더링됨
+1. ✅ 모든 예제(01-13)가 시각적으로 올바르게 렌더링됨
 2. ✅ 각 예제 PNG를 육안으로 확인했음
 3. ✅ 레이아웃 버그 없음 (모든 패널에 콘텐츠 올바르게 배치)
 4. ✅ 캐릭터 완전 렌더링 (머리, 몸통, 팔, 다리)

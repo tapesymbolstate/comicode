@@ -1,7 +1,7 @@
 # Examples Maintenance - 예제 정리 및 관리 기준
 
 > **Note**: This document contains **process guidelines** for future maintenance.
-> All 11 examples (01-11) are currently working correctly as of v0.1.27.
+> All 13 examples (01-13) are currently working correctly as of v0.1.29.
 
 ## What
 examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 예제만 유지**하고, 버그가 있는 예제는 명확히 표시하거나 임시 제거한다.
@@ -34,7 +34,7 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 
 ## Current Examples Status
 
-**All 11 examples are working.** As of 2026-01-18, all examples execute successfully and produce correct output.
+**All 13 examples are working.** As of 2026-01-18, all examples execute successfully and produce correct output.
 
 | Example | Status |
 |---------|--------|
@@ -49,6 +49,8 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 | 09_using_templates.py | ✅ Working |
 | 10_error_handling.py | ✅ Working |
 | 11_html_export.py | ✅ Working |
+| 12_parser_dsl.py | ✅ Working |
+| 13_visual_effects.py | ✅ Working |
 
 ## Immediate Action Plan
 

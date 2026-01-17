@@ -6,7 +6,7 @@ This directory contains specifications for the Comix comic creation library, wri
 
 Comix is a Python library for creating comics programmatically, inspired by Manim's API design but focused on comic/manga creation instead of mathematical animations.
 
-**Current Status**: All core features implemented and working. 1607 tests passing, all 11 examples working, mypy and ruff pass.
+**Current Status**: All core features implemented and working. 1607 tests passing, all 13 examples working, mypy and ruff pass.
 
 ## Active Specs
 
@@ -38,7 +38,7 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 | Character Basics | ✅ Complete |
 | Speech Bubbles | ✅ Complete |
 | Page Rendering | ✅ Complete |
-| Working Examples | ✅ All 11 examples working |
+| Working Examples | ✅ All 13 examples working |
 | Effect System | ✅ Complete |
 | Parser DSL | ✅ Complete |
 | AI Images | ✅ Complete |
@@ -47,7 +47,7 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 
 ### Examples Status (examples/output/)
 
-All 11 examples (01-11) execute successfully and produce correct output.
+All 13 examples (01-13) execute successfully and produce correct output.
 
 ## Features
 

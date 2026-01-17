@@ -6,7 +6,7 @@ This directory contains specifications for the Comix comic creation library, wri
 
 Comix is a Python library for creating comics programmatically, inspired by Manim's API design but focused on comic/manga creation instead of mathematical animations.
 
-**Current Status**: All core features implemented and working. 1578 tests passing, all 10 examples working, mypy and ruff pass.
+**Current Status**: All core features implemented and working. 1607 tests passing, all 11 examples working, mypy and ruff pass.
 
 ## Active Specs
 
@@ -24,6 +24,7 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 - [Parser DSL](parser-dsl.md) - Markup language for rapid comic creation
 - [AI Images](ai-images.md) - DALL-E and Replicate AI image generation
 - [Preview Server](preview-server.md) - Live reload development server
+- [HTML Export](html-export.md) - Interactive HTML export with zoom, pan, themes
 
 ### Architecture (Reference)
 
@@ -37,15 +38,16 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 | Character Basics | ✅ Complete |
 | Speech Bubbles | ✅ Complete |
 | Page Rendering | ✅ Complete |
-| Working Examples | ✅ All 10 examples working |
+| Working Examples | ✅ All 11 examples working |
 | Effect System | ✅ Complete |
 | Parser DSL | ✅ Complete |
 | AI Images | ✅ Complete |
 | Preview Server | ✅ Complete |
+| HTML Export | ✅ Complete |
 
 ### Examples Status (examples/output/)
 
-All 10 examples (01-10) execute successfully and produce correct output.
+All 11 examples (01-11) execute successfully and produce correct output.
 
 ## Features
 
@@ -90,6 +92,7 @@ standing, sitting, waving, pointing, walking, running, jumping, dancing, lying, 
 - **PNG** - Raster output (optional, requires pycairo)
 - **PDF** - Document output (optional, requires pycairo)
 - **Multi-page PDF** - Book class for compiling pages
+- **Interactive HTML** - Standalone HTML with zoom, pan, themes
 
 ## Acceptance Criteria Flow
 
@@ -156,8 +159,7 @@ Each spec follows this structure:
 Potential features not yet scoped:
 
 - **Animation Export** - Animated GIF/video for webtoon scroll effects
-- **Interactive HTML** - Export comics with hover effects
-- **Web Renderer** - HTML Canvas output
+- **Canvas Renderer** - HTML Canvas output (alternative to SVG-based HTML)
 - **Comic Reader Component** - Web component for viewing multi-page comics
 
 ## Contributing

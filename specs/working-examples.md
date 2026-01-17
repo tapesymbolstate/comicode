@@ -36,6 +36,9 @@ Without working examples, developers struggle to bridge the gap from API documen
 - [x] README in examples/ explaining how to run them
 - [x] Output PNG files committed to examples/output/ for preview
 
+### Should Have (Extended Examples)
+- [x] Example 11: Interactive HTML export with zoom, pan, themes
+
 ### Won't Have (This Iteration)
 - [ ] Complex multi-page stories (defer to tutorials)
 - [ ] Advanced styling and theming (defer to advanced docs)
@@ -72,10 +75,12 @@ examples/
 ├── 08_manual_positioning.py   # Precise control
 ├── 09_using_templates.py      # FourKoma, TwoByTwo
 ├── 10_error_handling.py       # Graceful degradation
+├── 11_html_export.py          # Interactive HTML export
 └── output/                    # Generated files
     ├── 01_simple_dialogue.png
     ├── 02_four_panel_comic.png
-    └── ...
+    ├── ...
+    └── 11_html_*.html         # HTML export variants
 ```
 
 ### Related Specs
@@ -297,6 +302,7 @@ Generated PNG files will be saved to `examples/output/`.
 8. **08_manual_positioning.py** - Precise manual positioning of elements
 9. **09_using_templates.py** - Using built-in templates (FourKoma, TwoByTwo, etc.)
 10. **10_error_handling.py** - Graceful error handling and fallbacks
+11. **11_html_export.py** - Interactive HTML export with zoom, pan, dark/light themes
 
 ## Requirements
 
@@ -368,7 +374,7 @@ Feel free to modify these examples to experiment:
 ## Success Metrics
 
 **This spec is successful when:**
-1. All 10 examples execute without errors
+1. All 11 examples execute without errors
 2. All examples produce correct visual output
 3. A new developer can run examples within 5 minutes
 4. Examples serve as effective templates for custom comics

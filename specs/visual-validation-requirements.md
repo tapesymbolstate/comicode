@@ -11,9 +11,9 @@
 **코드가 에러 없이 실행되고 테스트가 통과해도 실제 결과물이 엉망일 수 있다.**
 
 현재 문제:
-- ✅ 1578개 테스트 통과
+- ✅ 1607개 테스트 통과
 - ✅ 코드 에러 없음
-- ❌ 실제 만화는 깨져있음 (레이아웃 버그, 캐릭터 부분 렌더링, 텍스트 겹침)
+- ✅ 실제 만화도 올바르게 렌더링됨
 
 **테스트만으로는 충분하지 않다. 눈으로 직접 확인해야 한다.**
 
@@ -93,7 +93,7 @@
 
 ## Current Known Issues (실제 결과물 검증 결과)
 
-**No known issues.** As of 2026-01-18, all 1578 tests pass, all 10 examples (01-10) execute successfully and produce correct output, and mypy/ruff pass.
+**No known issues.** As of 2026-01-18, all 1607 tests pass, all 11 examples (01-11) execute successfully and produce correct output, and mypy/ruff pass.
 
 ## Implementation Strategy
 
@@ -194,7 +194,7 @@ page.render("test_grid.png")
 
 **이 스펙은 다음이 모두 충족될 때 성공:**
 
-1. ✅ 모든 예제(01-10)가 시각적으로 올바르게 렌더링됨
+1. ✅ 모든 예제(01-11)가 시각적으로 올바르게 렌더링됨
 2. ✅ 각 예제 PNG를 육안으로 확인했음
 3. ✅ 레이아웃 버그 없음 (모든 패널에 콘텐츠 올바르게 배치)
 4. ✅ 캐릭터 완전 렌더링 (머리, 몸통, 팔, 다리)

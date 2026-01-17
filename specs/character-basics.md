@@ -28,6 +28,8 @@ Without working character rendering, comics appear broken or incomplete.
 - [x] Character supports basic poses: standing, sitting, waving - *Implemented: 12 poses*
 - [x] Character.say() method returns SpeechBubble that auto-attaches
 - [x] Character.think() method returns ThoughtBubble that auto-attaches
+- [x] Character.shout() method returns ShoutBubble that auto-attaches
+- [x] Character.whisper() method returns WhisperBubble that auto-attaches
 - [x] Character color can be customized
 - [x] Character has a name property for debugging
 

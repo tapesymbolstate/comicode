@@ -1278,6 +1278,13 @@ COMIC_STYLE = Style(
     font_size=18,
     font_weight="bold",
 )
+
+MINIMAL_STYLE = Style(
+    border_color="#333333",
+    border_width=1,
+    font_family="Arial",
+    font_size=12,
+)
 ```
 
 ---

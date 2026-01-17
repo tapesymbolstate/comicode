@@ -233,7 +233,7 @@ panel.add_content(narration)
 - [x] What's default bubble padding? **Decision**: (15, 20, 15, 20) - top, right, bottom, left
 - [x] Should bubble overlap character or stay separated? **Decision**: Separated with configurable buffer
 - [x] Max line length before wrapping? **Decision**: Based on max_width or auto-calculated
-- [ ] Should bubbles auto-avoid overlapping each other? **Decision needed** (complex, defer to future)
+- [x] Should bubbles auto-avoid overlapping each other? **Decision**: Yes, implemented via `auto_attach_to()` method with collision detection
 
 ## Test Requirements
 
@@ -260,12 +260,46 @@ panel.add_content(narration)
    - Test: ShoutBubble has jagged edges
    - Test: NarratorBubble has no tail
 
-## Bug Fixes Required
+## Implemented Features
 
-Based on current diagnosis (text renders but no bubble border):
+### Auto-Positioning System
 
-1. **Investigate** `Bubble.generate_points()` - ensure bubble path is generated
-2. **Investigate** `create_bubble_path()` utility - verify bezier curve generation
-3. **Investigate** SVG/Cairo renderers - ensure they draw bubble fill and stroke
-4. **Verify** bubble is added to render queue (not just text child)
-5. **Add tests** to verify bubble border visibility in output
+The bubble module includes an advanced auto-positioning system:
+
+1. **`auto_attach_to(character, existing_bubbles=None)`**: Attaches bubble to character with collision avoidance
+   - Tries 8 positions (above, below, left, right, corners) to find non-overlapping placement
+   - Priority: above > right > left > below > corners
+   - Accepts list of existing bubbles to avoid collisions
+
+2. **`overlaps_with(other)`**: Checks if two bubbles overlap using bounding box intersection
+
+3. **`auto_position_bubbles(bubbles, characters)`**: Batch positioning helper
+   - Matches bubbles to characters based on order
+   - Automatically avoids overlaps between all bubbles
+
+### Example: Collision-Avoiding Positioning
+
+```python
+from comix import Stickman, Panel
+
+panel = Panel(width=600, height=400)
+
+char1 = Stickman(height=100)
+char1.move_to((200, 250))
+
+char2 = Stickman(height=100)
+char2.move_to((400, 250))
+
+# First bubble positions normally above char1
+bubble1 = char1.say("Hello!")
+
+# Second bubble uses auto_attach_to to avoid overlapping bubble1
+bubble2 = char2.say("Hi there!")
+bubble2.auto_attach_to(char2, existing_bubbles=[bubble1])
+
+panel.add_content(char1, char2, bubble1, bubble2)
+```
+
+## Implementation Status
+
+All speech bubble features are complete. Bug fixes mentioned in original spec have been resolved. See `IMPLEMENTATION_PLAN.md` for details.

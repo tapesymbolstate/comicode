@@ -503,6 +503,8 @@ class CairoRenderer:
             self._render_robot(data, pos)
         elif style == "chibi":
             self._render_chibi(data, pos)
+        elif style == "anime":
+            self._render_anime(data, pos)
         else:
             self._render_generic(data)
 
@@ -2164,5 +2166,595 @@ class CairoRenderer:
                 ctx.stroke()
             else:
                 ctx.new_path()
+
+        ctx.restore()
+
+    def _render_anime(self, data: dict[str, Any], pos: list[float]) -> None:
+        """Render an anime/manga style character.
+
+        Renders a character with typical anime proportions:
+        - Tapered face shape with pointed chin
+        - Large expressive eyes with highlights
+        - Visible neck and shoulders
+        - Natural body proportions
+        - Various hair styles
+        """
+        ctx = self._ctx
+        assert ctx is not None
+
+        points = data.get("points", [])
+        color = data.get("color", "#333333")
+        skin_color = data.get("skin_color", "#FFE0C4")
+        fill_color = data.get("fill_color", skin_color)
+        outfit_color = data.get("outfit_color", "#3B82F6")
+        hair_color = data.get("hair_color", "#2D1B12")
+        hair_style = data.get("hair_style", "flowing")
+        eye_color = data.get("eye_color", "#4A90D9")
+        stroke_width = 1.5
+
+        if len(points) < 32:
+            return
+
+        height = data.get("character_height", 100)
+
+        # Head points (first 32 points - tapered oval)
+        head_points = points[:32]
+        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
+
+        # Calculate head center for features
+        head_center_x = sum(p[0] for p in head_points) / len(head_points)
+        head_center_y = sum(p[1] for p in head_points) / len(head_points)
+        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_height = height * 0.14
+        head_width = height * 0.10
+
+        # Render hair (behind head)
+        self._render_anime_hair_cairo(ctx, head_pos, head_height, head_width, hair_style, hair_color)
+
+        # Draw head with skin color
+        ctx.save()
+        if translated_head:
+            ctx.move_to(translated_head[0][0], translated_head[0][1])
+            for point in translated_head[1:]:
+                ctx.line_to(point[0], point[1])
+            ctx.close_path()
+            self._set_color(fill_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+        ctx.restore()
+
+        # Neck points (next 4 points)
+        neck_points = points[32:36]
+        if len(neck_points) == 4:
+            translated_neck = [(p[0] + pos[0], p[1] + pos[1]) for p in neck_points]
+            ctx.save()
+            ctx.move_to(translated_neck[0][0], translated_neck[0][1])
+            for point in translated_neck[1:]:
+                ctx.line_to(point[0], point[1])
+            ctx.close_path()
+            self._set_color(fill_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+            ctx.restore()
+
+        # Body/torso points (next 4 points)
+        body_points = points[36:40]
+        if len(body_points) == 4:
+            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
+            ctx.save()
+            ctx.move_to(translated_body[0][0], translated_body[0][1])
+            for point in translated_body[1:]:
+                ctx.line_to(point[0], point[1])
+            ctx.close_path()
+            self._set_color(outfit_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+            ctx.restore()
+
+        # Arms and legs rendering
+        limb_start = 40
+
+        def render_arm(start_idx: int) -> None:
+            if start_idx + 11 > len(points):
+                return
+            p1 = points[start_idx]
+            p2 = points[start_idx + 1]
+            p3 = points[start_idx + 2]
+
+            # Upper arm
+            ctx.save()
+            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
+            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            self._set_color(color)
+            ctx.set_line_width(stroke_width + 1)
+            ctx.stroke()
+            ctx.restore()
+
+            # Forearm
+            ctx.save()
+            ctx.move_to(p2[0] + pos[0], p2[1] + pos[1])
+            ctx.line_to(p3[0] + pos[0], p3[1] + pos[1])
+            self._set_color(color)
+            ctx.set_line_width(stroke_width + 1)
+            ctx.stroke()
+            ctx.restore()
+
+            # Hand circle
+            hand_points = points[start_idx + 3 : start_idx + 11]
+            if hand_points:
+                translated_hand = [(p[0] + pos[0], p[1] + pos[1]) for p in hand_points]
+                ctx.save()
+                ctx.move_to(translated_hand[0][0], translated_hand[0][1])
+                for point in translated_hand[1:]:
+                    ctx.line_to(point[0], point[1])
+                ctx.close_path()
+                self._set_color(fill_color)
+                ctx.fill_preserve()
+                self._set_color(color)
+                ctx.set_line_width(stroke_width)
+                ctx.stroke()
+                ctx.restore()
+
+        def render_leg(start_idx: int) -> None:
+            if start_idx + 11 > len(points):
+                return
+            p1 = points[start_idx]
+            p2 = points[start_idx + 1]
+            p3 = points[start_idx + 2]
+
+            # Upper leg
+            ctx.save()
+            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
+            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            self._set_color(outfit_color)
+            ctx.set_line_width(stroke_width + 2)
+            ctx.stroke()
+            ctx.restore()
+
+            # Lower leg
+            ctx.save()
+            ctx.move_to(p2[0] + pos[0], p2[1] + pos[1])
+            ctx.line_to(p3[0] + pos[0], p3[1] + pos[1])
+            self._set_color(outfit_color)
+            ctx.set_line_width(stroke_width + 2)
+            ctx.stroke()
+            ctx.restore()
+
+            # Foot oval
+            foot_points = points[start_idx + 3 : start_idx + 11]
+            if foot_points:
+                translated_foot = [(p[0] + pos[0], p[1] + pos[1]) for p in foot_points]
+                ctx.save()
+                ctx.move_to(translated_foot[0][0], translated_foot[0][1])
+                for point in translated_foot[1:]:
+                    ctx.line_to(point[0], point[1])
+                ctx.close_path()
+                self._set_color(outfit_color)
+                ctx.fill_preserve()
+                self._set_color(color)
+                ctx.set_line_width(stroke_width)
+                ctx.stroke()
+                ctx.restore()
+
+        # Render limbs
+        render_arm(limb_start)  # Left arm
+        render_arm(limb_start + 11)  # Right arm
+        render_leg(limb_start + 22)  # Left leg
+        render_leg(limb_start + 33)  # Right leg
+
+        # Render face features
+        expression = data.get("expression", {})
+        eye_type = expression.get("eyes", "normal")
+        mouth_type = expression.get("mouth", "normal")
+        eyebrow_type = expression.get("eyebrows", "normal")
+
+        eye_y = head_pos[1] - head_height * 0.1
+        eye_offset = head_width * 0.45
+        eye_radius = head_height * 0.18
+
+        # Render anime-style eyes
+        self._render_anime_eyes_cairo(ctx, head_pos, head_height, eye_y, eye_offset, eye_radius, eye_type, eye_color, color)
+
+        # Render eyebrows
+        self._render_face_eyebrows_cairo(head_pos, head_height, eye_y - eye_radius * 0.9, eye_offset, eyebrow_type, color)
+
+        # Render mouth
+        self._render_anime_mouth_cairo(ctx, head_pos, head_height, mouth_type, color)
+
+        # Render hair bangs (front layer)
+        self._render_anime_bangs_cairo(ctx, head_pos, head_height, head_width, hair_style, hair_color)
+
+    def _render_anime_hair_cairo(
+        self, ctx: Any, head_pos: list[float], head_height: float, head_width: float,
+        hair_style: str, hair_color: str
+    ) -> None:
+        """Render anime hair (back layer behind head)."""
+        cx, cy = head_pos
+
+        if hair_style == "none":
+            return
+
+        if hair_style == "flowing":
+            # Long flowing hair
+            hair_points = [
+                (cx - head_width * 1.2, cy - head_height * 0.3),
+                (cx - head_width * 1.4, cy + head_height * 0.8),
+                (cx - head_width * 1.2, cy + head_height * 1.5),
+                (cx - head_width * 0.8, cy + head_height * 1.8),
+                (cx, cy + head_height * 1.6),
+                (cx + head_width * 0.8, cy + head_height * 1.8),
+                (cx + head_width * 1.2, cy + head_height * 1.5),
+                (cx + head_width * 1.4, cy + head_height * 0.8),
+                (cx + head_width * 1.2, cy - head_height * 0.3),
+            ]
+            ctx.save()
+            ctx.move_to(hair_points[0][0], hair_points[0][1])
+            for point in hair_points[1:]:
+                ctx.line_to(point[0], point[1])
+            ctx.close_path()
+            self._set_color(hair_color)
+            ctx.fill()
+            ctx.restore()
+
+        elif hair_style == "ponytail":
+            # Ponytail at the back
+            ponytail_points = [
+                (cx + head_width * 0.6, cy - head_height * 0.2),
+                (cx + head_width * 1.8, cy),
+                (cx + head_width * 2.0, cy + head_height * 0.8),
+                (cx + head_width * 1.6, cy + head_height * 1.5),
+                (cx + head_width * 1.0, cy + head_height * 1.2),
+                (cx + head_width * 0.8, cy + head_height * 0.3),
+            ]
+            ctx.save()
+            ctx.move_to(ponytail_points[0][0], ponytail_points[0][1])
+            for point in ponytail_points[1:]:
+                ctx.line_to(point[0], point[1])
+            ctx.close_path()
+            self._set_color(hair_color)
+            ctx.fill()
+            ctx.restore()
+
+        elif hair_style == "twintails":
+            # Two side tails
+            for side in [-1, 1]:
+                tail_points = [
+                    (cx + side * head_width * 0.8, cy),
+                    (cx + side * head_width * 1.5, cy + head_height * 0.3),
+                    (cx + side * head_width * 1.6, cy + head_height * 1.0),
+                    (cx + side * head_width * 1.3, cy + head_height * 1.5),
+                    (cx + side * head_width * 0.9, cy + head_height * 1.2),
+                    (cx + side * head_width * 0.7, cy + head_height * 0.4),
+                ]
+                ctx.save()
+                ctx.move_to(tail_points[0][0], tail_points[0][1])
+                for point in tail_points[1:]:
+                    ctx.line_to(point[0], point[1])
+                ctx.close_path()
+                self._set_color(hair_color)
+                ctx.fill()
+                ctx.restore()
+
+        # Hair cap for most styles
+        if hair_style in ["short", "spiky", "bob", "flowing", "ponytail", "twintails"]:
+            cap_points = [
+                (cx - head_width * 1.1, cy - head_height * 0.2),
+                (cx - head_width * 0.9, cy - head_height * 0.5),
+                (cx, cy - head_height * 0.6),
+                (cx + head_width * 0.9, cy - head_height * 0.5),
+                (cx + head_width * 1.1, cy - head_height * 0.2),
+            ]
+            ctx.save()
+            ctx.move_to(cap_points[0][0], cap_points[0][1])
+            for point in cap_points[1:]:
+                ctx.line_to(point[0], point[1])
+            ctx.close_path()
+            self._set_color(hair_color)
+            ctx.fill()
+            ctx.restore()
+
+    def _render_anime_bangs_cairo(
+        self, ctx: Any, head_pos: list[float], head_height: float, head_width: float,
+        hair_style: str, hair_color: str
+    ) -> None:
+        """Render anime hair bangs (front layer)."""
+        cx, cy = head_pos
+
+        if hair_style == "none":
+            return
+
+        if hair_style == "spiky":
+            spikes = [
+                [(cx - head_width * 0.8, cy - head_height * 0.3),
+                 (cx - head_width * 0.5, cy - head_height * 0.6),
+                 (cx - head_width * 0.3, cy - head_height * 0.25)],
+                [(cx - head_width * 0.3, cy - head_height * 0.25),
+                 (cx, cy - head_height * 0.7),
+                 (cx + head_width * 0.2, cy - head_height * 0.3)],
+                [(cx + head_width * 0.2, cy - head_height * 0.3),
+                 (cx + head_width * 0.5, cy - head_height * 0.55),
+                 (cx + head_width * 0.8, cy - head_height * 0.3)],
+            ]
+            for spike in spikes:
+                ctx.save()
+                ctx.move_to(spike[0][0], spike[0][1])
+                for point in spike[1:]:
+                    ctx.line_to(point[0], point[1])
+                ctx.close_path()
+                self._set_color(hair_color)
+                ctx.fill()
+                ctx.restore()
+
+        elif hair_style in ["flowing", "ponytail", "twintails"]:
+            left_bang = [
+                (cx - head_width * 0.9, cy - head_height * 0.3),
+                (cx - head_width * 0.6, cy - head_height * 0.5),
+                (cx - head_width * 0.2, cy - head_height * 0.35),
+                (cx - head_width * 0.3, cy - head_height * 0.15),
+                (cx - head_width * 0.5, cy - head_height * 0.1),
+            ]
+            right_bang = [
+                (cx + head_width * 0.9, cy - head_height * 0.3),
+                (cx + head_width * 0.6, cy - head_height * 0.5),
+                (cx + head_width * 0.2, cy - head_height * 0.35),
+                (cx + head_width * 0.3, cy - head_height * 0.15),
+                (cx + head_width * 0.5, cy - head_height * 0.1),
+            ]
+            for bang in [left_bang, right_bang]:
+                ctx.save()
+                ctx.move_to(bang[0][0], bang[0][1])
+                for point in bang[1:]:
+                    ctx.line_to(point[0], point[1])
+                ctx.close_path()
+                self._set_color(hair_color)
+                ctx.fill()
+                ctx.restore()
+
+        elif hair_style == "bob":
+            bang = [
+                (cx - head_width * 0.8, cy - head_height * 0.25),
+                (cx - head_width * 0.4, cy - head_height * 0.4),
+                (cx, cy - head_height * 0.45),
+                (cx + head_width * 0.4, cy - head_height * 0.4),
+                (cx + head_width * 0.8, cy - head_height * 0.25),
+                (cx + head_width * 0.6, cy - head_height * 0.1),
+                (cx, cy - head_height * 0.2),
+                (cx - head_width * 0.6, cy - head_height * 0.1),
+            ]
+            ctx.save()
+            ctx.move_to(bang[0][0], bang[0][1])
+            for point in bang[1:]:
+                ctx.line_to(point[0], point[1])
+            ctx.close_path()
+            self._set_color(hair_color)
+            ctx.fill()
+            ctx.restore()
+
+        elif hair_style == "short":
+            bangs = [
+                (cx - head_width * 0.7, cy - head_height * 0.3),
+                (cx - head_width * 0.35, cy - head_height * 0.5),
+                (cx, cy - head_height * 0.4),
+                (cx + head_width * 0.35, cy - head_height * 0.5),
+                (cx + head_width * 0.7, cy - head_height * 0.3),
+                (cx + head_width * 0.4, cy - head_height * 0.15),
+                (cx, cy - head_height * 0.25),
+                (cx - head_width * 0.4, cy - head_height * 0.15),
+            ]
+            ctx.save()
+            ctx.move_to(bangs[0][0], bangs[0][1])
+            for point in bangs[1:]:
+                ctx.line_to(point[0], point[1])
+            ctx.close_path()
+            self._set_color(hair_color)
+            ctx.fill()
+            ctx.restore()
+
+    def _render_anime_eyes_cairo(
+        self, ctx: Any, head_pos: list[float], head_height: float,
+        eye_y: float, eye_offset: float, eye_radius: float,
+        eye_type: str, eye_color: str, outline_color: str
+    ) -> None:
+        """Render anime-style eyes with highlights."""
+        left_x = head_pos[0] - eye_offset
+        right_x = head_pos[0] + eye_offset
+
+        if eye_type == "curved":
+            # Happy curved eyes (^_^)
+            for x in [left_x, right_x]:
+                ctx.save()
+                ctx.move_to(x - eye_radius * 1.2, eye_y)
+                ctx.line_to(x, eye_y - eye_radius * 0.5)
+                ctx.line_to(x + eye_radius * 1.2, eye_y)
+                self._set_color(outline_color)
+                ctx.set_line_width(2)
+                ctx.set_line_cap(1)  # CAIRO_LINE_CAP_ROUND
+                ctx.stroke()
+                ctx.restore()
+
+        elif eye_type == "closed":
+            for x in [left_x, right_x]:
+                ctx.save()
+                ctx.move_to(x - eye_radius, eye_y)
+                ctx.line_to(x + eye_radius, eye_y)
+                self._set_color(outline_color)
+                ctx.set_line_width(2)
+                ctx.set_line_cap(1)
+                ctx.stroke()
+                ctx.restore()
+
+        elif eye_type == "stars":
+            for x in [left_x, right_x]:
+                star_size = eye_radius * 0.8
+                for angle in [0, 45, 90, 135]:
+                    rad = math.radians(angle)
+                    ctx.save()
+                    ctx.move_to(x - star_size * math.cos(rad), eye_y - star_size * math.sin(rad))
+                    ctx.line_to(x + star_size * math.cos(rad), eye_y + star_size * math.sin(rad))
+                    self._set_color(eye_color)
+                    ctx.set_line_width(2)
+                    ctx.stroke()
+                    ctx.restore()
+
+        elif eye_type == "tears":
+            for x in [left_x, right_x]:
+                # Eye base
+                ctx.save()
+                ctx.arc(x, eye_y, eye_radius, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill_preserve()
+                self._set_color(outline_color)
+                ctx.set_line_width(1.5)
+                ctx.stroke()
+                ctx.restore()
+                # Pupil
+                ctx.save()
+                ctx.arc(x, eye_y, eye_radius * 0.5, 0, 2 * math.pi)
+                self._set_color(eye_color)
+                ctx.fill()
+                ctx.restore()
+                # Tear drop
+                ctx.save()
+                ctx.arc(x, eye_y + eye_radius * 1.5, eye_radius * 0.3, 0, 2 * math.pi)
+                self._set_color("#87CEEB")
+                ctx.fill()
+                ctx.restore()
+
+        elif eye_type in ["wide", "surprised"]:
+            for x in [left_x, right_x]:
+                # Larger white of eye
+                ctx.save()
+                ctx.arc(x, eye_y, eye_radius * 1.2, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill_preserve()
+                self._set_color(outline_color)
+                ctx.set_line_width(1.5)
+                ctx.stroke()
+                ctx.restore()
+                # Smaller pupil
+                ctx.save()
+                ctx.arc(x, eye_y, eye_radius * 0.4, 0, 2 * math.pi)
+                self._set_color(eye_color)
+                ctx.fill()
+                ctx.restore()
+                # Highlight
+                ctx.save()
+                ctx.arc(x - eye_radius * 0.3, eye_y - eye_radius * 0.3, eye_radius * 0.2, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill()
+                ctx.restore()
+
+        else:
+            # Normal anime eyes with highlights
+            for x in [left_x, right_x]:
+                # White of eye
+                ctx.save()
+                ctx.arc(x, eye_y, eye_radius, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill_preserve()
+                self._set_color(outline_color)
+                ctx.set_line_width(1.5)
+                ctx.stroke()
+                ctx.restore()
+
+                # Iris (colored)
+                ctx.save()
+                ctx.arc(x, eye_y + eye_radius * 0.1, eye_radius * 0.7, 0, 2 * math.pi)
+                self._set_color(eye_color)
+                ctx.fill()
+                ctx.restore()
+
+                # Inner pupil (dark)
+                ctx.save()
+                ctx.arc(x, eye_y + eye_radius * 0.15, eye_radius * 0.35, 0, 2 * math.pi)
+                self._set_color("#1a1a1a")
+                ctx.fill()
+                ctx.restore()
+
+                # Large highlight (top-left)
+                ctx.save()
+                ctx.arc(x - eye_radius * 0.25, eye_y - eye_radius * 0.2, eye_radius * 0.25, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill()
+                ctx.restore()
+
+                # Small highlight (bottom-right)
+                ctx.save()
+                ctx.arc(x + eye_radius * 0.2, eye_y + eye_radius * 0.3, eye_radius * 0.12, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill()
+                ctx.restore()
+
+    def _render_anime_mouth_cairo(
+        self, ctx: Any, head_pos: list[float], head_height: float, mouth_type: str, color: str
+    ) -> None:
+        """Render anime-style mouth (small and simple)."""
+        cx = head_pos[0]
+        mouth_y = head_pos[1] + head_height * 0.25
+        mouth_width = head_height * 0.12
+
+        ctx.save()
+        self._set_color(color)
+        ctx.set_line_width(1.5)
+        ctx.set_line_cap(1)  # CAIRO_LINE_CAP_ROUND
+
+        if mouth_type == "smile":
+            ctx.move_to(cx - mouth_width, mouth_y)
+            ctx.line_to(cx, mouth_y + mouth_width * 0.5)
+            ctx.line_to(cx + mouth_width, mouth_y)
+            ctx.stroke()
+
+        elif mouth_type == "frown":
+            ctx.move_to(cx - mouth_width, mouth_y)
+            ctx.line_to(cx, mouth_y - mouth_width * 0.5)
+            ctx.line_to(cx + mouth_width, mouth_y)
+            ctx.stroke()
+
+        elif mouth_type == "open":
+            ctx.arc(cx, mouth_y, mouth_width * 0.6, 0, 2 * math.pi)
+            self._set_color("#2a1a1a")
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.stroke()
+
+        elif mouth_type == "grin":
+            ctx.move_to(cx - mouth_width * 1.5, mouth_y)
+            ctx.line_to(cx - mouth_width * 0.5, mouth_y + mouth_width * 0.6)
+            ctx.line_to(cx + mouth_width * 0.5, mouth_y + mouth_width * 0.6)
+            ctx.line_to(cx + mouth_width * 1.5, mouth_y)
+            ctx.stroke()
+
+        elif mouth_type == "gasp":
+            ctx.arc(cx, mouth_y, mouth_width, 0, 2 * math.pi)
+            self._set_color("#2a1a1a")
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.stroke()
+
+        elif mouth_type == "wavy":
+            ctx.move_to(cx - mouth_width, mouth_y)
+            ctx.line_to(cx - mouth_width * 0.5, mouth_y - mouth_width * 0.3)
+            ctx.line_to(cx, mouth_y + mouth_width * 0.2)
+            ctx.line_to(cx + mouth_width * 0.5, mouth_y - mouth_width * 0.3)
+            ctx.line_to(cx + mouth_width, mouth_y)
+            ctx.stroke()
+
+        elif mouth_type == "smirk":
+            ctx.move_to(cx - mouth_width, mouth_y + mouth_width * 0.2)
+            ctx.line_to(cx, mouth_y)
+            ctx.line_to(cx + mouth_width, mouth_y - mouth_width * 0.4)
+            ctx.stroke()
+
+        else:
+            # Normal small line
+            ctx.move_to(cx - mouth_width * 0.7, mouth_y)
+            ctx.line_to(cx + mouth_width * 0.7, mouth_y)
+            ctx.stroke()
 
         ctx.restore()

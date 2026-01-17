@@ -1,6 +1,7 @@
 """Character module - comic characters."""
 
 from comix.cobject.character.character import (
+    Anime,
     Character,
     Chibi,
     ChubbyStickman,
@@ -12,6 +13,7 @@ from comix.cobject.character.character import (
 )
 
 __all__ = [
+    "Anime",
     "Character",
     "Chibi",
     "ChubbyStickman",

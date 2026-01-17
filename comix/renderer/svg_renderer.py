@@ -472,6 +472,8 @@ class SVGRenderer:
             self._render_robot(data, group, pos, points)
         elif style == "chibi":
             self._render_chibi(data, group, pos, points)
+        elif style == "anime":
+            self._render_anime(data, group, pos, points)
         else:
             self._render_generic(data, group)
 
@@ -1978,3 +1980,627 @@ class SVGRenderer:
             stroke_width=2,
         )
         group.add(polyline)
+
+    def _render_anime(
+        self, data: dict[str, Any], group: Group, pos: list[float], points: list[list[float]]
+    ) -> None:
+        """Render an anime/manga style character.
+
+        Renders a character with typical anime proportions:
+        - Tapered face shape with pointed chin
+        - Large expressive eyes with highlights
+        - Visible neck and shoulders
+        - Natural body proportions
+        - Various hair styles
+        """
+        color = data.get("color", "#333333")
+        skin_color = data.get("skin_color", "#FFE0C4")
+        fill_color = data.get("fill_color", skin_color)
+        outfit_color = data.get("outfit_color", "#3B82F6")
+        hair_color = data.get("hair_color", "#2D1B12")
+        hair_style = data.get("hair_style", "flowing")
+        eye_color = data.get("eye_color", "#4A90D9")
+        stroke_width = 1.5
+
+        if len(points) < 32:
+            return
+
+        height = data.get("character_height", 100)
+
+        # Head points (first 32 points - tapered oval)
+        head_points = points[:32]
+        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
+
+        # Calculate head center for features
+        head_center_x = sum(p[0] for p in head_points) / len(head_points)
+        head_center_y = sum(p[1] for p in head_points) / len(head_points)
+        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_height = height * 0.14
+        head_width = height * 0.10
+
+        # Render hair (behind head)
+        self._render_anime_hair(group, head_pos, head_height, head_width, hair_style, hair_color)
+
+        # Draw head with skin color
+        head = Polygon(
+            points=translated_head,
+            fill=fill_color,
+            stroke=color,
+            stroke_width=stroke_width,
+        )
+        group.add(head)
+
+        # Neck points (next 4 points)
+        neck_points = points[32:36]
+        if len(neck_points) == 4:
+            translated_neck = [(p[0] + pos[0], p[1] + pos[1]) for p in neck_points]
+            neck = Polygon(
+                points=translated_neck,
+                fill=fill_color,
+                stroke=color,
+                stroke_width=stroke_width,
+            )
+            group.add(neck)
+
+        # Body/torso points (next 4 points)
+        body_points = points[36:40]
+        if len(body_points) == 4:
+            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
+            body = Polygon(
+                points=translated_body,
+                fill=outfit_color,
+                stroke=color,
+                stroke_width=stroke_width,
+            )
+            group.add(body)
+
+        # Arms and legs - each limb has: start, elbow/knee, end, hand/foot circle (8 points)
+        limb_start = 40
+
+        def render_arm(start_idx: int) -> None:
+            if start_idx + 11 > len(points):
+                return
+            # Arm segments
+            p1 = points[start_idx]
+            p2 = points[start_idx + 1]
+            p3 = points[start_idx + 2]
+
+            # Upper arm
+            line1 = SVGLine(
+                start=(p1[0] + pos[0], p1[1] + pos[1]),
+                end=(p2[0] + pos[0], p2[1] + pos[1]),
+                stroke=color,
+                stroke_width=stroke_width + 1,
+            )
+            group.add(line1)
+
+            # Forearm
+            line2 = SVGLine(
+                start=(p2[0] + pos[0], p2[1] + pos[1]),
+                end=(p3[0] + pos[0], p3[1] + pos[1]),
+                stroke=color,
+                stroke_width=stroke_width + 1,
+            )
+            group.add(line2)
+
+            # Hand circle
+            hand_points = points[start_idx + 3 : start_idx + 11]
+            if hand_points:
+                translated_hand = [(p[0] + pos[0], p[1] + pos[1]) for p in hand_points]
+                hand = Polygon(
+                    points=translated_hand,
+                    fill=fill_color,
+                    stroke=color,
+                    stroke_width=stroke_width,
+                )
+                group.add(hand)
+
+        def render_leg(start_idx: int) -> None:
+            if start_idx + 11 > len(points):
+                return
+            # Leg segments
+            p1 = points[start_idx]
+            p2 = points[start_idx + 1]
+            p3 = points[start_idx + 2]
+
+            # Upper leg
+            line1 = SVGLine(
+                start=(p1[0] + pos[0], p1[1] + pos[1]),
+                end=(p2[0] + pos[0], p2[1] + pos[1]),
+                stroke=outfit_color,
+                stroke_width=stroke_width + 2,
+            )
+            group.add(line1)
+
+            # Lower leg
+            line2 = SVGLine(
+                start=(p2[0] + pos[0], p2[1] + pos[1]),
+                end=(p3[0] + pos[0], p3[1] + pos[1]),
+                stroke=outfit_color,
+                stroke_width=stroke_width + 2,
+            )
+            group.add(line2)
+
+            # Foot oval
+            foot_points = points[start_idx + 3 : start_idx + 11]
+            if foot_points:
+                translated_foot = [(p[0] + pos[0], p[1] + pos[1]) for p in foot_points]
+                foot = Polygon(
+                    points=translated_foot,
+                    fill=outfit_color,
+                    stroke=color,
+                    stroke_width=stroke_width,
+                )
+                group.add(foot)
+
+        # Render arms (skin color for hands)
+        render_arm(limb_start)  # Left arm
+        render_arm(limb_start + 11)  # Right arm
+
+        # Render legs (outfit color)
+        render_leg(limb_start + 22)  # Left leg
+        render_leg(limb_start + 33)  # Right leg
+
+        # Render face features
+        expression = data.get("expression", {})
+        eye_type = expression.get("eyes", "normal")
+        mouth_type = expression.get("mouth", "normal")
+        eyebrow_type = expression.get("eyebrows", "normal")
+
+        # Anime eyes are large and positioned in upper part of face
+        eye_y = head_pos[1] - head_height * 0.1
+        eye_offset = head_width * 0.45
+        eye_radius = head_height * 0.18  # Large anime eyes
+
+        # Render anime-style eyes
+        self._render_anime_eyes(group, head_pos, head_height, eye_y, eye_offset, eye_radius, eye_type, eye_color, color)
+
+        # Render eyebrows
+        self._render_face_eyebrows(group, head_pos, head_height, eye_y - eye_radius * 0.9, eye_offset, eyebrow_type, color)
+
+        # Render mouth (small anime mouth)
+        self._render_anime_mouth(group, head_pos, head_height, mouth_type, color)
+
+        # Render hair in front (bangs)
+        self._render_anime_bangs(group, head_pos, head_height, head_width, hair_style, hair_color)
+
+    def _render_anime_hair(
+        self, group: Group, head_pos: list[float], head_height: float, head_width: float,
+        hair_style: str, hair_color: str
+    ) -> None:
+        """Render anime hair (back layer behind head)."""
+        cx, cy = head_pos
+        stroke_width = 1.5
+
+        if hair_style == "none":
+            return
+
+        if hair_style == "flowing":
+            # Long flowing hair
+            hair_points = [
+                (cx - head_width * 1.2, cy - head_height * 0.3),
+                (cx - head_width * 1.4, cy + head_height * 0.8),
+                (cx - head_width * 1.2, cy + head_height * 1.5),
+                (cx - head_width * 0.8, cy + head_height * 1.8),
+                (cx, cy + head_height * 1.6),
+                (cx + head_width * 0.8, cy + head_height * 1.8),
+                (cx + head_width * 1.2, cy + head_height * 1.5),
+                (cx + head_width * 1.4, cy + head_height * 0.8),
+                (cx + head_width * 1.2, cy - head_height * 0.3),
+            ]
+            hair = Polygon(
+                points=hair_points,
+                fill=hair_color,
+                stroke=hair_color,
+                stroke_width=stroke_width,
+            )
+            group.add(hair)
+
+        elif hair_style == "ponytail":
+            # Ponytail at the back
+            ponytail_points = [
+                (cx + head_width * 0.6, cy - head_height * 0.2),
+                (cx + head_width * 1.8, cy),
+                (cx + head_width * 2.0, cy + head_height * 0.8),
+                (cx + head_width * 1.6, cy + head_height * 1.5),
+                (cx + head_width * 1.0, cy + head_height * 1.2),
+                (cx + head_width * 0.8, cy + head_height * 0.3),
+            ]
+            ponytail = Polygon(
+                points=ponytail_points,
+                fill=hair_color,
+                stroke=hair_color,
+                stroke_width=stroke_width,
+            )
+            group.add(ponytail)
+
+        elif hair_style == "twintails":
+            # Two side tails
+            for side in [-1, 1]:
+                tail_points = [
+                    (cx + side * head_width * 0.8, cy),
+                    (cx + side * head_width * 1.5, cy + head_height * 0.3),
+                    (cx + side * head_width * 1.6, cy + head_height * 1.0),
+                    (cx + side * head_width * 1.3, cy + head_height * 1.5),
+                    (cx + side * head_width * 0.9, cy + head_height * 1.2),
+                    (cx + side * head_width * 0.7, cy + head_height * 0.4),
+                ]
+                tail = Polygon(
+                    points=tail_points,
+                    fill=hair_color,
+                    stroke=hair_color,
+                    stroke_width=stroke_width,
+                )
+                group.add(tail)
+
+        # Hair cap for most styles (short, spiky, bob also get base layer)
+        if hair_style in ["short", "spiky", "bob", "flowing", "ponytail", "twintails"]:
+            cap_points = [
+                (cx - head_width * 1.1, cy - head_height * 0.2),
+                (cx - head_width * 0.9, cy - head_height * 0.5),
+                (cx, cy - head_height * 0.6),
+                (cx + head_width * 0.9, cy - head_height * 0.5),
+                (cx + head_width * 1.1, cy - head_height * 0.2),
+            ]
+            cap = Polygon(
+                points=cap_points,
+                fill=hair_color,
+                stroke=hair_color,
+                stroke_width=stroke_width,
+            )
+            group.add(cap)
+
+    def _render_anime_bangs(
+        self, group: Group, head_pos: list[float], head_height: float, head_width: float,
+        hair_style: str, hair_color: str
+    ) -> None:
+        """Render anime hair bangs (front layer)."""
+        cx, cy = head_pos
+        stroke_width = 1.5
+
+        if hair_style == "none":
+            return
+
+        if hair_style == "spiky":
+            # Spiky bangs
+            spikes = [
+                [(cx - head_width * 0.8, cy - head_height * 0.3),
+                 (cx - head_width * 0.5, cy - head_height * 0.6),
+                 (cx - head_width * 0.3, cy - head_height * 0.25)],
+                [(cx - head_width * 0.3, cy - head_height * 0.25),
+                 (cx, cy - head_height * 0.7),
+                 (cx + head_width * 0.2, cy - head_height * 0.3)],
+                [(cx + head_width * 0.2, cy - head_height * 0.3),
+                 (cx + head_width * 0.5, cy - head_height * 0.55),
+                 (cx + head_width * 0.8, cy - head_height * 0.3)],
+            ]
+            for spike in spikes:
+                bang = Polygon(points=spike, fill=hair_color, stroke=hair_color, stroke_width=stroke_width)
+                group.add(bang)
+
+        elif hair_style in ["flowing", "ponytail", "twintails"]:
+            # Soft side-swept bangs
+            left_bang = [
+                (cx - head_width * 0.9, cy - head_height * 0.3),
+                (cx - head_width * 0.6, cy - head_height * 0.5),
+                (cx - head_width * 0.2, cy - head_height * 0.35),
+                (cx - head_width * 0.3, cy - head_height * 0.15),
+                (cx - head_width * 0.5, cy - head_height * 0.1),
+            ]
+            right_bang = [
+                (cx + head_width * 0.9, cy - head_height * 0.3),
+                (cx + head_width * 0.6, cy - head_height * 0.5),
+                (cx + head_width * 0.2, cy - head_height * 0.35),
+                (cx + head_width * 0.3, cy - head_height * 0.15),
+                (cx + head_width * 0.5, cy - head_height * 0.1),
+            ]
+            group.add(Polygon(points=left_bang, fill=hair_color, stroke=hair_color, stroke_width=stroke_width))
+            group.add(Polygon(points=right_bang, fill=hair_color, stroke=hair_color, stroke_width=stroke_width))
+
+        elif hair_style == "bob":
+            # Short bob bangs
+            bang = [
+                (cx - head_width * 0.8, cy - head_height * 0.25),
+                (cx - head_width * 0.4, cy - head_height * 0.4),
+                (cx, cy - head_height * 0.45),
+                (cx + head_width * 0.4, cy - head_height * 0.4),
+                (cx + head_width * 0.8, cy - head_height * 0.25),
+                (cx + head_width * 0.6, cy - head_height * 0.1),
+                (cx, cy - head_height * 0.2),
+                (cx - head_width * 0.6, cy - head_height * 0.1),
+            ]
+            group.add(Polygon(points=bang, fill=hair_color, stroke=hair_color, stroke_width=stroke_width))
+
+        elif hair_style == "short":
+            # Short tousled bangs
+            bangs = [
+                (cx - head_width * 0.7, cy - head_height * 0.3),
+                (cx - head_width * 0.35, cy - head_height * 0.5),
+                (cx, cy - head_height * 0.4),
+                (cx + head_width * 0.35, cy - head_height * 0.5),
+                (cx + head_width * 0.7, cy - head_height * 0.3),
+                (cx + head_width * 0.4, cy - head_height * 0.15),
+                (cx, cy - head_height * 0.25),
+                (cx - head_width * 0.4, cy - head_height * 0.15),
+            ]
+            group.add(Polygon(points=bangs, fill=hair_color, stroke=hair_color, stroke_width=stroke_width))
+
+    def _render_anime_eyes(
+        self, group: Group, head_pos: list[float], head_height: float,
+        eye_y: float, eye_offset: float, eye_radius: float,
+        eye_type: str, eye_color: str, outline_color: str
+    ) -> None:
+        """Render anime-style eyes with highlights."""
+        left_x = head_pos[0] - eye_offset
+        right_x = head_pos[0] + eye_offset
+
+        if eye_type == "curved":
+            # Happy curved eyes (^_^)
+            curve_width = eye_radius * 1.2
+            for x in [left_x, right_x]:
+                eye = Polyline(
+                    points=[
+                        (x - curve_width, eye_y),
+                        (x, eye_y - eye_radius * 0.5),
+                        (x + curve_width, eye_y),
+                    ],
+                    fill="none",
+                    stroke=outline_color,
+                    stroke_width=2,
+                    stroke_linecap="round",
+                )
+                group.add(eye)
+
+        elif eye_type == "closed":
+            # Closed/sleepy eyes (horizontal lines)
+            for x in [left_x, right_x]:
+                eye = SVGLine(
+                    start=(x - eye_radius, eye_y),
+                    end=(x + eye_radius, eye_y),
+                    stroke=outline_color,
+                    stroke_width=2,
+                    stroke_linecap="round",
+                )
+                group.add(eye)
+
+        elif eye_type == "stars":
+            # Star/sparkle eyes (excited)
+            for x in [left_x, right_x]:
+                # Outer star shape
+                star_size = eye_radius * 0.8
+                for angle in [0, 45, 90, 135]:
+                    import math
+                    rad = math.radians(angle)
+                    line = SVGLine(
+                        start=(x - star_size * math.cos(rad), eye_y - star_size * math.sin(rad)),
+                        end=(x + star_size * math.cos(rad), eye_y + star_size * math.sin(rad)),
+                        stroke=eye_color,
+                        stroke_width=2,
+                    )
+                    group.add(line)
+
+        elif eye_type == "tears":
+            # Crying eyes with tear drops
+            for x in [left_x, right_x]:
+                # Eye base
+                eye = SVGCircle(
+                    center=(x, eye_y),
+                    r=eye_radius,
+                    fill="white",
+                    stroke=outline_color,
+                    stroke_width=1.5,
+                )
+                group.add(eye)
+                # Pupil
+                pupil = SVGCircle(
+                    center=(x, eye_y),
+                    r=eye_radius * 0.5,
+                    fill=eye_color,
+                    stroke="none",
+                )
+                group.add(pupil)
+                # Tear drop
+                tear = SVGCircle(
+                    center=(x, eye_y + eye_radius * 1.5),
+                    r=eye_radius * 0.3,
+                    fill="#87CEEB",
+                    stroke="none",
+                )
+                group.add(tear)
+
+        elif eye_type in ["wide", "surprised"]:
+            # Wide surprised eyes
+            for x in [left_x, right_x]:
+                # Larger white of eye
+                eye = SVGCircle(
+                    center=(x, eye_y),
+                    r=eye_radius * 1.2,
+                    fill="white",
+                    stroke=outline_color,
+                    stroke_width=1.5,
+                )
+                group.add(eye)
+                # Smaller pupil (surprised look)
+                pupil = SVGCircle(
+                    center=(x, eye_y),
+                    r=eye_radius * 0.4,
+                    fill=eye_color,
+                    stroke="none",
+                )
+                group.add(pupil)
+                # Highlight
+                highlight = SVGCircle(
+                    center=(x - eye_radius * 0.3, eye_y - eye_radius * 0.3),
+                    r=eye_radius * 0.2,
+                    fill="white",
+                    stroke="none",
+                )
+                group.add(highlight)
+
+        else:
+            # Normal anime eyes with highlights
+            for x in [left_x, right_x]:
+                # White of eye (slightly taller)
+                eye_white = SVGCircle(
+                    center=(x, eye_y),
+                    r=eye_radius,
+                    fill="white",
+                    stroke=outline_color,
+                    stroke_width=1.5,
+                )
+                group.add(eye_white)
+
+                # Iris/pupil (colored)
+                iris = SVGCircle(
+                    center=(x, eye_y + eye_radius * 0.1),
+                    r=eye_radius * 0.7,
+                    fill=eye_color,
+                    stroke="none",
+                )
+                group.add(iris)
+
+                # Inner pupil (dark)
+                pupil = SVGCircle(
+                    center=(x, eye_y + eye_radius * 0.15),
+                    r=eye_radius * 0.35,
+                    fill="#1a1a1a",
+                    stroke="none",
+                )
+                group.add(pupil)
+
+                # Large highlight (top-left)
+                highlight1 = SVGCircle(
+                    center=(x - eye_radius * 0.25, eye_y - eye_radius * 0.2),
+                    r=eye_radius * 0.25,
+                    fill="white",
+                    stroke="none",
+                )
+                group.add(highlight1)
+
+                # Small highlight (bottom-right)
+                highlight2 = SVGCircle(
+                    center=(x + eye_radius * 0.2, eye_y + eye_radius * 0.3),
+                    r=eye_radius * 0.12,
+                    fill="white",
+                    stroke="none",
+                )
+                group.add(highlight2)
+
+    def _render_anime_mouth(
+        self, group: Group, head_pos: list[float], head_height: float, mouth_type: str, color: str
+    ) -> None:
+        """Render anime-style mouth (small and simple)."""
+        cx = head_pos[0]
+        mouth_y = head_pos[1] + head_height * 0.25
+        mouth_width = head_height * 0.12
+
+        if mouth_type == "smile":
+            # Small upward curve
+            mouth = Polyline(
+                points=[
+                    (cx - mouth_width, mouth_y),
+                    (cx, mouth_y + mouth_width * 0.5),
+                    (cx + mouth_width, mouth_y),
+                ],
+                fill="none",
+                stroke=color,
+                stroke_width=1.5,
+                stroke_linecap="round",
+            )
+            group.add(mouth)
+
+        elif mouth_type == "frown":
+            # Small downward curve
+            mouth = Polyline(
+                points=[
+                    (cx - mouth_width, mouth_y),
+                    (cx, mouth_y - mouth_width * 0.5),
+                    (cx + mouth_width, mouth_y),
+                ],
+                fill="none",
+                stroke=color,
+                stroke_width=1.5,
+                stroke_linecap="round",
+            )
+            group.add(mouth)
+
+        elif mouth_type == "open":
+            # Small open mouth (circle)
+            mouth = SVGCircle(
+                center=(cx, mouth_y),
+                r=mouth_width * 0.6,
+                fill="#2a1a1a",
+                stroke=color,
+                stroke_width=1.5,
+            )
+            group.add(mouth)
+
+        elif mouth_type == "grin":
+            # Wide grin with teeth hint
+            mouth = Polyline(
+                points=[
+                    (cx - mouth_width * 1.5, mouth_y),
+                    (cx - mouth_width * 0.5, mouth_y + mouth_width * 0.6),
+                    (cx + mouth_width * 0.5, mouth_y + mouth_width * 0.6),
+                    (cx + mouth_width * 1.5, mouth_y),
+                ],
+                fill="none",
+                stroke=color,
+                stroke_width=1.5,
+                stroke_linecap="round",
+            )
+            group.add(mouth)
+
+        elif mouth_type == "gasp":
+            # Larger open surprised mouth
+            mouth = SVGCircle(
+                center=(cx, mouth_y),
+                r=mouth_width,
+                fill="#2a1a1a",
+                stroke=color,
+                stroke_width=1.5,
+            )
+            group.add(mouth)
+
+        elif mouth_type == "wavy":
+            # Uncertain wavy line
+            mouth = Polyline(
+                points=[
+                    (cx - mouth_width, mouth_y),
+                    (cx - mouth_width * 0.5, mouth_y - mouth_width * 0.3),
+                    (cx, mouth_y + mouth_width * 0.2),
+                    (cx + mouth_width * 0.5, mouth_y - mouth_width * 0.3),
+                    (cx + mouth_width, mouth_y),
+                ],
+                fill="none",
+                stroke=color,
+                stroke_width=1.5,
+                stroke_linecap="round",
+            )
+            group.add(mouth)
+
+        elif mouth_type == "smirk":
+            # Asymmetric smirk
+            mouth = Polyline(
+                points=[
+                    (cx - mouth_width, mouth_y + mouth_width * 0.2),
+                    (cx, mouth_y),
+                    (cx + mouth_width, mouth_y - mouth_width * 0.4),
+                ],
+                fill="none",
+                stroke=color,
+                stroke_width=1.5,
+                stroke_linecap="round",
+            )
+            group.add(mouth)
+
+        else:
+            # Normal small line
+            mouth = SVGLine(
+                start=(cx - mouth_width * 0.7, mouth_y),
+                end=(cx + mouth_width * 0.7, mouth_y),
+                stroke=color,
+                stroke_width=1.5,
+                stroke_linecap="round",
+            )
+            group.add(mouth)

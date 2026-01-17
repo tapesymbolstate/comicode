@@ -25,6 +25,7 @@ from comix.cobject.bubble.bubble import (
 )
 from comix.cobject.text.text import Text, StyledText, SFX
 from comix.cobject.character.character import (
+    Anime,
     Character,
     Chibi,
     ChubbyStickman,
@@ -160,6 +161,7 @@ __all__ = [
     "StyledText",
     "SFX",
     # Characters
+    "Anime",
     "Character",
     "Chibi",
     "ChubbyStickman",

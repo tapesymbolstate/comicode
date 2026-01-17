@@ -6,7 +6,7 @@ from pathlib import Path
 from comix.page.page import Page
 from comix.cobject.panel.panel import Panel
 from comix.cobject.bubble.bubble import SpeechBubble
-from comix.cobject.character.character import Stickman, SimpleFace, ChubbyStickman, Robot, Chibi
+from comix.cobject.character.character import Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime
 from comix.cobject.text.text import Text, SFX
 from comix.cobject.shapes.shapes import Rectangle, Circle, Line
 from comix.renderer.svg_renderer import SVGRenderer
@@ -388,6 +388,106 @@ class TestSVGRenderer:
             hair_color="#0000FF",
         ).move_to((200, 150))
         page.add(chibi)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            # Custom colors should appear in the SVG - check svg renders
+            assert "svg" in content.lower()
+            Path(output_path).unlink()
+
+    def test_render_anime(self):
+        """Test rendering an anime character."""
+        page = Page(width=400, height=300)
+        anime = Anime(name="Sakura").move_to((200, 150))
+        page.add(anime)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            # Anime renders - check for svg content
+            assert "svg" in content.lower()
+            Path(output_path).unlink()
+
+    def test_render_anime_with_expression(self):
+        """Test rendering an anime with expression."""
+        page = Page(width=400, height=300)
+        anime = Anime(name="HappyAnime", expression="happy").move_to((200, 150))
+        page.add(anime)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            assert "svg" in content.lower()
+            Path(output_path).unlink()
+
+    def test_render_anime_with_pose(self):
+        """Test rendering an anime with different poses."""
+        for pose_name in ["standing", "waving", "jumping", "cheering"]:
+            page = Page(width=400, height=300)
+            anime = Anime(name="Poser", pose=pose_name).move_to((200, 150))
+            page.add(anime)
+
+            with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+                output_path = page.render(f.name)
+                content = Path(output_path).read_text()
+                assert "svg" in content.lower()
+                Path(output_path).unlink()
+
+    def test_render_anime_facing_left(self):
+        """Test rendering an anime facing left."""
+        page = Page(width=400, height=300)
+        anime = Anime(name="Lefty", facing="left").move_to((200, 150))
+        page.add(anime)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            assert "svg" in content.lower()
+            Path(output_path).unlink()
+
+    def test_render_anime_hair_styles(self):
+        """Test rendering an anime with different hair styles."""
+        styles = ["flowing", "ponytail", "short", "spiky", "bob", "twintails", "none"]
+        for style in styles:
+            page = Page(width=400, height=300)
+            anime = Anime(name="Hairy", hair_style=style).move_to((200, 150))
+            page.add(anime)
+
+            with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+                output_path = page.render(f.name)
+                content = Path(output_path).read_text()
+                assert "svg" in content.lower()
+                Path(output_path).unlink()
+
+    def test_render_anime_all_expressions(self):
+        """Test rendering anime with all expression types."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            page = Page(width=400, height=300)
+            anime = Anime(name="Expressive", expression=expr_name).move_to((200, 150))
+            page.add(anime)
+
+            with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+                output_path = page.render(f.name)
+                content = Path(output_path).read_text()
+                # Should render without errors
+                assert "svg" in content.lower()
+                Path(output_path).unlink()
+
+    def test_render_anime_custom_colors(self):
+        """Test rendering an anime with custom colors."""
+        page = Page(width=400, height=300)
+        anime = Anime(
+            name="ColorAnime",
+            color="#FF0000",
+            skin_color="#FFD700",
+            outfit_color="#00FF00",
+            hair_color="#0000FF",
+            eye_color="#FF00FF",
+        ).move_to((200, 150))
+        page.add(anime)
 
         with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
             output_path = page.render(f.name)

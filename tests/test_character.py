@@ -3,6 +3,7 @@
 import numpy as np
 
 from comix.cobject.character.character import (
+    Anime,
     Character,
     Chibi,
     ChubbyStickman,
@@ -713,3 +714,169 @@ class TestChibi:
         chibi = Chibi(height=100)
         data = chibi.get_render_data()
         assert data["limb_thickness"] == 5.0  # height * 0.05
+
+
+class TestAnime:
+    """Tests for Anime character class."""
+
+    def test_default_init(self):
+        """Test default initialization."""
+        anime = Anime()
+        assert anime.name == "Anime"
+        assert anime.style == "anime"
+        assert anime.hair_style == "flowing"
+        assert anime.hair_color == "#2D1B12"
+        assert anime.skin_color == "#FFE0C4"
+        assert anime.outfit_color == "#3B82F6"
+        assert anime.eye_color == "#4A90D9"
+        assert anime.gender == "neutral"
+
+    def test_custom_name(self):
+        """Test custom character name."""
+        anime = Anime(name="Sakura")
+        assert anime.name == "Sakura"
+
+    def test_custom_hair_style(self):
+        """Test custom hair style."""
+        for hair_style in ["flowing", "ponytail", "short", "spiky", "bob", "twintails", "none"]:
+            anime = Anime(hair_style=hair_style)
+            assert anime.hair_style == hair_style
+
+    def test_custom_colors(self):
+        """Test custom colors."""
+        anime = Anime(
+            hair_color="#FF0000",
+            skin_color="#FFE0BD",
+            outfit_color="#00FF00",
+            eye_color="#0000FF",
+        )
+        assert anime.hair_color == "#FF0000"
+        assert anime.skin_color == "#FFE0BD"
+        assert anime.outfit_color == "#00FF00"
+        assert anime.eye_color == "#0000FF"
+
+    def test_gender_option(self):
+        """Test gender option."""
+        for gender in ["neutral", "masculine", "feminine"]:
+            anime = Anime(gender=gender)
+            assert anime.gender == gender
+
+    def test_generates_points(self):
+        """Test that anime generates outline points."""
+        anime = Anime()
+        assert len(anime._points) >= 32  # At least head points
+        assert anime._points.shape[1] == 2  # Each point has x, y
+
+    def test_facing_flips_points(self):
+        """Test that facing left flips x coordinates."""
+        anime_right = Anime(facing="right")
+        anime_left = Anime(facing="left")
+
+        # X coordinates should be flipped
+        assert not np.allclose(anime_right._points[:, 0], anime_left._points[:, 0])
+        # Y coordinates should be the same
+        assert np.allclose(anime_right._points[:, 1], anime_left._points[:, 1])
+
+    def test_custom_height(self):
+        """Test custom height parameter."""
+        anime = Anime(height=150)
+        assert anime.character_height == 150.0
+        data = anime.get_render_data()
+        assert data["character_height"] == 150.0
+
+    def test_get_render_data(self):
+        """Test render data includes anime-specific fields."""
+        anime = Anime()
+        data = anime.get_render_data()
+        assert data["style"] == "anime"
+        assert "hair_style" in data
+        assert data["hair_style"] == "flowing"
+        assert "hair_color" in data
+        assert data["hair_color"] == "#2D1B12"
+        assert "skin_color" in data
+        assert "outfit_color" in data
+        assert "eye_color" in data
+        assert "gender" in data
+        assert "head_height_ratio" in data
+        assert "shoulder_width_ratio" in data
+
+    def test_set_expression(self):
+        """Test setting expression."""
+        anime = Anime()
+        anime.set_expression("happy")
+        assert anime._expression.name == "happy"
+        assert anime._expression.mouth == "smile"
+
+    def test_set_pose(self):
+        """Test setting pose."""
+        anime = Anime()
+        anime.set_pose("walking")
+        assert anime._pose.name == "walking"
+        assert anime._pose.left_arm == 30
+
+    def test_say_creates_bubble(self):
+        """Test say method creates speech bubble."""
+        anime = Anime().move_to((100, 100))
+        bubble = anime.say("Hello!")
+        assert bubble.text == "Hello!"
+        assert bubble.bubble_type == "speech"
+
+    def test_think_creates_bubble(self):
+        """Test think method creates thought bubble."""
+        anime = Anime().move_to((100, 100))
+        bubble = anime.think("I wonder...")
+        assert bubble.text == "I wonder..."
+        assert bubble.bubble_type == "thought"
+
+    def test_shout_creates_bubble(self):
+        """Test shout method creates shout bubble."""
+        anime = Anime().move_to((100, 100))
+        bubble = anime.shout("YAMETE!")
+        assert bubble.text == "YAMETE!"
+        assert bubble.bubble_type == "shout"
+
+    def test_whisper_creates_bubble(self):
+        """Test whisper method creates whisper bubble."""
+        anime = Anime().move_to((100, 100))
+        bubble = anime.whisper("*psst*")
+        assert bubble.text == "*psst*"
+        assert bubble.bubble_type == "whisper"
+
+    def test_all_poses(self):
+        """Test anime with different poses."""
+        poses = ["standing", "sitting", "walking", "running", "pointing",
+                 "waving", "jumping", "dancing", "kneeling", "cheering", "thinking"]
+        for pose_name in poses:
+            anime = Anime(pose=pose_name)
+            assert anime._pose.name == pose_name
+            # Should still generate valid points
+            assert len(anime._points) >= 32
+
+    def test_all_expressions(self):
+        """Test anime with different expressions."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            anime = Anime(expression=expr_name)
+            assert anime._expression.name == expr_name
+            data = anime.get_render_data()
+            assert data["expression"]["name"] == expr_name
+
+    def test_default_fill_color_is_skin_color(self):
+        """Test default fill color matches skin color."""
+        anime = Anime()
+        assert anime.fill_color == "#FFE0C4"  # Default peach skin tone
+
+    def test_default_outline_color(self):
+        """Test default outline color."""
+        anime = Anime()
+        assert anime.color == "#333333"
+
+    def test_proportions(self):
+        """Test anime character has natural proportions."""
+        anime = Anime(height=100)
+        data = anime.get_render_data()
+        # Anime proportions: head is ~1/7 of height
+        assert data["head_height_ratio"] == 0.14
+        # Shoulders are wider than head
+        assert data["shoulder_width_ratio"] > data["head_width_ratio"]

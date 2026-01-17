@@ -825,3 +825,208 @@ class Chibi(Character):
         data["limb_length_ratio"] = 0.12
         data["limb_thickness"] = self.character_height * 0.05
         return data
+
+
+class Anime(Character):
+    """Anime/manga style character with typical anime proportions.
+
+    A character with distinctive anime/manga visual features:
+    - Large expressive eyes with highlights (anime trademark)
+    - Smaller nose and mouth
+    - Natural body proportions (not super-deformed)
+    - Distinct hair styles (ponytail, bob, flowing, short, spiky)
+    - Visible neck and shoulders
+    - Slender build with defined limbs
+
+    Suitable for serious manga, shoujo/shounen styles, and dramatic scenes.
+    """
+
+    def __init__(
+        self,
+        name: str = "Anime",
+        hair_style: str = "flowing",
+        hair_color: str = "#2D1B12",
+        skin_color: str = "#FFE0C4",
+        outfit_color: str = "#3B82F6",
+        eye_color: str = "#4A90D9",
+        gender: str = "neutral",
+        **kwargs: Any,
+    ) -> None:
+        """Initialize Anime character.
+
+        Args:
+            name: Character name
+            hair_style: Hair style ("flowing", "ponytail", "short", "spiky", "bob", "twintails", "none")
+            hair_color: Color for hair (default dark brown)
+            skin_color: Skin tone color (default peach)
+            outfit_color: Color for outfit (default blue)
+            eye_color: Color for eyes (default blue)
+            gender: Body type hint ("neutral", "masculine", "feminine")
+            **kwargs: Additional Character parameters
+        """
+        kwargs.setdefault("style", "anime")
+        kwargs.setdefault("color", "#333333")
+        kwargs.setdefault("fill_color", skin_color)
+        self.hair_style = hair_style
+        self.hair_color = hair_color
+        self.skin_color = skin_color
+        self.outfit_color = outfit_color
+        self.eye_color = eye_color
+        self.gender = gender
+        super().__init__(name=name, **kwargs)
+
+    def generate_points(self) -> None:
+        """Generate anime figure points.
+
+        Structure:
+        - Head: Slightly oval/tapered face shape
+        - Neck: Visible thin neck
+        - Body: Natural proportions with shoulders
+        - Arms: Slender limbs with defined shape
+        - Legs: Long slender legs
+        """
+        h = self.character_height
+
+        # Anime proportions: head is ~1/7 of height (natural proportions)
+        head_height = h * 0.14
+        head_width = h * 0.10
+        neck_height = h * 0.04
+        neck_width = h * 0.03
+        shoulder_width = h * 0.22
+        body_height = h * 0.30
+        body_width = h * 0.12
+        arm_length = h * 0.26
+        leg_length = h * 0.32
+        limb_width = h * 0.025
+
+        points = []
+
+        # Calculate vertical positions
+        head_top = h / 2
+        head_center_y = head_top - head_height / 2
+        head_bottom = head_top - head_height
+        neck_bottom = head_bottom - neck_height
+        shoulder_y = neck_bottom
+        body_bottom = shoulder_y - body_height
+        hip_y = body_bottom
+
+        # Generate head shape (slightly tapered oval - anime face shape)
+        # Top half is more rounded, bottom tapers to chin
+        for i, angle in enumerate(np.linspace(0, 2 * np.pi, 32)):
+            # Make the bottom half narrower (chin)
+            width_mod = 1.0 if np.sin(angle) >= 0 else 0.8
+            # Slightly taller than wide
+            points.append([
+                head_width * width_mod * np.cos(angle),
+                head_center_y + head_height * 0.55 * np.sin(angle)
+            ])
+
+        # Neck points
+        points.append([-neck_width, head_bottom])
+        points.append([-neck_width, neck_bottom])
+        points.append([neck_width, neck_bottom])
+        points.append([neck_width, head_bottom])
+
+        # Shoulders and body (torso trapezoid tapering down)
+        waist_width = body_width * 0.8
+        points.append([-shoulder_width / 2, shoulder_y])  # Left shoulder
+        points.append([-waist_width, body_bottom])  # Left hip
+        points.append([waist_width, body_bottom])  # Right hip
+        points.append([shoulder_width / 2, shoulder_y])  # Right shoulder
+
+        # Arms
+        arm_y = shoulder_y - h * 0.02
+
+        # Left arm
+        left_arm_angle = np.radians(self._pose.left_arm)
+        left_elbow_x = -shoulder_width / 2 - arm_length * 0.5 * np.cos(left_arm_angle)
+        left_elbow_y = arm_y - arm_length * 0.5 * np.sin(left_arm_angle)
+        left_hand_x = -shoulder_width / 2 - arm_length * np.cos(left_arm_angle)
+        left_hand_y = arm_y - arm_length * np.sin(left_arm_angle)
+
+        points.append([-shoulder_width / 2, arm_y])  # Shoulder
+        points.append([left_elbow_x, left_elbow_y])  # Elbow
+        points.append([left_hand_x, left_hand_y])  # Hand
+        # Hand circle
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                left_hand_x + limb_width * 1.5 * np.cos(angle),
+                left_hand_y + limb_width * 1.5 * np.sin(angle)
+            ])
+
+        # Right arm
+        right_arm_angle = np.radians(self._pose.right_arm)
+        right_elbow_x = shoulder_width / 2 + arm_length * 0.5 * np.cos(right_arm_angle)
+        right_elbow_y = arm_y - arm_length * 0.5 * np.sin(right_arm_angle)
+        right_hand_x = shoulder_width / 2 + arm_length * np.cos(right_arm_angle)
+        right_hand_y = arm_y - arm_length * np.sin(right_arm_angle)
+
+        points.append([shoulder_width / 2, arm_y])  # Shoulder
+        points.append([right_elbow_x, right_elbow_y])  # Elbow
+        points.append([right_hand_x, right_hand_y])  # Hand
+        # Hand circle
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                right_hand_x + limb_width * 1.5 * np.cos(angle),
+                right_hand_y + limb_width * 1.5 * np.sin(angle)
+            ])
+
+        # Legs
+        leg_gap = body_width * 0.4
+
+        # Left leg
+        left_leg_angle = np.radians(90 + self._pose.left_leg)
+        left_knee_x = -leg_gap - leg_length * 0.5 * np.cos(left_leg_angle)
+        left_knee_y = hip_y - leg_length * 0.5 * np.sin(left_leg_angle)
+        left_foot_x = -leg_gap - leg_length * np.cos(left_leg_angle)
+        left_foot_y = hip_y - leg_length * np.sin(left_leg_angle)
+
+        points.append([-leg_gap, hip_y])  # Hip
+        points.append([left_knee_x, left_knee_y])  # Knee
+        points.append([left_foot_x, left_foot_y])  # Foot
+        # Foot shape (oval)
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                left_foot_x + limb_width * 2 * np.cos(angle),
+                left_foot_y + limb_width * np.sin(angle)
+            ])
+
+        # Right leg
+        right_leg_angle = np.radians(90 + self._pose.right_leg)
+        right_knee_x = leg_gap + leg_length * 0.5 * np.cos(right_leg_angle)
+        right_knee_y = hip_y - leg_length * 0.5 * np.sin(right_leg_angle)
+        right_foot_x = leg_gap + leg_length * np.cos(right_leg_angle)
+        right_foot_y = hip_y - leg_length * np.sin(right_leg_angle)
+
+        points.append([leg_gap, hip_y])  # Hip
+        points.append([right_knee_x, right_knee_y])  # Knee
+        points.append([right_foot_x, right_foot_y])  # Foot
+        # Foot shape (oval)
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                right_foot_x + limb_width * 2 * np.cos(angle),
+                right_foot_y + limb_width * np.sin(angle)
+            ])
+
+        self._points = np.array(points, dtype=np.float64)
+
+        if self.facing == "left":
+            self._points[:, 0] *= -1
+
+    def get_render_data(self) -> dict[str, Any]:
+        """Get data for rendering."""
+        data = super().get_render_data()
+        # Add anime-specific render info
+        data["hair_style"] = self.hair_style
+        data["hair_color"] = self.hair_color
+        data["skin_color"] = self.skin_color
+        data["outfit_color"] = self.outfit_color
+        data["eye_color"] = self.eye_color
+        data["gender"] = self.gender
+        data["head_height_ratio"] = 0.14
+        data["head_width_ratio"] = 0.10
+        data["shoulder_width_ratio"] = 0.22
+        data["body_height_ratio"] = 0.30
+        data["arm_length_ratio"] = 0.26
+        data["leg_length_ratio"] = 0.32
+        return data

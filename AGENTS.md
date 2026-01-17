@@ -20,19 +20,21 @@ comicode/
 │   │   ├── panel/            # Panel, Border, Gutter
 │   │   ├── bubble/           # Speech bubbles (Speech, Thought, Shout, Whisper, Narrator)
 │   │   ├── text/             # Text, StyledText, SFX
-│   │   ├── character/        # Character, Stickman, SimpleFace
+│   │   ├── character/        # 8 types: Stickman, SimpleFace, Chibi, Anime, Robot, etc.
 │   │   ├── shapes/           # Rectangle, Circle, Line
 │   │   └── image/            # Image, AIImage
 │   ├── page/                 # Page, Strip, SinglePanel
 │   ├── effect/               # Visual effects for webtoons
 │   ├── layout/               # GridLayout, FlowLayout
 │   ├── style/                # Style system with presets
-│   ├── renderer/             # SVG, Cairo, Web renderers
-│   ├── parser/               # Markup parser (optional)
-│   └── utils/                # Color, geometry, bezier utilities
+│   ├── renderer/             # SVG, Cairo (PNG/PDF), HTML renderers
+│   ├── parser/               # Markup parser (DSL)
+│   ├── preview/              # Hot-reload preview server
+│   └── utils/                # Geometry, bezier utilities
 ├── specs/                    # PRD and specifications
 │   └── PRD.md                # Full architecture design
-├── tests/                    # Test files
+├── tests/                    # Test files (27 test modules)
+├── examples/                 # 13 working examples
 ├── main.py                   # Entry point
 └── pyproject.toml            # Project config
 ```

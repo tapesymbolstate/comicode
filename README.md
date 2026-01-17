@@ -217,7 +217,7 @@ comix compile page1.py page2.py -o book.pdf
 
 ## Examples
 
-See the `examples/` directory for 10 working examples:
+See the `examples/` directory for 13 working examples:
 
 ```bash
 # Run an example

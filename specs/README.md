@@ -38,7 +38,7 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 | Character Basics | ✅ Complete |
 | Speech Bubbles | ✅ Complete |
 | Page Rendering | ✅ Complete |
-| Working Examples | ✅ All 13 examples working |
+| Working Examples | ✅ All 15 examples working |
 | Effect System | ✅ Complete |
 | Parser DSL | ✅ Complete |
 | AI Images | ✅ Complete |
@@ -106,7 +106,7 @@ getting-started.md
          └─> working-examples.md (examples 01-05 implemented)
 ```
 
-All acceptance criteria are met. The library is feature-complete for v0.1.41 with all 8 phases implemented.
+All acceptance criteria are met. The library is feature-complete for v0.1.42 with all 8 phases implemented.
 
 ## How to Use These Specs
 
@@ -187,6 +187,6 @@ See `IMPLEMENTATION_PLAN.md` for current implementation status.
 
 ---
 
-**Version**: 0.1.41 (as of 2026-01-18)
+**Version**: 0.1.42 (as of 2026-01-18)
 **Last Updated**: 2026-01-18
 **Maintainer**: Claude Code Ralph Agent

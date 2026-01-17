@@ -190,7 +190,7 @@ class AIImage(Image):
     async def _generate_openai(self) -> None:
         """Generate image using OpenAI DALL-E."""
         try:
-            from openai import AsyncOpenAI  # type: ignore[import-not-found]
+            from openai import AsyncOpenAI
         except ImportError as e:
             raise AIProviderNotAvailableError(
                 "OpenAI package not installed. Install with: pip install openai"
@@ -247,7 +247,7 @@ class AIImage(Image):
     async def _generate_replicate(self) -> None:
         """Generate image using Replicate."""
         try:
-            import replicate  # type: ignore[import-not-found]
+            import replicate
         except ImportError as e:
             raise AIProviderNotAvailableError(
                 "Replicate package not installed. Install with: pip install replicate"

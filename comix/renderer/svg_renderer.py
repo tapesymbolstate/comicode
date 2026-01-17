@@ -5,14 +5,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import svgwrite  # type: ignore[import-untyped]
+import svgwrite
 from svgwrite import Drawing
-from svgwrite.container import Group  # type: ignore[import-untyped]
-from svgwrite.path import Path as SVGPath  # type: ignore[import-untyped]
-from svgwrite.shapes import Circle as SVGCircle  # type: ignore[import-untyped]
+from svgwrite.container import Group
+from svgwrite.path import Path as SVGPath
+from svgwrite.shapes import Circle as SVGCircle
 from svgwrite.shapes import Line as SVGLine
 from svgwrite.shapes import Polygon, Polyline, Rect
-from svgwrite.text import Text as SVGText  # type: ignore[import-untyped]
+from svgwrite.text import Text as SVGText
 
 if TYPE_CHECKING:
     from comix.effect.effect import Effect

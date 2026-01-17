@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Interactive HTML Export
 
-**Current Git Tag: v0.1.34**
+**Current Git Tag: v0.1.35**
 
 All 6 phases have been implemented with **1607 tests passing**, ruff clean, and mypy passing.
 
@@ -58,6 +58,6 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Documentation Update (v0.1.34)
+## Note: Stable Release (v0.1.35)
 
-Updated AGENTS.md project structure documentation to accurately reflect all 8 character types, HTML renderer, DSL parser, preview server, and test/example counts.
+All systems stable with 1607 tests passing.

@@ -11,7 +11,7 @@
 **코드가 에러 없이 실행되고 테스트가 통과해도 실제 결과물이 엉망일 수 있다.**
 
 현재 문제:
-- ✅ 1366개 테스트 통과
+- ✅ 1578개 테스트 통과
 - ✅ 코드 에러 없음
 - ❌ 실제 만화는 깨져있음 (레이아웃 버그, 캐릭터 부분 렌더링, 텍스트 겹침)
 
@@ -93,7 +93,7 @@
 
 ## Current Known Issues (실제 결과물 검증 결과)
 
-**No known issues.** As of 2026-01-18, all 1460 tests pass, all 10 examples (01-10) execute successfully and produce correct output, and mypy/ruff pass.
+**No known issues.** As of 2026-01-18, all 1578 tests pass, all 10 examples (01-10) execute successfully and produce correct output, and mypy/ruff pass.
 
 ## Implementation Strategy
 

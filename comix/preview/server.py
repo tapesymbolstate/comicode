@@ -551,6 +551,7 @@ class PreviewServer:
 
         if self._server is not None:
             self._server.shutdown()
+            self._server.server_close()  # Close socket to avoid ResourceWarning
             self._server = None
 
 

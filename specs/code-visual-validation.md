@@ -1,6 +1,6 @@
 # Code-Visual Validation Report - 코드와 시각적 결과 일치 검증
 
-> **NOTE (2026-01-18)**: This document's bug analysis is now **obsolete**. All issues described below have been resolved. All 1460 tests pass, all 10 examples (01-10) execute successfully and produce correct output, and mypy/ruff pass. This document is retained for historical reference only.
+> **NOTE (2026-01-18)**: This document's bug analysis is now **obsolete**. All issues described below have been resolved. All 1578 tests pass, all 10 examples (01-10) execute successfully and produce correct output, and mypy/ruff pass. This document is retained for historical reference only.
 
 ---
 

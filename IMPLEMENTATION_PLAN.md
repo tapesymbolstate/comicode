@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.23**
+**Current Git Tag: v0.1.24**
 
 All 5 phases have been implemented with **1578 tests passing**, ruff clean, and mypy passing. Current version: **v0.1.0**.
 
@@ -207,6 +207,10 @@ All 5 phases have been implemented with **1578 tests passing**, ruff clean, and 
   - Added test_render_with_characters_and_bubbles() to test_book.py verifying Book PDF rendering with Stickman characters and SpeechBubbles across multiple pages
   - Updated specs/README.md test count to 1578
   - Total: 1 new test, test count increased from 1577 to 1578
+- **PreviewServer Socket Cleanup (v0.1.24)**: Fixed ResourceWarning in preview server shutdown:
+  - Added `server_close()` call after `shutdown()` in `PreviewServer.stop()` method
+  - Properly closes the server socket to avoid ResourceWarning about unclosed sockets during tests
+  - Updated outdated test counts in historical spec docs (visual-validation-requirements.md, code-visual-validation.md) from 1460 to 1578
 
 ### Technical Stack
 

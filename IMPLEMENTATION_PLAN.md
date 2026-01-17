@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Interactive HTML Export
 
-**Current Git Tag: v0.1.35**
+**Current Git Tag: v0.1.36**
 
 All 6 phases have been implemented with **1607 tests passing**, ruff clean, and mypy passing.
 
@@ -58,6 +58,6 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.35)
+## Note: Stable Release (v0.1.36)
 
 All systems stable with 1607 tests passing.

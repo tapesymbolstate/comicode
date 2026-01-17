@@ -76,7 +76,7 @@ from comix.page.templates import (
     MangaPage,
     ActionPage,
 )
-from comix.parser import parse_markup, MarkupParser, ParseError
+from comix.parser import parse_markup, parse_book_markup, MarkupParser, BookMarkupParser, ParseError, BookSpec
 from comix.renderer.svg_renderer import SVGRenderer
 from comix.renderer.html_renderer import HTMLRenderer
 from comix.style.style import (
@@ -269,8 +269,11 @@ __all__ = [
     "ActionPage",
     # Parser
     "parse_markup",
+    "parse_book_markup",
     "MarkupParser",
+    "BookMarkupParser",
     "ParseError",
+    "BookSpec",
     # Renderers
     "SVGRenderer",
     "CairoRenderer",

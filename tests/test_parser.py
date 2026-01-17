@@ -890,3 +890,317 @@ class TestParserEdgeCases:
         assert isinstance(actions[1], SFXAction)
         assert isinstance(actions[2], BackgroundDirective)
         assert isinstance(actions[3], CharacterAction)
+
+
+class TestBookMarkupParser:
+    """Tests for multi-page book parsing functionality."""
+
+    def test_basic_book_parsing(self):
+        """Test parsing basic multi-page book markup."""
+        from comix.parser import parse_book_markup
+
+        markup = """
+        [page 2x2]
+        # panel 1
+        Alice(left): "Page 1!"
+
+        ===
+
+        [page 1x2]
+        # panel 1
+        Bob(right): "Page 2!"
+        """
+        book = parse_book_markup(markup)
+
+        assert book.page_count == 2
+        assert len(book.pages[0]._panels) >= 1
+        assert len(book.pages[1]._panels) >= 1
+
+    def test_book_with_metadata_inline(self):
+        """Test parsing book with metadata mixed in first section."""
+        from comix.parser import parse_book_markup
+
+        markup = """
+        [book: My Comic]
+        title: Test Comic
+        author: Test Author
+
+        [page 2x1]
+        # panel 1
+        Alice(left): "Hello!"
+
+        ===
+
+        [page 1x1]
+        # panel 1
+        Bob(right): "Bye!"
+        """
+        book = parse_book_markup(markup)
+
+        assert book.title == "Test Comic"
+        assert book.author == "Test Author"
+        assert book.page_count == 2
+
+    def test_book_with_separate_metadata_section(self):
+        """Test parsing book with metadata in separate section."""
+        from comix.parser import parse_book_markup
+
+        markup = """
+        [book]
+        title: Separate Section Comic
+        author: Author Name
+
+        ===
+
+        [page 2x2]
+        # panel 1
+        Alice(left): "First page!"
+
+        ---
+
+        [page 1x2]
+        # panel 1
+        Bob(right): "Second page!"
+        """
+        book = parse_book_markup(markup)
+
+        assert book.title == "Separate Section Comic"
+        assert book.author == "Author Name"
+        assert book.page_count == 2
+
+    def test_book_title_in_bracket(self):
+        """Test parsing book title in bracket syntax."""
+        from comix.parser import parse_book_markup
+
+        markup = """
+        [book: Inline Title]
+
+        [page 1x1]
+        # panel 1
+        Alice(left): "Hello!"
+        """
+        book = parse_book_markup(markup)
+
+        assert book.title == "Inline Title"
+        assert book.page_count == 1
+
+    def test_dash_separator(self):
+        """Test parsing pages with --- separator."""
+        from comix.parser import parse_book_markup
+
+        markup = """
+        [page 1x1]
+        # panel 1
+        Alice(left): "Page 1"
+
+        ---
+
+        [page 1x1]
+        # panel 1
+        Bob(right): "Page 2"
+
+        ---
+
+        [page 1x1]
+        # panel 1
+        Charlie(center): "Page 3"
+        """
+        book = parse_book_markup(markup)
+
+        assert book.page_count == 3
+
+    def test_equals_separator(self):
+        """Test parsing pages with === separator."""
+        from comix.parser import parse_book_markup
+
+        markup = """
+        [page 1x1]
+        # panel 1
+        Alice(left): "Page 1"
+
+        ======
+
+        [page 1x1]
+        # panel 1
+        Bob(right): "Page 2"
+        """
+        book = parse_book_markup(markup)
+
+        assert book.page_count == 2
+
+    def test_mixed_separators(self):
+        """Test parsing pages with mixed === and --- separators."""
+        from comix.parser import parse_book_markup
+
+        markup = """
+        [page 1x1]
+        # panel 1
+        Alice(left): "Page 1"
+
+        ===
+
+        [page 1x1]
+        # panel 1
+        Bob(right): "Page 2"
+
+        ---
+
+        [page 1x1]
+        # panel 1
+        Charlie(center): "Page 3"
+        """
+        book = parse_book_markup(markup)
+
+        assert book.page_count == 3
+
+    def test_single_page_no_separator(self):
+        """Test parsing single page (no separators)."""
+        from comix.parser import parse_book_markup
+
+        markup = """
+        [page 2x2]
+        # panel 1
+        Alice(left): "Hello!"
+        # panel 2
+        Bob(right): "Hi!"
+        """
+        book = parse_book_markup(markup)
+
+        assert book.page_count == 1
+        assert len(book.pages[0]._panels) >= 2
+
+    def test_empty_sections_skipped(self):
+        """Test that empty sections between separators are skipped."""
+        from comix.parser import parse_book_markup
+
+        markup = """
+        [page 1x1]
+        # panel 1
+        Alice(left): "Page 1"
+
+        ===
+
+        ===
+
+        [page 1x1]
+        # panel 1
+        Bob(right): "Page 2"
+        """
+        book = parse_book_markup(markup)
+
+        assert book.page_count == 2
+
+    def test_book_spec_dataclass(self):
+        """Test BookSpec dataclass creation."""
+        from comix.parser.parser import BookSpec, PageSpec
+
+        spec = BookSpec(
+            title="Test",
+            author="Author",
+            pages=[PageSpec(rows=1, cols=1), PageSpec(rows=2, cols=2)]
+        )
+
+        assert spec.title == "Test"
+        assert spec.author == "Author"
+        assert len(spec.pages) == 2
+
+    def test_book_markup_parser_class(self):
+        """Test BookMarkupParser class directly."""
+        from comix.parser import BookMarkupParser
+
+        markup = """
+        [book: Direct Parser Test]
+        author: Direct Author
+
+        [page 1x1]
+        # panel 1
+        Alice(left): "Test"
+        """
+        parser = BookMarkupParser(markup)
+        spec = parser.parse()
+
+        assert spec.title == "Direct Parser Test"
+        assert spec.author == "Direct Author"
+        assert len(spec.pages) == 1
+
+    def test_book_with_expressions_and_modifiers(self):
+        """Test multi-page book with various expressions and modifiers."""
+        from comix.parser import parse_book_markup
+
+        markup = """
+        [page 2x1]
+        # panel 1
+        Alice(left, happy): "I'm happy!"
+        Bob(right, sad, thought): "I'm thinking..."
+
+        ===
+
+        [page 1x1]
+        # panel 1
+        Charlie(center, angry, shout): "I'M ANGRY!"
+        """
+        book = parse_book_markup(markup)
+
+        assert book.page_count == 2
+
+    def test_book_with_sfx_and_narrator(self):
+        """Test multi-page book with SFX and narrator elements."""
+        from comix.parser import parse_book_markup
+
+        markup = """
+        [page 1x1]
+        # panel 1
+        sfx: BOOM
+        Alice(left): "What was that?"
+
+        ===
+
+        [page 1x1]
+        # panel 1
+        narrator: "The next day..."
+        Bob(right): "All is calm now."
+        """
+        book = parse_book_markup(markup)
+
+        assert book.page_count == 2
+
+    def test_book_default_values(self):
+        """Test book with no explicit title or author."""
+        from comix.parser import parse_book_markup
+
+        markup = """
+        [page 1x1]
+        # panel 1
+        Alice(left): "No metadata"
+        """
+        book = parse_book_markup(markup)
+
+        # BookSpec default is "Untitled", Book uses it as-is
+        assert book.title == "Untitled"
+        assert book.author == ""
+        assert book.page_count == 1
+
+    def test_book_korean_content(self):
+        """Test multi-page book with Korean content."""
+        from comix.parser import parse_book_markup
+
+        markup = """
+        [book: 한국어 만화]
+        title: 나의 만화
+        author: 김작가
+
+        [page 2x1]
+        # panel 1
+        철수(left, happy): "안녕하세요!"
+
+        ===
+
+        [page 1x1]
+        # panel 1
+        영희(right, surprised): "오랜만이에요!"
+        """
+        book = parse_book_markup(markup)
+
+        assert book.title == "나의 만화"
+        assert book.author == "김작가"
+        assert book.page_count == 2

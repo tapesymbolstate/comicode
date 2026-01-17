@@ -39,8 +39,12 @@ Writing Python code for every panel, character, and dialogue line is verbose and
 - [x] Graceful handling of malformed lines
 - [x] Page dimension specification (`[page RxC WxH]`)
 
+### Extended Features (v0.1.45)
+- [x] Multi-page markup files with page separators (=== or ---)
+- [x] Book metadata (title, author)
+- [x] `parse_book_markup()` function for multi-page comics
+
 ### Won't Have (This Iteration)
-- [ ] Multi-page markup files
 - [ ] Custom character styles in markup
 - [ ] Effect declarations in markup
 - [ ] Import/include statements
@@ -209,9 +213,69 @@ for panel in spec.panels:
 page = parser.to_page()
 ```
 
+### Example 6: Multi-Page Book Markup
+
+```python
+from comix.parser import parse_book_markup
+
+markup = """
+[book: My Comic Adventure]
+title: My Comic Adventure
+author: Comic Creator
+
+[page 2x2]
+# panel 1
+Alice(left, happy): "Page 1 begins!"
+Bob(right): "Let's go!"
+
+===
+
+[page 1x2]
+# panel 1
+Alice(center, surprised): "We're on page 2!"
+# panel 2
+sfx: WOOSH
+narrator: "The adventure continues..."
+
+---
+
+[page 1x1]
+# panel 1
+Bob(center, excited): "The End!"
+"""
+
+# Parse and render to PDF
+book = parse_book_markup(markup)
+book.render("my_comic.pdf")
+
+# Access individual pages
+print(f"Title: {book.title}")
+print(f"Pages: {book.page_count}")
+for i, page in enumerate(book.pages):
+    page.render(f"page_{i+1}.svg")
+```
+
+### Multi-Page Syntax Reference
+
+#### Page Separators
+```
+===              # Equals separator (3+ equals signs)
+======           # Also valid
+---              # Dash separator (3+ dashes)
+---------        # Also valid
+```
+
+#### Book Metadata
+```
+[book]                           # Book declaration
+[book: My Comic Title]           # Book with inline title
+title: My Comic Title            # Explicit title
+author: Author Name              # Author metadata
+```
+
 ## Open Questions
 
-- [x] Support multi-page in single file? **Decision**: No, use Book class for multi-page
+- [x] Support multi-page in single file? **Decision**: Yes, implemented with === and --- separators
 - [x] Handle invalid modifiers? **Decision**: Silently ignore, use defaults
 - [x] Allow nested quotes? **Decision**: No, use opposite quote type
 - [x] Support custom character styles? **Decision**: Defer to future iteration
@@ -251,4 +315,6 @@ page = parser.to_page()
 
 ## Implementation Status
 
-Fully implemented in `/comix/parser/parser.py` with 76 tests in `/tests/test_parser.py`.
+Fully implemented in `/comix/parser/parser.py` with 82 tests in `/tests/test_parser.py`.
+
+Multi-page book parsing added in v0.1.45 with `BookMarkupParser` class and `parse_book_markup()` function. 15 additional tests cover the multi-page functionality.

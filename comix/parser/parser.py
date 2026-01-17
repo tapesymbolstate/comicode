@@ -27,6 +27,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from comix.page.book import Book
     from comix.page.page import Page
 
 
@@ -95,8 +96,21 @@ class PageSpec:
     height: float = 1200.0
 
 
+@dataclass
+class BookSpec:
+    """Specification for a multi-page comic book."""
+
+    title: str = "Untitled"
+    author: str = ""
+    pages: list[PageSpec] = field(default_factory=list)
+
+
 # Pattern definitions
 PAGE_PATTERN = re.compile(r"^\s*\[page\s+(\d+)x(\d+)(?:\s+(\d+)x(\d+))?\]\s*$")
+BOOK_PATTERN = re.compile(r"^\s*\[book(?:\s*:\s*(.+?))?\]\s*$", re.IGNORECASE)
+BOOK_TITLE_PATTERN = re.compile(r"^\s*title\s*:\s*(.+?)\s*$", re.IGNORECASE)
+BOOK_AUTHOR_PATTERN = re.compile(r"^\s*author\s*:\s*(.+?)\s*$", re.IGNORECASE)
+PAGE_SEPARATOR_PATTERN = re.compile(r"^\s*(?:===+|---+)\s*$")
 PANEL_PATTERN = re.compile(r"^\s*#\s*panel\s+(\d+)\s*$", re.IGNORECASE)
 CHARACTER_PATTERN = re.compile(
     r"^\s*([가-힣\w]+)\s*\(([^)]*)\)\s*:\s*[\"'](.+?)[\"']\s*$"
@@ -445,3 +459,248 @@ def parse_markup(markup: str) -> Page:
     """
     parser = MarkupParser(markup)
     return parser.to_page()
+
+
+class BookMarkupParser:
+    """Parser for multi-page Comix markup language.
+
+    Supports multiple pages separated by === or --- lines, with optional
+    book metadata at the beginning.
+
+    Example markup:
+        [book: My Comic]
+        title: My Amazing Comic
+        author: John Doe
+
+        [page 2x2]
+        # panel 1
+        Alice(left): "Page 1!"
+
+        ===
+
+        [page 1x2]
+        # panel 1
+        Bob(right): "Page 2!"
+    """
+
+    def __init__(self, text: str) -> None:
+        self.text = text
+        self._book_spec: BookSpec | None = None
+
+    def parse(self) -> BookSpec:
+        """Parse the markup and return a BookSpec."""
+        self._book_spec = BookSpec()
+
+        # Split text into sections by page separators
+        sections = self._split_into_sections()
+
+        for section in sections:
+            section = section.strip()
+            if not section:
+                continue
+
+            # Check for book metadata at the start
+            if self._is_book_metadata_section(section):
+                # Section contains ONLY book metadata
+                self._parse_book_metadata(section)
+            else:
+                # Section may contain book metadata mixed with page content
+                # Extract book metadata first, then parse the rest as a page
+                self._extract_book_metadata_from_section(section)
+
+                # Parse as a page
+                page_parser = MarkupParser(section)
+                page_spec = page_parser.parse()
+                self._book_spec.pages.append(page_spec)
+
+        return self._book_spec
+
+    def _extract_book_metadata_from_section(self, section: str) -> None:
+        """Extract book metadata from a section that may also contain page content."""
+        if self._book_spec is None:
+            self._book_spec = BookSpec()
+
+        for line in section.split("\n"):
+            stripped = line.strip()
+            if not stripped:
+                continue
+
+            # Check for [book: title] pattern
+            book_match = BOOK_PATTERN.match(stripped)
+            if book_match:
+                title = book_match.group(1)
+                if title:
+                    self._book_spec.title = title.strip()
+                continue
+
+            # Check for title: pattern (only at start, not after content)
+            title_match = BOOK_TITLE_PATTERN.match(stripped)
+            if title_match:
+                self._book_spec.title = title_match.group(1).strip()
+                continue
+
+            # Check for author: pattern
+            author_match = BOOK_AUTHOR_PATTERN.match(stripped)
+            if author_match:
+                self._book_spec.author = author_match.group(1).strip()
+                continue
+
+    def _split_into_sections(self) -> list[str]:
+        """Split markup into sections by page separators (=== or ---)."""
+        sections: list[str] = []
+        current_section_lines: list[str] = []
+
+        for line in self.text.split("\n"):
+            if PAGE_SEPARATOR_PATTERN.match(line):
+                # End current section
+                if current_section_lines:
+                    sections.append("\n".join(current_section_lines))
+                    current_section_lines = []
+            else:
+                current_section_lines.append(line)
+
+        # Add the last section
+        if current_section_lines:
+            sections.append("\n".join(current_section_lines))
+
+        return sections
+
+    def _is_book_metadata_section(self, section: str) -> bool:
+        """Check if section contains ONLY book metadata (no page or panel declarations)."""
+        lines = section.strip().split("\n")
+        has_book_metadata = False
+        has_page_content = False
+
+        for line in lines:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("//") or stripped.startswith("#!"):
+                continue
+            # Check for book metadata patterns
+            if BOOK_PATTERN.match(stripped):
+                has_book_metadata = True
+                continue
+            if BOOK_TITLE_PATTERN.match(stripped):
+                has_book_metadata = True
+                continue
+            if BOOK_AUTHOR_PATTERN.match(stripped):
+                has_book_metadata = True
+                continue
+            # Check for page/panel content
+            if PAGE_PATTERN.match(stripped):
+                has_page_content = True
+            if PANEL_PATTERN.match(stripped):
+                has_page_content = True
+            if CHARACTER_PATTERN.match(stripped):
+                has_page_content = True
+
+        # Only a book metadata section if it has metadata but NO page content
+        return has_book_metadata and not has_page_content
+
+    def _parse_book_metadata(self, section: str) -> None:
+        """Parse book metadata from section."""
+        if self._book_spec is None:
+            self._book_spec = BookSpec()
+
+        for line in section.split("\n"):
+            stripped = line.strip()
+            if not stripped:
+                continue
+
+            # Check for [book: title] pattern
+            book_match = BOOK_PATTERN.match(stripped)
+            if book_match:
+                title = book_match.group(1)
+                if title:
+                    self._book_spec.title = title.strip()
+                continue
+
+            # Check for title: pattern
+            title_match = BOOK_TITLE_PATTERN.match(stripped)
+            if title_match:
+                self._book_spec.title = title_match.group(1).strip()
+                continue
+
+            # Check for author: pattern
+            author_match = BOOK_AUTHOR_PATTERN.match(stripped)
+            if author_match:
+                self._book_spec.author = author_match.group(1).strip()
+                continue
+
+    def to_book(self) -> "Book":
+        """Parse and convert to a Book object."""
+        from comix.page.book import Book
+
+        spec = self.parse()
+
+        # Create book with metadata
+        book = Book(title=spec.title, author=spec.author)
+
+        # Convert each page spec to a Page and add to book
+        for page_spec in spec.pages:
+            # Create a temporary markup parser to convert PageSpec to Page
+            page_markup = self._page_spec_to_markup(page_spec)
+            page = parse_markup(page_markup)
+            book.add_page(page)
+
+        return book
+
+    def _page_spec_to_markup(self, spec: PageSpec) -> str:
+        """Convert a PageSpec back to markup for parsing."""
+        lines = [f"[page {spec.rows}x{spec.cols}]"]
+
+        for panel in spec.panels:
+            lines.append(f"# panel {panel.number}")
+
+            for action in panel.actions:
+                if isinstance(action, CharacterAction):
+                    modifiers = []
+                    if action.position != "center":
+                        modifiers.append(action.position)
+                    if action.expression != "neutral":
+                        modifiers.append(action.expression)
+                    if action.bubble_type != "speech":
+                        modifiers.append(action.bubble_type)
+                    modifier_str = ", ".join(modifiers)
+                    lines.append(f'{action.name}({modifier_str}): "{action.text}"')
+                elif isinstance(action, SFXAction):
+                    lines.append(f"sfx: {action.text}")
+                elif isinstance(action, NarratorAction):
+                    lines.append(f'narrator: "{action.text}"')
+                elif isinstance(action, BackgroundDirective):
+                    lines.append(f"[background: {action.description}]")
+
+        return "\n".join(lines)
+
+
+def parse_book_markup(markup: str) -> "Book":
+    """Parse multi-page markup text and return a Book object.
+
+    This function parses markup containing multiple pages separated by
+    === or --- lines, with optional book metadata.
+
+    Args:
+        markup: The markup text to parse.
+
+    Returns:
+        A Book object with all pages configured.
+
+    Example:
+        >>> book = parse_book_markup('''
+        ... [book: My Comic]
+        ... title: My Amazing Comic
+        ... author: John Doe
+        ...
+        ... [page 2x2]
+        ... # panel 1
+        ... Alice(left, happy): "Hello!"
+        ...
+        ... ===
+        ...
+        ... [page 1x2]
+        ... # panel 1
+        ... Bob(right): "Goodbye!"
+        ... ''')
+        >>> book.render("my_comic.pdf")
+    """
+    parser = BookMarkupParser(markup)
+    return parser.to_book()

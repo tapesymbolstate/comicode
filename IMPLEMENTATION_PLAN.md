@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Interactive HTML Export
 
-**Current Git Tag: v0.1.28**
+**Current Git Tag: v0.1.29**
 
 All 5 phases plus Interactive HTML Export have been implemented with **1607 tests passing**, ruff clean, and mypy passing.
 
@@ -30,7 +30,7 @@ All 5 phases plus Interactive HTML Export have been implemented with **1607 test
 - **Preview Server**: Hot reload web preview with file watching
 - **Templates**: 7 page templates (FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage)
 - **Interactive HTML Export**: Standalone HTML files with zoom, pan, dark/light themes, fullscreen, keyboard shortcuts, and multi-page navigation
-- **11 Working Examples**: Complete example scripts in examples/ directory
+- **13 Working Examples**: Complete example scripts in examples/ directory including parser DSL and visual effects
 
 ### Technical Stack
 

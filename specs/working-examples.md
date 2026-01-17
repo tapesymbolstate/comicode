@@ -38,11 +38,12 @@ Without working examples, developers struggle to bridge the gap from API documen
 
 ### Should Have (Extended Examples)
 - [x] Example 11: Interactive HTML export with zoom, pan, themes
+- [x] Example 12: Parser/DSL markup for rapid comic creation
+- [x] Example 13: Visual effects (shake, zoom, motion, focus, impact)
 
 ### Won't Have (This Iteration)
 - [ ] Complex multi-page stories (defer to tutorials)
 - [ ] Advanced styling and theming (defer to advanced docs)
-- [ ] Parser/DSL examples (defer to parser.md)
 - [ ] AI image generation examples (defer to ai-images.md)
 - [ ] Video tutorials (defer to future)
 
@@ -76,11 +77,15 @@ examples/
 ├── 09_using_templates.py      # FourKoma, TwoByTwo
 ├── 10_error_handling.py       # Graceful degradation
 ├── 11_html_export.py          # Interactive HTML export
+├── 12_parser_dsl.py           # Parser/DSL markup
+├── 13_visual_effects.py       # Visual effects
 └── output/                    # Generated files
     ├── 01_simple_dialogue.png
     ├── 02_four_panel_comic.png
     ├── ...
-    └── 11_html_*.html         # HTML export variants
+    ├── 11_html_*.html         # HTML export variants
+    ├── 12_parser_*.png        # Parser DSL outputs
+    └── 13_effect_*.png        # Visual effects outputs
 ```
 
 ### Related Specs
@@ -374,7 +379,7 @@ Feel free to modify these examples to experiment:
 ## Success Metrics
 
 **This spec is successful when:**
-1. All 11 examples execute without errors
+1. All 13 examples execute without errors
 2. All examples produce correct visual output
 3. A new developer can run examples within 5 minutes
 4. Examples serve as effective templates for custom comics

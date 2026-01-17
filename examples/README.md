@@ -22,13 +22,19 @@ Generated PNG files will be saved to `examples/output/`.
 4. **04_expressions.py** - Different character expressions (happy, sad, angry, etc.)
 5. **05_bubble_types.py** - Different speech bubble styles (speech, thought, shout, whisper)
 
-### Advanced Examples (06-10)
+### Advanced Examples (06-11)
 
 6. **06_multi_page_pdf.py** - Creating multi-page PDF comics using the Book class
 7. **07_custom_layout.py** - Custom grid layouts (3x2, 2x3, etc.)
 8. **08_manual_positioning.py** - Precise manual positioning of elements
 9. **09_using_templates.py** - Using built-in templates (FourKoma, TwoByTwo, ActionPage, WebComic)
 10. **10_error_handling.py** - Graceful error handling and fallbacks
+11. **11_html_export.py** - Interactive HTML export with zoom, pan, dark/light themes
+
+### Extended Examples (12-13)
+
+12. **12_parser_dsl.py** - Create comics from markup text using the DSL parser
+13. **13_visual_effects.py** - Manga-style visual effects (shake, zoom, motion, focus, impact)
 
 ## Requirements
 

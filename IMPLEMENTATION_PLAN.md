@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Interactive HTML Export
 
-**Current Git Tag: v0.1.32**
+**Current Git Tag: v0.1.33**
 
 All 6 phases have been implemented with **1607 tests passing**, ruff clean, and mypy passing.
 
@@ -65,3 +65,7 @@ The PRD (Product Requirements Document) was updated to reflect the completion of
 ## Note: Security Fix (v0.1.32)
 
 Fixed a security vulnerability in the AI image download functionality where SSL certificate verification was disabled. The `_download_image` method in `ai_image.py` now uses proper SSL certificate verification when downloading generated images from Replicate.
+
+## Note: Changelog Update (v0.1.33)
+
+Updated CHANGELOG.md with all missing version entries from v0.1.20 through v0.1.32. The changelog now accurately documents all releases including the Interactive HTML Export feature (v0.1.27), parser DSL examples (v0.1.29), and security fix (v0.1.32).

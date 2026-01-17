@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.33] - 2026-01-18
+
+### Documentation
+- Updated CHANGELOG.md with all missing version entries from v0.1.20 through v0.1.32
+- Changelog now accurately documents all releases including Interactive HTML Export, parser examples, and security fixes
+
 ## [v0.1.32] - 2026-01-18
 
 ### Security

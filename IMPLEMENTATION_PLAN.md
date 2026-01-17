@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Animation Export + Video Export
 
-**Current Git Tag: v0.1.43**
+**Current Git Tag: v0.1.44**
 
 All 8 phases have been implemented with **1728 tests passing** (1724 pass + 4 skip), ruff clean, and mypy passing.
 
@@ -63,6 +63,6 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.43)
+## Note: Stable Release (v0.1.44)
 
 All systems stable with 1728 tests passing. Specs synchronized with implementation. Audio track support is implemented and tested.

@@ -1163,6 +1163,108 @@ class TestSimpleFaceExpressionRendering:
                 # Uneven eyes are circles of different sizes
                 assert svg_string.count("<circle") >= 3
 
+    def test_render_new_eye_types(self):
+        """Test new eye types (closed, stars, tears) render correctly."""
+        from comix.cobject.character.character import Expression
+
+        new_eye_types = ["closed", "stars", "tears"]
+
+        for eye in new_eye_types:
+            page = Page(width=400, height=300)
+            face = SimpleFace(name=f"Eyes_{eye}").move_to((200, 150))
+            face._expression = Expression(
+                name="custom", eyes=eye, mouth="normal", eyebrows="normal"
+            )
+            page.add(face)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<circle" in svg_string  # Face circle always present
+            if eye == "closed":
+                # Closed eyes are curved polylines
+                assert "<polyline" in svg_string
+            elif eye == "stars":
+                # Star eyes have lines and a center dot
+                assert "<line" in svg_string
+                assert svg_string.count("<circle") >= 3  # Face + center dots
+            elif eye == "tears":
+                # Tears have normal eyes + tear drop circles
+                assert svg_string.count("<circle") >= 5  # Face + eyes + tears
+                assert "#87CEEB" in svg_string  # Light blue tear color
+
+    def test_render_new_mouth_types(self):
+        """Test new mouth types (grin, gasp, smirk) render correctly."""
+        from comix.cobject.character.character import Expression
+
+        new_mouth_types = ["grin", "gasp", "smirk"]
+
+        for mouth in new_mouth_types:
+            page = Page(width=400, height=300)
+            face = SimpleFace(name=f"Mouth_{mouth}").move_to((200, 150))
+            face._expression = Expression(
+                name="custom", eyes="normal", mouth=mouth, eyebrows="normal"
+            )
+            page.add(face)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<circle" in svg_string  # Face circle always present
+            if mouth == "grin":
+                # Grin has a polyline and teeth line
+                assert "<polyline" in svg_string
+                assert "<line" in svg_string
+            elif mouth == "gasp":
+                # Gasp is a circle (open mouth)
+                assert svg_string.count("<circle") >= 4  # Face + eyes + mouth
+            elif mouth == "smirk":
+                # Smirk is a polyline
+                assert "<polyline" in svg_string
+
+    def test_render_new_eyebrow_types(self):
+        """Test new eyebrow types (relaxed, asymmetric) render correctly."""
+        from comix.cobject.character.character import Expression
+
+        new_brow_types = ["relaxed", "asymmetric"]
+
+        for brow in new_brow_types:
+            page = Page(width=400, height=300)
+            face = SimpleFace(name=f"Brows_{brow}").move_to((200, 150))
+            face._expression = Expression(
+                name="custom", eyes="normal", mouth="normal", eyebrows=brow
+            )
+            page.add(face)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            assert "<circle" in svg_string  # Face circle always present
+            if brow == "relaxed":
+                # Relaxed eyebrows are lines
+                assert "<line" in svg_string
+            elif brow == "asymmetric":
+                # Asymmetric has one polyline and one line
+                assert "<polyline" in svg_string
+                assert "<line" in svg_string
+
+    def test_render_new_expressions_complete(self):
+        """Test all new preset expressions render successfully."""
+        new_expressions = ["sleepy", "excited", "scared", "smirk", "crying"]
+
+        for expr_name in new_expressions:
+            page = Page(width=400, height=300)
+            face = SimpleFace(name=f"Expr_{expr_name}", expression=expr_name)
+            face.move_to((200, 150))
+            page.add(face)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            # All expressions should render successfully
+            assert "<circle" in svg_string
+            assert "<svg" in svg_string
+
 
 class TestEffectElementStrokeDasharray:
     """Tests for effect elements with stroke dasharray."""

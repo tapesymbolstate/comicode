@@ -13,14 +13,27 @@ if TYPE_CHECKING:
 
 
 class Expression:
-    """Character expression definition."""
+    """Character expression definition.
 
+    Expressions are composed of three facial components:
+    - eyes: normal, curved, droopy, narrow, wide, uneven, closed, stars, tears
+    - mouth: normal, smile, frown, open, wavy, grin, gasp, smirk
+    - eyebrows: normal, raised, worried, furrowed, relaxed, asymmetric
+    """
+
+    # Standard expressions
     NEUTRAL = "neutral"
     HAPPY = "happy"
     SAD = "sad"
     ANGRY = "angry"
     SURPRISED = "surprised"
     CONFUSED = "confused"
+    # Extended expressions
+    SLEEPY = "sleepy"
+    EXCITED = "excited"
+    SCARED = "scared"
+    SMIRK = "smirk"
+    CRYING = "crying"
 
     def __init__(
         self,
@@ -38,25 +51,46 @@ class Expression:
     def from_name(cls, name: str) -> Expression:
         """Create expression from preset name."""
         presets = {
+            # Standard expressions
             "neutral": cls("neutral", "normal", "normal", "normal"),
             "happy": cls("happy", "curved", "smile", "raised"),
             "sad": cls("sad", "droopy", "frown", "worried"),
             "angry": cls("angry", "narrow", "frown", "furrowed"),
             "surprised": cls("surprised", "wide", "open", "raised"),
             "confused": cls("confused", "uneven", "wavy", "raised"),
+            # Extended expressions
+            "sleepy": cls("sleepy", "closed", "normal", "relaxed"),
+            "excited": cls("excited", "stars", "grin", "raised"),
+            "scared": cls("scared", "wide", "gasp", "worried"),
+            "smirk": cls("smirk", "normal", "smirk", "asymmetric"),
+            "crying": cls("crying", "tears", "frown", "worried"),
         }
         return presets.get(name, cls())
 
 
 class Pose:
-    """Character pose definition."""
+    """Character pose definition.
 
+    Poses define limb angles (in degrees) and body tilt:
+    - left_arm/right_arm: Arm angles (0=down, positive=forward, negative=back)
+    - left_leg/right_leg: Leg angles from vertical (0=straight, positive=forward)
+    - body_angle: Body tilt angle (positive=leaning forward)
+    """
+
+    # Standard poses
     STANDING = "standing"
     SITTING = "sitting"
     WALKING = "walking"
     RUNNING = "running"
     POINTING = "pointing"
     WAVING = "waving"
+    # Extended poses
+    JUMPING = "jumping"
+    DANCING = "dancing"
+    LYING = "lying"
+    KNEELING = "kneeling"
+    CHEERING = "cheering"
+    THINKING = "thinking"
 
     def __init__(
         self,
@@ -78,12 +112,20 @@ class Pose:
     def from_name(cls, name: str) -> Pose:
         """Create pose from preset name."""
         presets = {
+            # Standard poses
             "standing": cls("standing", -15, 15, 0, 0, 0),
             "sitting": cls("sitting", -30, 30, 90, 90, 0),
             "walking": cls("walking", 30, -30, 20, -20, 0),
             "running": cls("running", 60, -60, 45, -45, 10),
             "pointing": cls("pointing", -90, 15, 0, 0, 0),
             "waving": cls("waving", -135, 15, 0, 0, 0),
+            # Extended poses
+            "jumping": cls("jumping", -45, 45, -30, -30, -5),  # Arms up, legs bent back
+            "dancing": cls("dancing", -120, 45, 30, -15, 5),  # Asymmetric dance pose
+            "lying": cls("lying", 0, 0, 0, 0, 90),  # Horizontal body
+            "kneeling": cls("kneeling", -30, 30, 90, 120, 0),  # One knee down
+            "cheering": cls("cheering", -150, -150, 0, 0, -5),  # Both arms raised high
+            "thinking": cls("thinking", 60, 15, 0, 0, 0),  # Hand on chin pose
         }
         return presets.get(name, cls())
 

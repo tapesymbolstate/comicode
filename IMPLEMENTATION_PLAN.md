@@ -1,8 +1,8 @@
 # Implementation Plan
 
-## Status: All Phases Complete + Multi-page PDF Export
+## Status: All Phases Complete + Extended Character Library
 
-All 4 phases have been implemented with **1075 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **1092 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -57,6 +57,24 @@ All 4 phases have been implemented with **1075 tests passing**, mypy clean, and 
   The 6 preset expressions (neutral, happy, sad, angry, surprised, confused) now render visually distinct faces. Added 20 new tests for SVG and Cairo expression rendering.
 - **CLI Error Handling Test Coverage**: Extended test coverage for CLI error handling paths including spec/loader failures, ImportError scenarios (missing watchdog/Cairo dependencies), script execution errors, book render exceptions, and Page class instantiation in preview command (8 new tests).
 - **Parser Edge Case Test Coverage**: Comprehensive tests for parser edge cases including unrecognized hash comments (treated as comments), elements appearing without panel markers (background, narrator, SFX, character), character reuse with expression updates, and invalid syntax handling (9 new tests).
+- **Extended Expression System**: Added 5 new preset expressions for richer character emotions:
+  - **sleepy**: closed eyes, normal mouth, relaxed eyebrows
+  - **excited**: star eyes, grin mouth, raised eyebrows
+  - **scared**: wide eyes, gasp mouth, worried eyebrows
+  - **smirk**: normal eyes, asymmetric smirk mouth, asymmetric eyebrows
+  - **crying**: tears eyes (with blue tear drops), frown mouth, worried eyebrows
+- **Extended Pose System**: Added 6 new preset poses for more dynamic character positioning:
+  - **jumping**: arms up, legs bent back, slight forward lean
+  - **dancing**: asymmetric arm positions with body twist
+  - **lying**: horizontal body orientation (90° body angle)
+  - **kneeling**: one knee down pose
+  - **cheering**: both arms raised high in celebration
+  - **thinking**: hand on chin thoughtful pose
+- **New Facial Component Types**: Added new component types for expressions:
+  - **Eyes**: closed (sleepy curves), stars (sparkle effect), tears (with blue tear drops)
+  - **Mouth**: grin (wide smile with teeth), gasp (larger open mouth), smirk (asymmetric half-smile)
+  - **Eyebrows**: relaxed (low, slightly droopy), asymmetric (one raised, one flat)
+- Both SVG and Cairo renderers fully support all new expression components (17 new tests).
 
 ### Technical Stack
 
@@ -71,7 +89,7 @@ All 4 phases have been implemented with **1075 tests passing**, mypy clean, and 
 These are potential improvements, not planned work:
 
 1. **Animation Export**: Animated GIF/video for webtoon scroll effects
-2. **Character Library**: Expanded character styles beyond Stickman/SimpleFace
+2. **Additional Character Styles**: New character classes beyond Stickman/SimpleFace (e.g., DetailedFace, AnimeStyle, ChubbyStickman)
 3. **Web Renderer**: HTML output with interactive features
 
 ## Known Issues

@@ -638,6 +638,42 @@ class CairoRenderer:
             # Right eye - larger
             ctx.arc(right_x, eye_y - eye_radius * 0.2, eye_radius * 1.2, 0, 2 * math.pi)
             ctx.fill()
+        elif eye_type == "closed":
+            # Sleepy closed eyes (curved lines)
+            curve_width = eye_radius * 1.2
+            ctx.set_line_width(2)
+            for x in [left_x, right_x]:
+                ctx.move_to(x - curve_width, eye_y + eye_radius * 0.3)
+                ctx.line_to(x, eye_y)
+                ctx.line_to(x + curve_width, eye_y + eye_radius * 0.3)
+                ctx.stroke()
+        elif eye_type == "stars":
+            # Excited star eyes (sparkle effect)
+            star_size = eye_radius * 1.3
+            ctx.set_line_width(2)
+            for x in [left_x, right_x]:
+                # Vertical line
+                ctx.move_to(x, eye_y - star_size)
+                ctx.line_to(x, eye_y + star_size)
+                ctx.stroke()
+                # Horizontal line
+                ctx.move_to(x - star_size, eye_y)
+                ctx.line_to(x + star_size, eye_y)
+                ctx.stroke()
+                # Small center dot
+                ctx.arc(x, eye_y, eye_radius * 0.3, 0, 2 * math.pi)
+                ctx.fill()
+        elif eye_type == "tears":
+            # Crying eyes with tear drops
+            for x in [left_x, right_x]:
+                # Normal eye base
+                ctx.arc(x, eye_y, eye_radius * 0.9, 0, 2 * math.pi)
+                ctx.fill()
+                # Tear drop (light blue)
+                self._set_color("#87CEEB")
+                ctx.arc(x + eye_radius * 0.3, eye_y + eye_radius * 1.8, eye_radius * 0.4, 0, 2 * math.pi)
+                ctx.fill()
+                self._set_color(color)  # Restore color
         else:
             # Normal round eyes
             for x in [left_x, right_x]:
@@ -695,6 +731,26 @@ class CairoRenderer:
             ctx.move_to(right_x - brow_width, brow_y - radius * 0.08)
             ctx.line_to(right_x + brow_width, brow_y + radius * 0.04)
             ctx.stroke()
+        elif eyebrow_type == "relaxed":
+            # Relaxed/sleepy eyebrows (slightly droopy, low position)
+            relaxed_y = brow_y + radius * 0.02
+            ctx.set_line_width(1.5)
+            for x in [left_x, right_x]:
+                ctx.move_to(x - brow_width, relaxed_y - radius * 0.02)
+                ctx.line_to(x + brow_width, relaxed_y + radius * 0.02)
+                ctx.stroke()
+        elif eyebrow_type == "asymmetric":
+            # Asymmetric eyebrows (one raised, one normal - smirk/skeptical)
+            ctx.set_line_width(2)
+            # Left eyebrow - raised
+            ctx.move_to(left_x - brow_width, brow_y - radius * 0.03)
+            ctx.line_to(left_x, brow_y - radius * 0.08)
+            ctx.line_to(left_x + brow_width, brow_y - radius * 0.03)
+            ctx.stroke()
+            # Right eyebrow - flat/normal
+            ctx.move_to(right_x - brow_width, brow_y)
+            ctx.line_to(right_x + brow_width, brow_y)
+            ctx.stroke()
         # "normal" eyebrows - no visible eyebrows for cleaner look
 
     def _render_face_mouth_cairo(
@@ -738,6 +794,32 @@ class CairoRenderer:
             ctx.line_to(pos[0], mouth_y + radius * 0.04)
             ctx.line_to(pos[0] + segment, mouth_y - radius * 0.04)
             ctx.line_to(pos[0] + mouth_width, mouth_y)
+            ctx.stroke()
+        elif mouth_type == "grin":
+            # Big grin (wide smile with teeth hint)
+            grin_width = mouth_width * 1.3
+            ctx.set_line_width(2.5)
+            # Upper lip curve
+            ctx.move_to(pos[0] - grin_width, mouth_y - radius * 0.02)
+            ctx.line_to(pos[0] - grin_width * 0.5, mouth_y + radius * 0.08)
+            ctx.line_to(pos[0], mouth_y + radius * 0.12)
+            ctx.line_to(pos[0] + grin_width * 0.5, mouth_y + radius * 0.08)
+            ctx.line_to(pos[0] + grin_width, mouth_y - radius * 0.02)
+            ctx.stroke()
+            # Teeth line
+            ctx.set_line_width(1)
+            ctx.move_to(pos[0] - grin_width * 0.6, mouth_y + radius * 0.04)
+            ctx.line_to(pos[0] + grin_width * 0.6, mouth_y + radius * 0.04)
+            ctx.stroke()
+        elif mouth_type == "gasp":
+            # Gasping/scared mouth (oval open mouth)
+            ctx.arc(pos[0], mouth_y + radius * 0.05, radius * 0.18, 0, 2 * math.pi)
+            ctx.stroke()
+        elif mouth_type == "smirk":
+            # Asymmetric smirk (one side up)
+            ctx.move_to(pos[0] - mouth_width, mouth_y + radius * 0.02)
+            ctx.line_to(pos[0], mouth_y)
+            ctx.line_to(pos[0] + mouth_width, mouth_y - radius * 0.08)
             ctx.stroke()
         else:
             # Normal mouth (straight line)

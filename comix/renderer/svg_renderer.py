@@ -631,6 +631,66 @@ class SVGRenderer:
                 fill=color,
             )
             group.add(right_eye)
+        elif eye_type == "closed":
+            # Sleepy closed eyes (curved lines like happy but lower)
+            curve_width = eye_radius * 1.2
+            for x in [left_x, right_x]:
+                eye = Polyline(
+                    points=[
+                        (x - curve_width, eye_y + eye_radius * 0.3),
+                        (x, eye_y),
+                        (x + curve_width, eye_y + eye_radius * 0.3),
+                    ],
+                    fill="none",
+                    stroke=color,
+                    stroke_width=2,
+                )
+                group.add(eye)
+        elif eye_type == "stars":
+            # Excited star eyes (sparkle effect)
+            for x in [left_x, right_x]:
+                # Draw a simple 4-point star
+                star_size = eye_radius * 1.3
+                # Vertical line
+                v_line = SVGLine(
+                    start=(x, eye_y - star_size),
+                    end=(x, eye_y + star_size),
+                    stroke=color,
+                    stroke_width=2,
+                )
+                group.add(v_line)
+                # Horizontal line
+                h_line = SVGLine(
+                    start=(x - star_size, eye_y),
+                    end=(x + star_size, eye_y),
+                    stroke=color,
+                    stroke_width=2,
+                )
+                group.add(h_line)
+                # Small center dot
+                center_dot = SVGCircle(
+                    center=(x, eye_y),
+                    r=eye_radius * 0.3,
+                    fill=color,
+                )
+                group.add(center_dot)
+        elif eye_type == "tears":
+            # Crying eyes with tear drops
+            for x in [left_x, right_x]:
+                # Normal eye base
+                eye = SVGCircle(
+                    center=(x, eye_y),
+                    r=eye_radius * 0.9,
+                    fill=color,
+                )
+                group.add(eye)
+                # Tear drop (simple circle below eye)
+                tear = SVGCircle(
+                    center=(x + eye_radius * 0.3, eye_y + eye_radius * 1.8),
+                    r=eye_radius * 0.4,
+                    fill="#87CEEB",  # Light blue for tears
+                )
+                group.add(tear)
         else:
             # Normal round eyes
             for x in [left_x, right_x]:
@@ -708,6 +768,39 @@ class SVGRenderer:
                 stroke_width=2.5,
             )
             group.add(right_brow)
+        elif eyebrow_type == "relaxed":
+            # Relaxed/sleepy eyebrows (slightly droopy, low position)
+            relaxed_y = brow_y + radius * 0.02
+            for x in [left_x, right_x]:
+                brow = SVGLine(
+                    start=(x - brow_width, relaxed_y - radius * 0.02),
+                    end=(x + brow_width, relaxed_y + radius * 0.02),
+                    stroke=color,
+                    stroke_width=1.5,
+                )
+                group.add(brow)
+        elif eyebrow_type == "asymmetric":
+            # Asymmetric eyebrows (one raised, one normal - smirk/skeptical)
+            # Left eyebrow - raised
+            left_brow = Polyline(
+                points=[
+                    (left_x - brow_width, brow_y - radius * 0.03),
+                    (left_x, brow_y - radius * 0.08),
+                    (left_x + brow_width, brow_y - radius * 0.03),
+                ],
+                fill="none",
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(left_brow)
+            # Right eyebrow - flat/normal
+            right_brow = SVGLine(
+                start=(right_x - brow_width, brow_y),
+                end=(right_x + brow_width, brow_y),
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(right_brow)
         # "normal" eyebrows - no visible eyebrows for cleaner look
 
     def _render_face_mouth(
@@ -768,6 +861,54 @@ class SVGRenderer:
                     (pos[0], mouth_y + radius * 0.04),
                     (pos[0] + segment, mouth_y - radius * 0.04),
                     (pos[0] + mouth_width, mouth_y),
+                ],
+                fill="none",
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+        elif mouth_type == "grin":
+            # Big grin (wide smile with teeth hint)
+            grin_width = mouth_width * 1.3
+            # Upper lip curve
+            mouth = Polyline(
+                points=[
+                    (pos[0] - grin_width, mouth_y - radius * 0.02),
+                    (pos[0] - grin_width * 0.5, mouth_y + radius * 0.08),
+                    (pos[0], mouth_y + radius * 0.12),
+                    (pos[0] + grin_width * 0.5, mouth_y + radius * 0.08),
+                    (pos[0] + grin_width, mouth_y - radius * 0.02),
+                ],
+                fill="none",
+                stroke=color,
+                stroke_width=2.5,
+            )
+            group.add(mouth)
+            # Teeth line
+            teeth = SVGLine(
+                start=(pos[0] - grin_width * 0.6, mouth_y + radius * 0.04),
+                end=(pos[0] + grin_width * 0.6, mouth_y + radius * 0.04),
+                stroke=color,
+                stroke_width=1,
+            )
+            group.add(teeth)
+        elif mouth_type == "gasp":
+            # Gasping/scared mouth (oval open mouth)
+            mouth = SVGCircle(
+                center=(pos[0], mouth_y + radius * 0.05),
+                r=radius * 0.18,
+                fill="none",
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+        elif mouth_type == "smirk":
+            # Asymmetric smirk (one side up)
+            mouth = Polyline(
+                points=[
+                    (pos[0] - mouth_width, mouth_y + radius * 0.02),
+                    (pos[0], mouth_y),
+                    (pos[0] + mouth_width, mouth_y - radius * 0.08),
                 ],
                 fill="none",
                 stroke=color,

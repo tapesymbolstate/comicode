@@ -32,6 +32,54 @@ class TestExpression:
         expr = Expression.from_name("unknown")
         assert expr.name == "neutral"
 
+    def test_sleepy_expression(self):
+        """Test sleepy expression preset."""
+        expr = Expression.from_name("sleepy")
+        assert expr.name == "sleepy"
+        assert expr.eyes == "closed"
+        assert expr.mouth == "normal"
+        assert expr.eyebrows == "relaxed"
+
+    def test_excited_expression(self):
+        """Test excited expression preset."""
+        expr = Expression.from_name("excited")
+        assert expr.name == "excited"
+        assert expr.eyes == "stars"
+        assert expr.mouth == "grin"
+        assert expr.eyebrows == "raised"
+
+    def test_scared_expression(self):
+        """Test scared expression preset."""
+        expr = Expression.from_name("scared")
+        assert expr.name == "scared"
+        assert expr.eyes == "wide"
+        assert expr.mouth == "gasp"
+        assert expr.eyebrows == "worried"
+
+    def test_smirk_expression(self):
+        """Test smirk expression preset."""
+        expr = Expression.from_name("smirk")
+        assert expr.name == "smirk"
+        assert expr.eyes == "normal"
+        assert expr.mouth == "smirk"
+        assert expr.eyebrows == "asymmetric"
+
+    def test_crying_expression(self):
+        """Test crying expression preset."""
+        expr = Expression.from_name("crying")
+        assert expr.name == "crying"
+        assert expr.eyes == "tears"
+        assert expr.mouth == "frown"
+        assert expr.eyebrows == "worried"
+
+    def test_expression_class_constants(self):
+        """Test expression class constants are defined."""
+        assert Expression.SLEEPY == "sleepy"
+        assert Expression.EXCITED == "excited"
+        assert Expression.SCARED == "scared"
+        assert Expression.SMIRK == "smirk"
+        assert Expression.CRYING == "crying"
+
 
 class TestPose:
     """Tests for Pose class."""
@@ -46,6 +94,61 @@ class TestPose:
         pose = Pose.from_name("waving")
         assert pose.name == "waving"
         assert pose.left_arm == -135
+
+    def test_jumping_pose(self):
+        """Test jumping pose preset."""
+        pose = Pose.from_name("jumping")
+        assert pose.name == "jumping"
+        assert pose.left_arm == -45
+        assert pose.right_arm == 45
+        assert pose.left_leg == -30
+        assert pose.right_leg == -30
+        assert pose.body_angle == -5
+
+    def test_dancing_pose(self):
+        """Test dancing pose preset."""
+        pose = Pose.from_name("dancing")
+        assert pose.name == "dancing"
+        assert pose.left_arm == -120
+        assert pose.right_arm == 45
+        assert pose.body_angle == 5
+
+    def test_lying_pose(self):
+        """Test lying pose preset."""
+        pose = Pose.from_name("lying")
+        assert pose.name == "lying"
+        assert pose.body_angle == 90
+
+    def test_kneeling_pose(self):
+        """Test kneeling pose preset."""
+        pose = Pose.from_name("kneeling")
+        assert pose.name == "kneeling"
+        assert pose.left_leg == 90
+        assert pose.right_leg == 120
+
+    def test_cheering_pose(self):
+        """Test cheering pose preset."""
+        pose = Pose.from_name("cheering")
+        assert pose.name == "cheering"
+        assert pose.left_arm == -150
+        assert pose.right_arm == -150
+        assert pose.body_angle == -5
+
+    def test_thinking_pose(self):
+        """Test thinking pose preset."""
+        pose = Pose.from_name("thinking")
+        assert pose.name == "thinking"
+        assert pose.left_arm == 60
+        assert pose.right_arm == 15
+
+    def test_pose_class_constants(self):
+        """Test pose class constants are defined."""
+        assert Pose.JUMPING == "jumping"
+        assert Pose.DANCING == "dancing"
+        assert Pose.LYING == "lying"
+        assert Pose.KNEELING == "kneeling"
+        assert Pose.CHEERING == "cheering"
+        assert Pose.THINKING == "thinking"
 
 
 class TestCharacter:

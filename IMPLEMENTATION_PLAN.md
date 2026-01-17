@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Animation Export + Video Export + Multi-Page Parser
 
-**Current Git Tag: v0.1.45**
+**Current Git Tag: v0.1.46**
 
 All 8 phases have been implemented with **1743 tests** (1739 pass + 4 skip), ruff clean, and mypy passing.
 
@@ -63,6 +63,6 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.45)
+## Note: Stable Release (v0.1.46)
 
-All systems stable with 1743 tests (1739 pass + 4 skip). Specs synchronized with implementation. Multi-page book parser support added with `parse_book_markup()` function for parsing multiple pages from a single markup file with page separators (=== or ---).
+All systems stable with 1743 tests (1739 pass + 4 skip). Specs synchronized with implementation. Added formal specification documents for Animation Export (animation-export.md) and Video Export (video-export.md) features.

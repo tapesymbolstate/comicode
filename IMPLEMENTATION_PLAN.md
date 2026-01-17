@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Interactive HTML Export
 
-**Current Git Tag: v0.1.27**
+**Current Git Tag: v0.1.28**
 
 All 5 phases plus Interactive HTML Export have been implemented with **1607 tests passing**, ruff clean, and mypy passing.
 

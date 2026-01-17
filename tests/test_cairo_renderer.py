@@ -11,6 +11,8 @@ from comix.cobject.character.character import Stickman, SimpleFace
 from comix.cobject.text.text import Text, SFX
 from comix.cobject.shapes.shapes import Rectangle, Circle, Line
 from comix.cobject.panel.panel import Border
+from comix.cobject.image.image import Image
+from comix.effect.effect import MotionLines, FocusLines, ImpactEffect, ShakeEffect
 
 # Skip all tests if Cairo is not available
 try:
@@ -430,3 +432,364 @@ class TestCairoRendererIntegration:
                 output = page.render(f.name, format="png", quality=quality)
                 assert Path(output).exists()
                 Path(output).unlink()
+
+
+@pytest.mark.skipif(not CAIRO_AVAILABLE, reason="Cairo not installed")
+class TestCairoRendererCoverage:
+    """Additional tests to improve CairoRenderer test coverage."""
+
+    def test_render_image_with_base64_data(self):
+        """Test rendering an image element with base64 data."""
+        page = Page(width=400, height=300)
+
+        # 1x1 red PNG
+        png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=="
+
+        img = Image(width=100, height=100)
+        img.set_base64_data(png_b64, "image/png")
+        img.move_to((200, 150))
+        page.add(img)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            assert Path(output_path).stat().st_size > 100
+            Path(output_path).unlink()
+
+    def test_render_image_cover_mode(self):
+        """Test rendering image with fit='cover' mode."""
+        page = Page(width=400, height=300)
+
+        png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=="
+
+        img = Image(width=100, height=50)  # Non-square to test cover mode
+        img.set_base64_data(png_b64, "image/png")
+        img.set_fit("cover")
+        img.move_to((200, 150))
+        page.add(img)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_image_fill_mode(self):
+        """Test rendering image with fit='fill' mode (no aspect ratio preservation)."""
+        page = Page(width=400, height=300)
+
+        png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=="
+
+        img = Image(width=100, height=50)
+        img.set_base64_data(png_b64, "image/png")
+        img.set_fit("fill")
+        img.preserve_aspect_ratio = False
+        img.move_to((200, 150))
+        page.add(img)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_image_placeholder_no_data(self):
+        """Test image placeholder rendering when base64_data is None."""
+        page = Page(width=400, height=300)
+
+        img = Image(width=100, height=100)
+        img.move_to((200, 150))
+        # No base64 data set - should render placeholder
+        page.add(img)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_text_empty_string(self):
+        """Test rendering text element with empty string."""
+        page = Page(width=400, height=300)
+        text = Text(text="").move_to((200, 150))
+        page.add(text)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_dotted_line(self):
+        """Test rendering a dotted line."""
+        page = Page(width=400, height=300)
+        line = Line(start=(0, 0), end=(200, 0), stroke_style="dotted").move_to((100, 150))
+        page.add(line)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_effect_motion_lines(self):
+        """Test rendering motion lines effect."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.move_to((200, 150))
+
+        # MotionLines with position tuple
+        effect = MotionLines(position=(200, 150), direction=0.0, intensity=0.7, seed=42)
+        page.add_effect(effect)
+        page.add(panel)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_effect_focus_lines(self):
+        """Test rendering focus lines effect."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.move_to((200, 150))
+
+        # FocusLines with position tuple
+        effect = FocusLines(position=(200, 150), intensity=0.8, seed=42)
+        page.add_effect(effect)
+        page.add(panel)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_effect_impact(self):
+        """Test rendering impact effect."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.move_to((200, 150))
+
+        # ImpactEffect with position tuple
+        effect = ImpactEffect(position=(200, 150), intensity=1.0, seed=42)
+        page.add_effect(effect)
+        page.add(panel)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_effect_shake(self):
+        """Test rendering shake effect."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.move_to((200, 150))
+
+        # ShakeEffect with target CObject
+        effect = ShakeEffect(target=panel, intensity=0.5, seed=42)
+        page.add_effect(effect)
+        page.add(panel)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_effect_with_opacity(self):
+        """Test rendering effect with custom opacity."""
+        page = Page(width=400, height=300)
+
+        effect = MotionLines(position=(200, 150), direction=0.0, intensity=0.5, opacity=0.3, seed=42)
+        page.add_effect(effect)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_effect_background_z_index(self):
+        """Test rendering effects with negative z_index (behind objects)."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.move_to((200, 150))
+
+        # Effect with negative z_index renders behind panel
+        effect = FocusLines(position=(200, 150), z_index=-1, seed=42)
+        page.add_effect(effect)
+        page.add(panel)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_effect_foreground_z_index(self):
+        """Test rendering effects with positive z_index (in front)."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.move_to((200, 150))
+
+        # Effect with positive z_index renders in front of panel
+        effect = FocusLines(position=(200, 150), z_index=10, seed=42)
+        page.add_effect(effect)
+        page.add(panel)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_book_multiple_pages(self):
+        """Test rendering multiple pages to single PDF using render_book."""
+        from comix.page.book import Book
+
+        page1 = Page(width=400, height=300)
+        page1.add(Panel(width=300, height=200).move_to((200, 150)))
+
+        page2 = Page(width=400, height=300)
+        page2.add(Panel(width=300, height=200).move_to((200, 150)))
+
+        book = Book()
+        book.add_page(page1)
+        book.add_page(page2)
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            renderer = CairoRenderer(page1)  # Use first page for renderer
+            output_path = renderer.render_book([page1, page2], f.name)
+            assert Path(output_path).exists()
+            # Verify it's a valid PDF
+            with open(output_path, "rb") as pdf_file:
+                signature = pdf_file.read(4)
+                assert signature == b"%PDF"
+            Path(output_path).unlink()
+
+    def test_render_book_different_page_sizes(self):
+        """Test render_book handles pages with different dimensions."""
+        page1 = Page(width=400, height=300)
+        page1.add(Panel(width=300, height=200).move_to((200, 150)))
+
+        page2 = Page(width=800, height=600)  # Different size
+        page2.add(Panel(width=700, height=500).move_to((400, 300)))
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            renderer = CairoRenderer(page1)
+            output_path = renderer.render_book([page1, page2], f.name)
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_book_with_quality(self):
+        """Test render_book respects quality parameter."""
+        page1 = Page(width=400, height=300)
+        page1.add(Panel(width=300, height=200).move_to((200, 150)))
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            renderer = CairoRenderer(page1)
+            output_path = renderer.render_book([page1], f.name, quality="high")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_multiline_text(self):
+        """Test rendering multiline text."""
+        page = Page(width=400, height=300)
+        text = Text(text="Line 1\nLine 2\nLine 3", font_size=16).move_to((200, 150))
+        page.add(text)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_text_alignment(self):
+        """Test rendering text with different alignments."""
+        page = Page(width=400, height=300)
+
+        text_left = Text(text="Left", font_size=16, align="left").move_to((100, 100))
+        text_center = Text(text="Center", font_size=16, align="center").move_to((200, 150))
+        text_right = Text(text="Right", font_size=16, align="right").move_to((300, 200))
+
+        page.add(text_left, text_center, text_right)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_sfx_without_outline(self):
+        """Test rendering SFX text without outline."""
+        page = Page(width=400, height=300)
+        sfx = SFX(text="POW!", color="#0000FF", outline=False).move_to((200, 150))
+        page.add(sfx)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_shapes_with_fill(self):
+        """Test rendering shapes with fill colors."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=100, height=50, fill_color="#FF0000").move_to((200, 150))
+        circle = Circle(radius=30, fill_color="#00FF00").move_to((100, 100))
+        page.add(rect, circle)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_shapes_without_stroke(self):
+        """Test rendering shapes with only fill (no stroke)."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=100, height=50, fill_color="#FF0000", stroke_color="none").move_to((200, 150))
+        page.add(rect)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_character_expressions(self):
+        """Test rendering characters with different expressions."""
+        page = Page(width=800, height=300)
+
+        expressions = ["neutral", "happy", "sad", "angry", "surprised"]
+        for i, expr in enumerate(expressions):
+            face = SimpleFace(name=expr).move_to((100 + i * 140, 150))
+            face.set_expression(expr)
+            page.add(face)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_stickman_facing_directions(self):
+        """Test rendering stickman facing different directions."""
+        page = Page(width=600, height=300)
+
+        stickman_left = Stickman(name="Left").move_to((150, 150)).face("left")
+        stickman_right = Stickman(name="Right").move_to((300, 150)).face("right")
+        stickman_front = Stickman(name="Front").move_to((450, 150)).face("front")
+
+        page.add(stickman_left, stickman_right, stickman_front)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()

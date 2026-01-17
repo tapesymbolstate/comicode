@@ -260,6 +260,28 @@ None currently tracked.
 
 ## Verification Notes (2026-01-18)
 
+### Critical Rendering Bug Fixes (v0.1.7)
+
+1. **Double Position Bug in Character Rendering**: Fixed a critical bug where character positions were being added twice - once in `_get_transformed_points()` and again in the renderer. This caused all characters to render at 2x their intended offset from the origin. Fixed in both SVG and Cairo renderers for all character types (Stickman, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon).
+
+2. **Double Position Bug in Bubble Rendering**: Fixed similar bug in speech bubble rendering where bubble body points (which already include position from `_get_transformed_points()`) were having position added again. Tail points correctly still use position translation as they are stored in local coordinates.
+
+3. **Example Coordinate Fixes**: Fixed examples 01, 02, 04, 05, 06, 07, and 09 which had incorrect absolute coordinates. Characters must use absolute page coordinates matching panel positions after `auto_layout()` is called. For example, in a 2-panel horizontal layout on 800x400 page, Panel 1 is at x≈207 and Panel 2 is at x≈592.
+
+4. **README.md Created**: Added comprehensive README.md with installation instructions, quick start examples, feature overview, and documentation links.
+
+Files modified:
+- comix/renderer/svg_renderer.py - Removed double position addition in character and bubble rendering
+- comix/renderer/cairo_renderer.py - Same fixes for Cairo renderer
+- examples/01_simple_dialogue.py - Fixed Bob's position from (200,200) to (600,200)
+- examples/02_four_panel_comic.py - Fixed all 4 character Y positions
+- examples/04_expressions.py - Fixed all 4 character positions
+- examples/05_bubble_types.py - Fixed all 4 character Y positions
+- examples/06_multi_page_pdf.py - Fixed positions for pages 2 and 3
+- examples/07_custom_layout.py - Fixed all 6 character positions
+- examples/09_using_templates.py - Fixed positions for all 4 templates
+- README.md - Created comprehensive documentation
+
 ### Critical Bug Fix & Test Coverage (v0.1.6)
 
 - **Fixed Anime/Superhero/Cartoon Character Rendering Bug**: Both SVG and Cairo renderers had a dispatch bug where Anime, Superhero, and Cartoon character types were missing from the type dispatch list. This caused these characters to fall through to the generic renderer (rendering as simple polylines) instead of their specialized rendering methods with proper body parts, hair styles, costumes, etc.

@@ -384,8 +384,8 @@ class CairoRenderer:
         if not points:
             return
 
-        # Translate points
-        translated_points = [(p[0] + pos[0], p[1] + pos[1]) for p in points]
+        # Points already include position from _get_transformed_points()
+        translated_points = [(p[0], p[1]) for p in points]
 
         border_width = data.get("border_width", 2)
         if emphasis:
@@ -533,8 +533,7 @@ class CairoRenderer:
         # Draw head (first 16 points form a circle-ish shape)
         head_points = points[:16]
         if head_points:
-            translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
-            self._polygon_path(translated_head)
+            self._polygon_path(head_points)
             self._set_color(color)
             ctx.set_line_width(stroke_width)
             ctx.stroke()
@@ -548,7 +547,7 @@ class CairoRenderer:
             # Calculate head center from the head points
             head_center_x = sum(p[0] for p in head_points) / len(head_points)
             head_center_y = sum(p[1] for p in head_points) / len(head_points)
-            head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+            head_pos = [head_center_x, head_center_y]
 
             # Calculate head radius from character height
             height = data.get("character_height", 100)
@@ -571,8 +570,8 @@ class CairoRenderer:
                 if i + 1 < len(body_points):
                     p1 = body_points[i]
                     p2 = body_points[i + 1]
-                    ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
-                    ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+                    ctx.move_to(p1[0], p1[1])
+                    ctx.line_to(p2[0], p2[1])
                     self._set_color(color)
                     ctx.set_line_width(stroke_width)
                     ctx.stroke()
@@ -599,8 +598,7 @@ class CairoRenderer:
         # Draw head (first 24 points form a circle)
         head_points = points[:24]
         if head_points:
-            translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
-            self._polygon_path(translated_head)
+            self._polygon_path(head_points)
             self._set_color(fill_color)
             ctx.fill_preserve()
             self._set_color(color)
@@ -610,8 +608,7 @@ class CairoRenderer:
         # Draw body oval (next 16 points)
         body_points = points[24:40]
         if body_points:
-            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
-            self._polygon_path(translated_body)
+            self._polygon_path(body_points)
             self._set_color(fill_color)
             ctx.fill_preserve()
             self._set_color(color)
@@ -627,8 +624,8 @@ class CairoRenderer:
             # Limb line
             p1 = points[start_idx]
             p2 = points[start_idx + 1]
-            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
-            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            ctx.move_to(p1[0], p1[1])
+            ctx.line_to(p2[0], p2[1])
             self._set_color(color)
             ctx.set_line_width(stroke_width)
             ctx.stroke()
@@ -636,8 +633,7 @@ class CairoRenderer:
             # Rounded end (circle approximation from next 8 points)
             end_points = points[start_idx + 2 : start_idx + 10]
             if end_points:
-                translated_end = [(p[0] + pos[0], p[1] + pos[1]) for p in end_points]
-                self._polygon_path(translated_end)
+                self._polygon_path(end_points)
                 self._set_color(fill_color)
                 ctx.fill_preserve()
                 self._set_color(color)
@@ -659,7 +655,7 @@ class CairoRenderer:
         # Calculate head center
         head_center_x = sum(p[0] for p in head_points) / len(head_points)
         head_center_y = sum(p[1] for p in head_points) / len(head_points)
-        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_pos = [head_center_x, head_center_y]
 
         # Calculate head radius from character height
         height = data.get("character_height", 100)
@@ -708,14 +704,14 @@ class CairoRenderer:
             antenna_tip = points[0]
             antenna_base = points[1]
             # Antenna line
-            ctx.move_to(antenna_tip[0] + pos[0], antenna_tip[1] + pos[1])
-            ctx.line_to(antenna_base[0] + pos[0], antenna_base[1] + pos[1])
+            ctx.move_to(antenna_tip[0], antenna_tip[1])
+            ctx.line_to(antenna_base[0], antenna_base[1])
             self._set_color(color)
             ctx.set_line_width(stroke_width)
             ctx.stroke()
             # Antenna ball at tip
             antenna_radius = data.get("character_height", 100) * 0.02
-            ctx.arc(antenna_tip[0] + pos[0], antenna_tip[1] + pos[1], antenna_radius, 0, 2 * math.pi)
+            ctx.arc(antenna_tip[0], antenna_tip[1], antenna_radius, 0, 2 * math.pi)
             self._set_color(led_color)
             ctx.fill_preserve()
             self._set_color(color)
@@ -726,9 +722,8 @@ class CairoRenderer:
         head_start = offset
         if len(points) > head_start + 3:
             head_pts = points[head_start:head_start + 4]
-            translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_pts]
             # Draw head rectangle
-            self._polygon_path(translated_head)
+            self._polygon_path(head_pts)
             self._set_color(fill_color)
             ctx.fill_preserve()
             self._set_color(color)
@@ -736,8 +731,8 @@ class CairoRenderer:
             ctx.stroke()
 
             # Screen face area (slightly inset rectangle)
-            head_center_x = sum(p[0] for p in head_pts) / 4 + pos[0]
-            head_center_y = sum(p[1] for p in head_pts) / 4 + pos[1]
+            head_center_x = sum(p[0] for p in head_pts) / 4
+            head_center_y = sum(p[1] for p in head_pts) / 4
             head_width = abs(head_pts[1][0] - head_pts[0][0])
             head_height = abs(head_pts[0][1] - head_pts[3][1])
 
@@ -762,9 +757,8 @@ class CairoRenderer:
         body_start = offset + 4
         if len(points) > body_start + 3:
             body_pts = points[body_start:body_start + 4]
-            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_pts]
             # Draw body rectangle
-            self._polygon_path(translated_body)
+            self._polygon_path(body_pts)
             self._set_color(fill_color)
             ctx.fill_preserve()
             self._set_color(color)
@@ -772,9 +766,9 @@ class CairoRenderer:
             ctx.stroke()
 
             # Body panel detail (center line)
-            body_center_x = (body_pts[0][0] + body_pts[1][0]) / 2 + pos[0]
-            body_top_y = body_pts[0][1] + pos[1]
-            body_bottom_y = body_pts[2][1] + pos[1]
+            body_center_x = (body_pts[0][0] + body_pts[1][0]) / 2
+            body_top_y = body_pts[0][1]
+            body_bottom_y = body_pts[2][1]
             ctx.move_to(body_center_x, body_top_y + 5)
             ctx.line_to(body_center_x, body_bottom_y - 5)
             self._set_color(panel_color)
@@ -801,16 +795,16 @@ class CairoRenderer:
             # Upper limb segment
             p1 = points[start_idx]
             p2 = points[start_idx + 1]
-            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
-            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            ctx.move_to(p1[0], p1[1])
+            ctx.line_to(p2[0], p2[1])
             self._set_color(color)
             ctx.set_line_width(stroke_width + 1)
             ctx.stroke()
 
             # Lower limb segment
             p3 = points[start_idx + 2]
-            ctx.move_to(p2[0] + pos[0], p2[1] + pos[1])
-            ctx.line_to(p3[0] + pos[0], p3[1] + pos[1])
+            ctx.move_to(p2[0], p2[1])
+            ctx.line_to(p3[0], p3[1])
             self._set_color(color)
             ctx.set_line_width(stroke_width + 1)
             ctx.stroke()
@@ -818,8 +812,8 @@ class CairoRenderer:
             # Joint circle at elbow/knee
             joint_pts = points[start_idx + 3:start_idx + 7]
             if len(joint_pts) >= 4:
-                joint_center_x = sum(p[0] for p in joint_pts) / 4 + pos[0]
-                joint_center_y = sum(p[1] for p in joint_pts) / 4 + pos[1]
+                joint_center_x = sum(p[0] for p in joint_pts) / 4
+                joint_center_y = sum(p[1] for p in joint_pts) / 4
                 joint_radius = abs(joint_pts[0][0] - joint_pts[2][0]) / 2
                 ctx.arc(joint_center_x, joint_center_y, joint_radius, 0, 2 * math.pi)
                 self._set_color(panel_color)
@@ -829,8 +823,8 @@ class CairoRenderer:
                 ctx.stroke()
 
             # End effector (hand/foot) - small rectangle
-            end_x = p3[0] + pos[0]
-            end_y = p3[1] + pos[1]
+            end_x = p3[0]
+            end_y = p3[1]
             effector_size = data.get("character_height", 100) * 0.035
             ctx.rectangle(end_x - effector_size, end_y - effector_size / 2, effector_size * 2, effector_size)
             self._set_color(fill_color)
@@ -989,7 +983,7 @@ class CairoRenderer:
         # Calculate head center for features
         head_center_x = sum(p[0] for p in head_points) / len(head_points)
         head_center_y = sum(p[1] for p in head_points) / len(head_points)
-        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_pos = [head_center_x, head_center_y]
         height = data.get("character_height", 100)
         head_radius = height * 0.20
 
@@ -999,7 +993,7 @@ class CairoRenderer:
         # Draw head circle with skin color
         ctx.new_path()
         for i, p in enumerate(head_points):
-            x, y = p[0] + pos[0], p[1] + pos[1]
+            x, y = p[0], p[1]
             if i == 0:
                 ctx.move_to(x, y)
             else:
@@ -1016,7 +1010,7 @@ class CairoRenderer:
         if body_points:
             ctx.new_path()
             for i, p in enumerate(body_points):
-                x, y = p[0] + pos[0], p[1] + pos[1]
+                x, y = p[0], p[1]
                 if i == 0:
                     ctx.move_to(x, y)
                 else:
@@ -1038,8 +1032,8 @@ class CairoRenderer:
             p1 = points[start_idx]
             p2 = points[start_idx + 1]
             ctx.new_path()
-            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
-            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            ctx.move_to(p1[0], p1[1])
+            ctx.line_to(p2[0], p2[1])
             self._set_color(color)
             ctx.set_line_width(stroke_width + 2)  # Thicker for chibi style
             ctx.stroke()
@@ -1049,7 +1043,7 @@ class CairoRenderer:
             if end_points:
                 ctx.new_path()
                 for i, p in enumerate(end_points):
-                    x, y = p[0] + pos[0], p[1] + pos[1]
+                    x, y = p[0], p[1]
                     if i == 0:
                         ctx.move_to(x, y)
                     else:
@@ -2205,12 +2199,11 @@ class CairoRenderer:
 
         # Head points (first 32 points - tapered oval)
         head_points = points[:32]
-        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
 
         # Calculate head center for features
         head_center_x = sum(p[0] for p in head_points) / len(head_points)
         head_center_y = sum(p[1] for p in head_points) / len(head_points)
-        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_pos = [head_center_x, head_center_y]
         head_height = height * 0.14
         head_width = height * 0.10
 
@@ -2219,9 +2212,9 @@ class CairoRenderer:
 
         # Draw head with skin color
         ctx.save()
-        if translated_head:
-            ctx.move_to(translated_head[0][0], translated_head[0][1])
-            for point in translated_head[1:]:
+        if head_points:
+            ctx.move_to(head_points[0][0], head_points[0][1])
+            for point in head_points[1:]:
                 ctx.line_to(point[0], point[1])
             ctx.close_path()
             self._set_color(fill_color)
@@ -2234,10 +2227,9 @@ class CairoRenderer:
         # Neck points (next 4 points)
         neck_points = points[32:36]
         if len(neck_points) == 4:
-            translated_neck = [(p[0] + pos[0], p[1] + pos[1]) for p in neck_points]
             ctx.save()
-            ctx.move_to(translated_neck[0][0], translated_neck[0][1])
-            for point in translated_neck[1:]:
+            ctx.move_to(neck_points[0][0], neck_points[0][1])
+            for point in neck_points[1:]:
                 ctx.line_to(point[0], point[1])
             ctx.close_path()
             self._set_color(fill_color)
@@ -2250,10 +2242,9 @@ class CairoRenderer:
         # Body/torso points (next 4 points)
         body_points = points[36:40]
         if len(body_points) == 4:
-            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
             ctx.save()
-            ctx.move_to(translated_body[0][0], translated_body[0][1])
-            for point in translated_body[1:]:
+            ctx.move_to(body_points[0][0], body_points[0][1])
+            for point in body_points[1:]:
                 ctx.line_to(point[0], point[1])
             ctx.close_path()
             self._set_color(outfit_color)
@@ -2275,8 +2266,8 @@ class CairoRenderer:
 
             # Upper arm
             ctx.save()
-            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
-            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            ctx.move_to(p1[0], p1[1])
+            ctx.line_to(p2[0], p2[1])
             self._set_color(color)
             ctx.set_line_width(stroke_width + 1)
             ctx.stroke()
@@ -2284,8 +2275,8 @@ class CairoRenderer:
 
             # Forearm
             ctx.save()
-            ctx.move_to(p2[0] + pos[0], p2[1] + pos[1])
-            ctx.line_to(p3[0] + pos[0], p3[1] + pos[1])
+            ctx.move_to(p2[0], p2[1])
+            ctx.line_to(p3[0], p3[1])
             self._set_color(color)
             ctx.set_line_width(stroke_width + 1)
             ctx.stroke()
@@ -2294,10 +2285,9 @@ class CairoRenderer:
             # Hand circle
             hand_points = points[start_idx + 3 : start_idx + 11]
             if hand_points:
-                translated_hand = [(p[0] + pos[0], p[1] + pos[1]) for p in hand_points]
                 ctx.save()
-                ctx.move_to(translated_hand[0][0], translated_hand[0][1])
-                for point in translated_hand[1:]:
+                ctx.move_to(hand_points[0][0], hand_points[0][1])
+                for point in hand_points[1:]:
                     ctx.line_to(point[0], point[1])
                 ctx.close_path()
                 self._set_color(fill_color)
@@ -2316,8 +2306,8 @@ class CairoRenderer:
 
             # Upper leg
             ctx.save()
-            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
-            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            ctx.move_to(p1[0], p1[1])
+            ctx.line_to(p2[0], p2[1])
             self._set_color(outfit_color)
             ctx.set_line_width(stroke_width + 2)
             ctx.stroke()
@@ -2325,8 +2315,8 @@ class CairoRenderer:
 
             # Lower leg
             ctx.save()
-            ctx.move_to(p2[0] + pos[0], p2[1] + pos[1])
-            ctx.line_to(p3[0] + pos[0], p3[1] + pos[1])
+            ctx.move_to(p2[0], p2[1])
+            ctx.line_to(p3[0], p3[1])
             self._set_color(outfit_color)
             ctx.set_line_width(stroke_width + 2)
             ctx.stroke()
@@ -2335,10 +2325,9 @@ class CairoRenderer:
             # Foot oval
             foot_points = points[start_idx + 3 : start_idx + 11]
             if foot_points:
-                translated_foot = [(p[0] + pos[0], p[1] + pos[1]) for p in foot_points]
                 ctx.save()
-                ctx.move_to(translated_foot[0][0], translated_foot[0][1])
-                for point in translated_foot[1:]:
+                ctx.move_to(foot_points[0][0], foot_points[0][1])
+                for point in foot_points[1:]:
                     ctx.line_to(point[0], point[1])
                 ctx.close_path()
                 self._set_color(outfit_color)
@@ -2813,8 +2802,7 @@ class CairoRenderer:
         # Render cape first (behind character)
         if cape_enabled and len(points) >= right_leg_end + 6:
             cape_points = points[right_leg_end:right_leg_end + 6]
-            translated_cape = [(p[0] + pos[0], p[1] + pos[1]) for p in cape_points]
-            self._polygon_path(translated_cape)
+            self._polygon_path(cape_points)
             self._set_color(cape_color)
             ctx.fill_preserve()
             self._set_color(color)
@@ -2823,12 +2811,11 @@ class CairoRenderer:
 
         # Head points (first 24 points - angular heroic face)
         head_points = points[:head_end]
-        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
 
         # Calculate head center for features
         head_center_x = sum(p[0] for p in head_points) / len(head_points)
         head_center_y = sum(p[1] for p in head_points) / len(head_points)
-        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_pos = [head_center_x, head_center_y]
         head_height = height * 0.12
         head_width = height * 0.09
 
@@ -2836,7 +2823,7 @@ class CairoRenderer:
         head_fill = skin_color if mask == "none" else skin_color
         if mask == "full":
             head_fill = costume_primary
-        self._polygon_path(translated_head)
+        self._polygon_path(head_points)
         self._set_color(head_fill)
         ctx.fill_preserve()
         self._set_color(color)
@@ -2846,8 +2833,7 @@ class CairoRenderer:
         # Neck points
         if len(points) > neck_end:
             neck_points = points[head_end:neck_end]
-            translated_neck = [(p[0] + pos[0], p[1] + pos[1]) for p in neck_points]
-            self._polygon_path(translated_neck)
+            self._polygon_path(neck_points)
             self._set_color(skin_color)
             ctx.fill_preserve()
             self._set_color(color)
@@ -2857,8 +2843,7 @@ class CairoRenderer:
         # Torso - heroic V-shape
         if len(points) > torso_end:
             torso_points = points[neck_end:torso_end]
-            translated_torso = [(p[0] + pos[0], p[1] + pos[1]) for p in torso_points]
-            self._polygon_path(translated_torso)
+            self._polygon_path(torso_points)
             self._set_color(costume_primary)
             ctx.fill_preserve()
             self._set_color(color)
@@ -2867,8 +2852,8 @@ class CairoRenderer:
 
             # Render chest emblem
             if emblem != "none":
-                torso_center_x = sum(p[0] for p in torso_points) / len(torso_points) + pos[0]
-                torso_center_y = sum(p[1] for p in torso_points) / len(torso_points) + pos[1]
+                torso_center_x = sum(p[0] for p in torso_points) / len(torso_points)
+                torso_center_y = sum(p[1] for p in torso_points) / len(torso_points)
                 emblem_y = torso_center_y - height * 0.05  # Upper chest
                 emblem_size = height * 0.06
                 self._render_superhero_emblem_cairo(torso_center_x, emblem_y, emblem_size, emblem, emblem_color, color)
@@ -2883,16 +2868,16 @@ class CairoRenderer:
             p3 = points[start_idx + 2]  # Hand
 
             # Upper arm (shoulder to elbow)
-            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
-            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            ctx.move_to(p1[0], p1[1])
+            ctx.line_to(p2[0], p2[1])
             self._set_color(costume_primary)
             ctx.set_line_width(stroke_width + 3)
             ctx.stroke()
 
             # Forearm (elbow to hand)
             forearm_color = costume_secondary if gloves else costume_primary
-            ctx.move_to(p2[0] + pos[0], p2[1] + pos[1])
-            ctx.line_to(p3[0] + pos[0], p3[1] + pos[1])
+            ctx.move_to(p2[0], p2[1])
+            ctx.line_to(p3[0], p3[1])
             self._set_color(forearm_color)
             ctx.set_line_width(stroke_width + 3)
             ctx.stroke()
@@ -2900,9 +2885,8 @@ class CairoRenderer:
             # Fist/hand
             fist_points = points[start_idx + 3:start_idx + 11]
             if fist_points:
-                translated_fist = [(p[0] + pos[0], p[1] + pos[1]) for p in fist_points]
                 fist_fill = costume_secondary if gloves else skin_color
-                self._polygon_path(translated_fist)
+                self._polygon_path(fist_points)
                 self._set_color(fist_fill)
                 ctx.fill_preserve()
                 self._set_color(color)
@@ -2923,16 +2907,16 @@ class CairoRenderer:
             p3 = points[start_idx + 2]  # Foot
 
             # Upper leg (hip to knee)
-            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
-            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            ctx.move_to(p1[0], p1[1])
+            ctx.line_to(p2[0], p2[1])
             self._set_color(costume_secondary)
             ctx.set_line_width(stroke_width + 4)
             ctx.stroke()
 
             # Lower leg (knee to foot)
             lower_color = costume_primary if boots else costume_secondary
-            ctx.move_to(p2[0] + pos[0], p2[1] + pos[1])
-            ctx.line_to(p3[0] + pos[0], p3[1] + pos[1])
+            ctx.move_to(p2[0], p2[1])
+            ctx.line_to(p3[0], p3[1])
             self._set_color(lower_color)
             ctx.set_line_width(stroke_width + 4)
             ctx.stroke()
@@ -2940,9 +2924,8 @@ class CairoRenderer:
             # Boot/foot
             foot_points = points[start_idx + 3:start_idx + 11]
             if foot_points:
-                translated_foot = [(p[0] + pos[0], p[1] + pos[1]) for p in foot_points]
                 foot_fill = costume_primary if boots else costume_secondary
-                self._polygon_path(translated_foot)
+                self._polygon_path(foot_points)
                 self._set_color(foot_fill)
                 ctx.fill_preserve()
                 self._set_color(color)
@@ -3134,16 +3117,15 @@ class CairoRenderer:
 
         # Head points (first 32 points - large circle)
         head_points = points[:32]
-        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
 
         # Calculate head center for features
         head_center_x = sum(p[0] for p in head_points) / len(head_points)
         head_center_y = sum(p[1] for p in head_points) / len(head_points)
-        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_pos = [head_center_x, head_center_y]
         head_radius = height * 0.175
 
         # Draw head
-        self._polygon_path(translated_head)
+        self._polygon_path(head_points)
         self._set_color(fill_color)
         ctx.fill_preserve()
         self._set_color(outline_color)
@@ -3159,8 +3141,7 @@ class CairoRenderer:
         body_end = body_start + 20
         if len(points) >= body_end:
             body_points = points[body_start:body_end]
-            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
-            self._polygon_path(translated_body)
+            self._polygon_path(body_points)
             self._set_color(outfit_color)
             ctx.fill_preserve()
             self._set_color(outline_color)
@@ -3253,16 +3234,16 @@ class CairoRenderer:
 
                 # Draw thicker inner line (limb color)
                 ctx.new_path()
-                ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
-                ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+                ctx.move_to(p1[0], p1[1])
+                ctx.line_to(p2[0], p2[1])
                 self._set_color(limb_color)
                 ctx.set_line_width(stroke_width + 2)
                 ctx.stroke()
 
                 # Draw outline
                 ctx.new_path()
-                ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
-                ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+                ctx.move_to(p1[0], p1[1])
+                ctx.line_to(p2[0], p2[1])
                 self._set_color(outline_color)
                 ctx.set_line_width(stroke_width)
                 ctx.stroke()
@@ -3270,9 +3251,8 @@ class CairoRenderer:
         # Draw rounded end (hand/foot) from remaining points
         end_start = start_idx + segment_points
         if end_start + end_points <= len(points):
-            end_pts = points[end_start:end_start + end_points]
-            translated_end = [(p[0] + pos[0], p[1] + pos[1]) for p in end_pts]
-            self._polygon_path(translated_end)
+            end_pts = [(p[0], p[1]) for p in points[end_start:end_start + end_points]]
+            self._polygon_path(end_pts)
             self._set_color(end_color)
             ctx.fill_preserve()
             self._set_color(outline_color)

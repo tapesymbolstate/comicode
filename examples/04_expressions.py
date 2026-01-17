@@ -5,12 +5,18 @@ from comix import Stickman, TwoByTwo
 # Use TwoByTwo template (2x2 grid layout)
 page = TwoByTwo(width=800, height=800)
 
-# Four expressions to demonstrate
-expressions = ["neutral", "happy", "sad", "angry"]
+# Four expressions with their panel positions
+# TwoByTwo panels: (208,208), (592,208), (208,592), (592,592)
+expressions_with_pos = [
+    ("neutral", (208, 208)),
+    ("happy", (592, 208)),
+    ("sad", (208, 592)),
+    ("angry", (592, 592)),
+]
 
-for i, expr in enumerate(expressions):
+for i, (expr, pos) in enumerate(expressions_with_pos):
     char = Stickman(height=80)
-    char.move_to((200, 200))
+    char.move_to(pos)
     char.set_expression(expr)
     bubble = char.say(f"I'm {expr}!")
     page.panels[i].add_content(char, bubble)

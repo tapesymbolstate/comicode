@@ -16,7 +16,7 @@ panel1.add_content(alice, bubble1)
 # Panel 2: Bob responds
 panel2 = Panel()
 bob = Stickman(name="Bob", height=100, color="#4ECDC4")
-bob.move_to((200, 200))
+bob.move_to((600, 200))
 bubble2 = bob.say("I'm doing great!")
 panel2.add_content(bob, bubble2)
 

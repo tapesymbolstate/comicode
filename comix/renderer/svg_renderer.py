@@ -329,9 +329,8 @@ class SVGRenderer:
         emphasis = data.get("emphasis", False)
 
         if points:
-            translated_points = [
-                (p[0] + pos[0], p[1] + pos[1]) for p in points
-            ]
+            # Points already include position from _get_transformed_points()
+            translated_points = [(p[0], p[1]) for p in points]
 
             stroke_dasharray = None
             if data.get("border_style") == "dashed":
@@ -370,6 +369,7 @@ class SVGRenderer:
             group.add(bubble_path)
 
         if tail_points and len(tail_points) >= 3:
+            # Tail points are in local coordinates, need to translate by position
             translated_tail = [
                 (p[0] + pos[0], p[1] + pos[1]) for p in tail_points
             ]
@@ -499,11 +499,8 @@ class SVGRenderer:
 
         head_points = points[:16]
         if head_points:
-            translated_head = [
-                (p[0] + pos[0], p[1] + pos[1]) for p in head_points
-            ]
             head = Polygon(
-                points=translated_head,
+                points=head_points,
                 fill="none",
                 stroke=color,
                 stroke_width=stroke_width,
@@ -519,7 +516,7 @@ class SVGRenderer:
             # Calculate head center from the head points
             head_center_x = sum(p[0] for p in head_points) / len(head_points)
             head_center_y = sum(p[1] for p in head_points) / len(head_points)
-            head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+            head_pos = [head_center_x, head_center_y]
 
             # Calculate head radius from character height
             height = data.get("character_height", 100)
@@ -542,8 +539,8 @@ class SVGRenderer:
                     p1 = body_points[i]
                     p2 = body_points[i + 1]
                     line = SVGLine(
-                        start=(p1[0] + pos[0], p1[1] + pos[1]),
-                        end=(p2[0] + pos[0], p2[1] + pos[1]),
+                        start=(p1[0], p1[1]),
+                        end=(p2[0], p2[1]),
                         stroke=color,
                         stroke_width=stroke_width,
                     )
@@ -568,9 +565,8 @@ class SVGRenderer:
 
         # Head points (first 24 points form the head circle)
         head_points = points[:24]
-        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
         head = Polygon(
-            points=translated_head,
+            points=head_points,
             fill=fill_color,
             stroke=color,
             stroke_width=stroke_width,
@@ -580,9 +576,8 @@ class SVGRenderer:
         # Body oval points (next 16 points)
         body_points = points[24:40]
         if body_points:
-            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
             body = Polygon(
-                points=translated_body,
+                points=body_points,
                 fill=fill_color,
                 stroke=color,
                 stroke_width=stroke_width,
@@ -602,8 +597,8 @@ class SVGRenderer:
             p1 = points[start_idx]
             p2 = points[start_idx + 1]
             line = SVGLine(
-                start=(p1[0] + pos[0], p1[1] + pos[1]),
-                end=(p2[0] + pos[0], p2[1] + pos[1]),
+                start=(p1[0], p1[1]),
+                end=(p2[0], p2[1]),
                 stroke=color,
                 stroke_width=stroke_width,
             )
@@ -611,9 +606,8 @@ class SVGRenderer:
             # Rounded end (circle approximation from next 8 points)
             end_points = points[start_idx + 2 : start_idx + 10]
             if end_points:
-                translated_end = [(p[0] + pos[0], p[1] + pos[1]) for p in end_points]
                 end_shape = Polygon(
-                    points=translated_end,
+                    points=end_points,
                     fill=fill_color,
                     stroke=color,
                     stroke_width=stroke_width - 1,
@@ -639,7 +633,7 @@ class SVGRenderer:
         # Calculate head center (average of head points)
         head_center_x = sum(p[0] for p in head_points) / len(head_points)
         head_center_y = sum(p[1] for p in head_points) / len(head_points)
-        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_pos = [head_center_x, head_center_y]
 
         # Calculate head radius from data
         height = data.get("character_height", 100)
@@ -689,15 +683,15 @@ class SVGRenderer:
             antenna_base = points[1]
             # Antenna line
             antenna_line = SVGLine(
-                start=(antenna_tip[0] + pos[0], antenna_tip[1] + pos[1]),
-                end=(antenna_base[0] + pos[0], antenna_base[1] + pos[1]),
+                start=(antenna_tip[0], antenna_tip[1]),
+                end=(antenna_base[0], antenna_base[1]),
                 stroke=color,
                 stroke_width=stroke_width,
             )
             group.add(antenna_line)
             # Antenna ball at tip
             antenna_ball = SVGCircle(
-                center=(antenna_tip[0] + pos[0], antenna_tip[1] + pos[1]),
+                center=(antenna_tip[0], antenna_tip[1]),
                 r=data.get("character_height", 100) * 0.02,
                 fill=led_color,
                 stroke=color,
@@ -709,10 +703,9 @@ class SVGRenderer:
         head_start = offset
         if len(points) > head_start + 3:
             head_pts = points[head_start:head_start + 4]
-            translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_pts]
             # Main head
             head = Polygon(
-                points=translated_head,
+                points=head_pts,
                 fill=fill_color,
                 stroke=color,
                 stroke_width=stroke_width,
@@ -720,8 +713,8 @@ class SVGRenderer:
             group.add(head)
 
             # Screen face area (slightly inset rectangle)
-            head_center_x = sum(p[0] for p in head_pts) / 4 + pos[0]
-            head_center_y = sum(p[1] for p in head_pts) / 4 + pos[1]
+            head_center_x = sum(p[0] for p in head_pts) / 4
+            head_center_y = sum(p[1] for p in head_pts) / 4
             head_width = abs(head_pts[1][0] - head_pts[0][0])
             head_height = abs(head_pts[0][1] - head_pts[3][1])
 
@@ -745,10 +738,9 @@ class SVGRenderer:
         body_start = offset + 4
         if len(points) > body_start + 3:
             body_pts = points[body_start:body_start + 4]
-            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_pts]
             # Main body
             body = Polygon(
-                points=translated_body,
+                points=body_pts,
                 fill=fill_color,
                 stroke=color,
                 stroke_width=stroke_width,
@@ -756,9 +748,9 @@ class SVGRenderer:
             group.add(body)
 
             # Body panel detail (center line)
-            body_center_x = (body_pts[0][0] + body_pts[1][0]) / 2 + pos[0]
-            body_top_y = body_pts[0][1] + pos[1]
-            body_bottom_y = body_pts[2][1] + pos[1]
+            body_center_x = (body_pts[0][0] + body_pts[1][0]) / 2
+            body_top_y = body_pts[0][1]
+            body_bottom_y = body_pts[2][1]
             panel_line = SVGLine(
                 start=(body_center_x, body_top_y + 5),
                 end=(body_center_x, body_bottom_y - 5),
@@ -789,8 +781,8 @@ class SVGRenderer:
             p1 = points[start_idx]
             p2 = points[start_idx + 1]
             upper_limb = SVGLine(
-                start=(p1[0] + pos[0], p1[1] + pos[1]),
-                end=(p2[0] + pos[0], p2[1] + pos[1]),
+                start=(p1[0], p1[1]),
+                end=(p2[0], p2[1]),
                 stroke=color,
                 stroke_width=stroke_width + 1,
             )
@@ -799,8 +791,8 @@ class SVGRenderer:
             # Lower limb segment
             p3 = points[start_idx + 2]
             lower_limb = SVGLine(
-                start=(p2[0] + pos[0], p2[1] + pos[1]),
-                end=(p3[0] + pos[0], p3[1] + pos[1]),
+                start=(p2[0], p2[1]),
+                end=(p3[0], p3[1]),
                 stroke=color,
                 stroke_width=stroke_width + 1,
             )
@@ -809,8 +801,8 @@ class SVGRenderer:
             # Joint circle at elbow/knee (uses the 4 points to get center)
             joint_pts = points[start_idx + 3:start_idx + 7]
             if len(joint_pts) >= 4:
-                joint_center_x = sum(p[0] for p in joint_pts) / 4 + pos[0]
-                joint_center_y = sum(p[1] for p in joint_pts) / 4 + pos[1]
+                joint_center_x = sum(p[0] for p in joint_pts) / 4
+                joint_center_y = sum(p[1] for p in joint_pts) / 4
                 joint_radius = abs(joint_pts[0][0] - joint_pts[2][0]) / 2
                 joint = SVGCircle(
                     center=(joint_center_x, joint_center_y),
@@ -822,8 +814,8 @@ class SVGRenderer:
                 group.add(joint)
 
             # End effector (hand/foot) - small rectangle
-            end_x = p3[0] + pos[0]
-            end_y = p3[1] + pos[1]
+            end_x = p3[0]
+            end_y = p3[1]
             effector_size = data.get("character_height", 100) * 0.035
             effector = Rect(
                 insert=(end_x - effector_size, end_y - effector_size / 2),
@@ -1022,12 +1014,11 @@ class SVGRenderer:
 
         # Head circle points (first 32 points)
         head_points = points[:32]
-        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
 
         # Calculate head center for features
         head_center_x = sum(p[0] for p in head_points) / len(head_points)
         head_center_y = sum(p[1] for p in head_points) / len(head_points)
-        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_pos = [head_center_x, head_center_y]
         height = data.get("character_height", 100)
         head_radius = height * 0.20
 
@@ -1036,7 +1027,7 @@ class SVGRenderer:
 
         # Draw head circle with skin color
         head = Polygon(
-            points=translated_head,
+            points=head_points,
             fill=fill_color,
             stroke=color,
             stroke_width=stroke_width,
@@ -1046,10 +1037,9 @@ class SVGRenderer:
         # Body oval points (next 20 points)
         body_points = points[32:52]
         if body_points:
-            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
             # Body with outfit color
             body = Polygon(
-                points=translated_body,
+                points=body_points,
                 fill=outfit_color,
                 stroke=color,
                 stroke_width=stroke_width,
@@ -1070,8 +1060,8 @@ class SVGRenderer:
             p1 = points[start_idx]
             p2 = points[start_idx + 1]
             line = SVGLine(
-                start=(p1[0] + pos[0], p1[1] + pos[1]),
-                end=(p2[0] + pos[0], p2[1] + pos[1]),
+                start=(p1[0], p1[1]),
+                end=(p2[0], p2[1]),
                 stroke=color,
                 stroke_width=stroke_width + 2,  # Thicker for chibi style
             )
@@ -1079,10 +1069,9 @@ class SVGRenderer:
             # Rounded end (hand/foot)
             end_points = points[start_idx + 2 : start_idx + 10]
             if end_points:
-                translated_end = [(p[0] + pos[0], p[1] + pos[1]) for p in end_points]
                 limb_fill = outfit_color if is_leg else fill_color
                 end_shape = Polygon(
-                    points=translated_end,
+                    points=end_points,
                     fill=limb_fill,
                     stroke=color,
                     stroke_width=stroke_width,
@@ -2026,12 +2015,11 @@ class SVGRenderer:
 
         # Head points (first 32 points - tapered oval)
         head_points = points[:32]
-        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
 
         # Calculate head center for features
         head_center_x = sum(p[0] for p in head_points) / len(head_points)
         head_center_y = sum(p[1] for p in head_points) / len(head_points)
-        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_pos = [head_center_x, head_center_y]
         head_height = height * 0.14
         head_width = height * 0.10
 
@@ -2040,7 +2028,7 @@ class SVGRenderer:
 
         # Draw head with skin color
         head = Polygon(
-            points=translated_head,
+            points=head_points,
             fill=fill_color,
             stroke=color,
             stroke_width=stroke_width,
@@ -2050,9 +2038,8 @@ class SVGRenderer:
         # Neck points (next 4 points)
         neck_points = points[32:36]
         if len(neck_points) == 4:
-            translated_neck = [(p[0] + pos[0], p[1] + pos[1]) for p in neck_points]
             neck = Polygon(
-                points=translated_neck,
+                points=neck_points,
                 fill=fill_color,
                 stroke=color,
                 stroke_width=stroke_width,
@@ -2062,9 +2049,8 @@ class SVGRenderer:
         # Body/torso points (next 4 points)
         body_points = points[36:40]
         if len(body_points) == 4:
-            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
             body = Polygon(
-                points=translated_body,
+                points=body_points,
                 fill=outfit_color,
                 stroke=color,
                 stroke_width=stroke_width,
@@ -2084,8 +2070,8 @@ class SVGRenderer:
 
             # Upper arm
             line1 = SVGLine(
-                start=(p1[0] + pos[0], p1[1] + pos[1]),
-                end=(p2[0] + pos[0], p2[1] + pos[1]),
+                start=(p1[0], p1[1]),
+                end=(p2[0], p2[1]),
                 stroke=color,
                 stroke_width=stroke_width + 1,
             )
@@ -2093,8 +2079,8 @@ class SVGRenderer:
 
             # Forearm
             line2 = SVGLine(
-                start=(p2[0] + pos[0], p2[1] + pos[1]),
-                end=(p3[0] + pos[0], p3[1] + pos[1]),
+                start=(p2[0], p2[1]),
+                end=(p3[0], p3[1]),
                 stroke=color,
                 stroke_width=stroke_width + 1,
             )
@@ -2103,9 +2089,8 @@ class SVGRenderer:
             # Hand circle
             hand_points = points[start_idx + 3 : start_idx + 11]
             if hand_points:
-                translated_hand = [(p[0] + pos[0], p[1] + pos[1]) for p in hand_points]
                 hand = Polygon(
-                    points=translated_hand,
+                    points=hand_points,
                     fill=fill_color,
                     stroke=color,
                     stroke_width=stroke_width,
@@ -2122,8 +2107,8 @@ class SVGRenderer:
 
             # Upper leg
             line1 = SVGLine(
-                start=(p1[0] + pos[0], p1[1] + pos[1]),
-                end=(p2[0] + pos[0], p2[1] + pos[1]),
+                start=(p1[0], p1[1]),
+                end=(p2[0], p2[1]),
                 stroke=outfit_color,
                 stroke_width=stroke_width + 2,
             )
@@ -2131,8 +2116,8 @@ class SVGRenderer:
 
             # Lower leg
             line2 = SVGLine(
-                start=(p2[0] + pos[0], p2[1] + pos[1]),
-                end=(p3[0] + pos[0], p3[1] + pos[1]),
+                start=(p2[0], p2[1]),
+                end=(p3[0], p3[1]),
                 stroke=outfit_color,
                 stroke_width=stroke_width + 2,
             )
@@ -2141,9 +2126,8 @@ class SVGRenderer:
             # Foot oval
             foot_points = points[start_idx + 3 : start_idx + 11]
             if foot_points:
-                translated_foot = [(p[0] + pos[0], p[1] + pos[1]) for p in foot_points]
                 foot = Polygon(
-                    points=translated_foot,
+                    points=foot_points,
                     fill=outfit_color,
                     stroke=color,
                     stroke_width=stroke_width,
@@ -2668,9 +2652,8 @@ class SVGRenderer:
         # Render cape first (behind character)
         if cape_enabled and len(points) >= right_leg_end + 6:
             cape_points = points[right_leg_end:right_leg_end + 6]
-            translated_cape = [(p[0] + pos[0], p[1] + pos[1]) for p in cape_points]
             cape = Polygon(
-                points=translated_cape,
+                points=cape_points,
                 fill=cape_color,
                 stroke=color,
                 stroke_width=stroke_width,
@@ -2679,12 +2662,11 @@ class SVGRenderer:
 
         # Head points (first 24 points - angular heroic face)
         head_points = points[:head_end]
-        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
 
         # Calculate head center for features
         head_center_x = sum(p[0] for p in head_points) / len(head_points)
         head_center_y = sum(p[1] for p in head_points) / len(head_points)
-        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_pos = [head_center_x, head_center_y]
         head_height = height * 0.12
         head_width = height * 0.09
 
@@ -2693,7 +2675,7 @@ class SVGRenderer:
         if mask == "full":
             head_fill = costume_primary
         head = Polygon(
-            points=translated_head,
+            points=head_points,
             fill=head_fill,
             stroke=color,
             stroke_width=stroke_width,
@@ -2703,9 +2685,8 @@ class SVGRenderer:
         # Neck points
         if len(points) > neck_end:
             neck_points = points[head_end:neck_end]
-            translated_neck = [(p[0] + pos[0], p[1] + pos[1]) for p in neck_points]
             neck = Polygon(
-                points=translated_neck,
+                points=neck_points,
                 fill=skin_color,
                 stroke=color,
                 stroke_width=stroke_width,
@@ -2715,9 +2696,8 @@ class SVGRenderer:
         # Torso - heroic V-shape
         if len(points) > torso_end:
             torso_points = points[neck_end:torso_end]
-            translated_torso = [(p[0] + pos[0], p[1] + pos[1]) for p in torso_points]
             torso = Polygon(
-                points=translated_torso,
+                points=torso_points,
                 fill=costume_primary,
                 stroke=color,
                 stroke_width=stroke_width,
@@ -2726,8 +2706,8 @@ class SVGRenderer:
 
             # Render chest emblem
             if emblem != "none":
-                torso_center_x = sum(p[0] for p in torso_points) / len(torso_points) + pos[0]
-                torso_center_y = sum(p[1] for p in torso_points) / len(torso_points) + pos[1]
+                torso_center_x = sum(p[0] for p in torso_points) / len(torso_points)
+                torso_center_y = sum(p[1] for p in torso_points) / len(torso_points)
                 emblem_y = torso_center_y - height * 0.05  # Upper chest
                 emblem_size = height * 0.06
                 self._render_superhero_emblem(group, torso_center_x, emblem_y, emblem_size, emblem, emblem_color, color)
@@ -2743,8 +2723,8 @@ class SVGRenderer:
 
             # Upper arm (shoulder to elbow)
             upper_arm = SVGLine(
-                start=(p1[0] + pos[0], p1[1] + pos[1]),
-                end=(p2[0] + pos[0], p2[1] + pos[1]),
+                start=(p1[0], p1[1]),
+                end=(p2[0], p2[1]),
                 stroke=costume_primary,
                 stroke_width=stroke_width + 3,
             )
@@ -2753,8 +2733,8 @@ class SVGRenderer:
             # Forearm (elbow to hand)
             forearm_color = costume_secondary if gloves else costume_primary
             forearm = SVGLine(
-                start=(p2[0] + pos[0], p2[1] + pos[1]),
-                end=(p3[0] + pos[0], p3[1] + pos[1]),
+                start=(p2[0], p2[1]),
+                end=(p3[0], p3[1]),
                 stroke=forearm_color,
                 stroke_width=stroke_width + 3,
             )
@@ -2763,10 +2743,9 @@ class SVGRenderer:
             # Fist/hand
             fist_points = points[start_idx + 3:start_idx + 11]
             if fist_points:
-                translated_fist = [(p[0] + pos[0], p[1] + pos[1]) for p in fist_points]
                 fist_fill = costume_secondary if gloves else skin_color
                 fist = Polygon(
-                    points=translated_fist,
+                    points=fist_points,
                     fill=fist_fill,
                     stroke=color,
                     stroke_width=stroke_width,
@@ -2788,8 +2767,8 @@ class SVGRenderer:
 
             # Upper leg (hip to knee)
             upper_leg = SVGLine(
-                start=(p1[0] + pos[0], p1[1] + pos[1]),
-                end=(p2[0] + pos[0], p2[1] + pos[1]),
+                start=(p1[0], p1[1]),
+                end=(p2[0], p2[1]),
                 stroke=costume_secondary,
                 stroke_width=stroke_width + 4,
             )
@@ -2798,8 +2777,8 @@ class SVGRenderer:
             # Lower leg (knee to foot)
             lower_color = costume_primary if boots else costume_secondary
             lower_leg = SVGLine(
-                start=(p2[0] + pos[0], p2[1] + pos[1]),
-                end=(p3[0] + pos[0], p3[1] + pos[1]),
+                start=(p2[0], p2[1]),
+                end=(p3[0], p3[1]),
                 stroke=lower_color,
                 stroke_width=stroke_width + 4,
             )
@@ -2808,10 +2787,9 @@ class SVGRenderer:
             # Boot/foot
             foot_points = points[start_idx + 3:start_idx + 11]
             if foot_points:
-                translated_foot = [(p[0] + pos[0], p[1] + pos[1]) for p in foot_points]
                 foot_fill = costume_primary if boots else costume_secondary
                 foot = Polygon(
-                    points=translated_foot,
+                    points=foot_points,
                     fill=foot_fill,
                     stroke=color,
                     stroke_width=stroke_width,
@@ -2993,17 +2971,16 @@ class SVGRenderer:
 
         # Head points (first 32 points - large circle)
         head_points = points[:32]
-        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
 
         # Calculate head center for features
         head_center_x = sum(p[0] for p in head_points) / len(head_points)
         head_center_y = sum(p[1] for p in head_points) / len(head_points)
-        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_pos = [head_center_x, head_center_y]
         head_radius = height * 0.175  # 35% diameter
 
         # Draw head with skin color
         head = Polygon(
-            points=translated_head,
+            points=head_points,
             fill=fill_color,
             stroke=outline_color,
             stroke_width=stroke_width,
@@ -3022,9 +2999,8 @@ class SVGRenderer:
         body_end = body_start + 20
         if len(points) >= body_end:
             body_points = points[body_start:body_end]
-            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
             body = Polygon(
-                points=translated_body,
+                points=body_points,
                 fill=outfit_color,
                 stroke=outline_color,
                 stroke_width=stroke_width,
@@ -3120,16 +3096,16 @@ class SVGRenderer:
                 p1 = points[start_idx + i]
                 p2 = points[start_idx + i + 1]
                 line = SVGLine(
-                    start=(p1[0] + pos[0], p1[1] + pos[1]),
-                    end=(p2[0] + pos[0], p2[1] + pos[1]),
+                    start=(p1[0], p1[1]),
+                    end=(p2[0], p2[1]),
                     stroke=limb_color,
                     stroke_width=stroke_width + 2,  # Thicker limbs for cartoon
                 )
                 group.add(line)
                 # Add outline
                 outline_line = SVGLine(
-                    start=(p1[0] + pos[0], p1[1] + pos[1]),
-                    end=(p2[0] + pos[0], p2[1] + pos[1]),
+                    start=(p1[0], p1[1]),
+                    end=(p2[0], p2[1]),
                     stroke=outline_color,
                     stroke_width=stroke_width,
                 )
@@ -3139,9 +3115,8 @@ class SVGRenderer:
         end_start = start_idx + segment_points
         if end_start + end_points <= len(points):
             end_pts = points[end_start:end_start + end_points]
-            translated_end = [(p[0] + pos[0], p[1] + pos[1]) for p in end_pts]
             end_shape = Polygon(
-                points=translated_end,
+                points=end_pts,
                 fill=end_color,
                 stroke=outline_color,
                 stroke_width=stroke_width,

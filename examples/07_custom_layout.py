@@ -13,19 +13,21 @@ page = Page(width=900, height=600)
 page.set_layout(rows=2, cols=3)
 
 # Create 6 panels with different characters and expressions
+# Panel positions: row 0 at y=158, row 1 at y=442
+# Columns at x=160, 450, 740
 characters = [
-    ("neutral", "#FF6B9D", "Panel 1: Setup"),
-    ("happy", "#4ECDC4", "Panel 2: Joy"),
-    ("sad", "#95E1D3", "Panel 3: Sorrow"),
-    ("angry", "#F38181", "Panel 4: Anger"),
-    ("surprised", "#AA96DA", "Panel 5: Shock"),
-    ("confused", "#FCBAD3", "Panel 6: Puzzled"),
+    ("neutral", "#FF6B9D", "Panel 1: Setup", (160, 158)),
+    ("happy", "#4ECDC4", "Panel 2: Joy", (450, 158)),
+    ("sad", "#95E1D3", "Panel 3: Sorrow", (740, 158)),
+    ("angry", "#F38181", "Panel 4: Anger", (160, 442)),
+    ("surprised", "#AA96DA", "Panel 5: Shock", (450, 442)),
+    ("confused", "#FCBAD3", "Panel 6: Puzzled", (740, 442)),
 ]
 
-for i, (expression, color, text) in enumerate(characters):
+for i, (expression, color, text, pos) in enumerate(characters):
     panel = Panel()
     char = Stickman(height=80, color=color)
-    char.move_to((150, 100))
+    char.move_to(pos)
     char.set_expression(expression)
     bubble = char.say(text)
     panel.add_content(char, bubble)

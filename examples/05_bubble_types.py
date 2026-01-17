@@ -14,34 +14,34 @@ from comix import (
 page = Page(width=800, height=1000)
 page.set_layout(rows=4, cols=1)
 
-# Speech bubble (normal dialogue)
+# Speech bubble (normal dialogue) - panel center y ≈ 136
 panel1 = Panel()
 char1 = Stickman(height=80)
-char1.move_to((400, 125))
+char1.move_to((400, 136))
 bubble1 = SpeechBubble(text="This is normal speech")
 bubble1.attach_to(char1)
 panel1.add_content(char1, bubble1)
 
-# Thought bubble (internal thoughts)
+# Thought bubble (internal thoughts) - panel center y ≈ 379
 panel2 = Panel()
 char2 = Stickman(height=80)
-char2.move_to((400, 125))
+char2.move_to((400, 379))
 bubble2 = ThoughtBubble(text="This is a thought...")
 bubble2.attach_to(char2)
 panel2.add_content(char2, bubble2)
 
-# Shout bubble (loud exclamation)
+# Shout bubble (loud exclamation) - panel center y ≈ 621
 panel3 = Panel()
 char3 = Stickman(height=80)
-char3.move_to((400, 125))
+char3.move_to((400, 621))
 bubble3 = ShoutBubble(text="THIS IS SHOUTING!")
 bubble3.attach_to(char3)
 panel3.add_content(char3, bubble3)
 
-# Whisper bubble (quiet speech)
+# Whisper bubble (quiet speech) - panel center y ≈ 864
 panel4 = Panel()
 char4 = Stickman(height=80)
-char4.move_to((400, 125))
+char4.move_to((400, 864))
 bubble4 = WhisperBubble(text="this is a whisper...")
 bubble4.attach_to(char4)
 panel4.add_content(char4, bubble4)

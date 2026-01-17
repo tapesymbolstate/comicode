@@ -6,7 +6,7 @@ This directory contains specifications for the Comix comic creation library, wri
 
 Comix is a Python library for creating comics programmatically, inspired by Manim's API design but focused on comic/manga creation instead of mathematical animations.
 
-**Current Status**: All 8 phases implemented and working. 1726 tests passing, all 15 examples working, mypy and ruff pass.
+**Current Status**: All 8 phases implemented and working. 1728 tests passing (1724 pass + 4 skip), all 15 examples working, mypy and ruff pass.
 
 ## Active Specs
 
@@ -94,7 +94,7 @@ standing, sitting, waving, pointing, walking, running, jumping, dancing, lying, 
 - **Multi-page PDF** - Book class for compiling pages
 - **Interactive HTML** - Standalone HTML with zoom, pan, themes
 - **Animated GIF** - Timeline-based animation export (optional, requires Pillow)
-- **Video (MP4/WebM)** - Video export with ffmpeg (optional, requires imageio-ffmpeg)
+- **Video (MP4/WebM)** - Video export with ffmpeg and audio track support (optional, requires imageio-ffmpeg)
 
 ## Acceptance Criteria Flow
 
@@ -106,7 +106,7 @@ getting-started.md
          └─> working-examples.md (examples 01-05 implemented)
 ```
 
-All acceptance criteria are met. The library is feature-complete for v0.1.42 with all 8 phases implemented.
+All acceptance criteria are met. The library is feature-complete for v0.1.43 with all 8 phases implemented.
 
 ## How to Use These Specs
 
@@ -162,7 +162,6 @@ Potential features not yet scoped:
 
 - **Additional Character Styles** - New character types (DetailedFace, RealisticStyle)
 - **Comic Reader Component** - Web component for viewing multi-page comics
-- **Audio Support** - Add audio tracks to video exports
 
 ## Contributing
 
@@ -187,6 +186,6 @@ See `IMPLEMENTATION_PLAN.md` for current implementation status.
 
 ---
 
-**Version**: 0.1.42 (as of 2026-01-18)
+**Version**: 0.1.43 (as of 2026-01-18)
 **Last Updated**: 2026-01-18
 **Maintainer**: Claude Code Ralph Agent

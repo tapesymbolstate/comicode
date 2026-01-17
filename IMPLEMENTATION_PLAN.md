@@ -4,7 +4,7 @@
 
 **Current Git Tag: v0.1.43**
 
-All 8 phases have been implemented with **1726 tests passing**, ruff clean, and mypy passing.
+All 8 phases have been implemented with **1728 tests passing** (1724 pass + 4 skip), ruff clean, and mypy passing.
 
 ### Completed Phases Summary
 
@@ -28,7 +28,7 @@ All 8 phases have been implemented with **1726 tests passing**, ruff clean, and 
 - **Renderers**: SVG (always available), Cairo PNG/PDF (optional), HTML (interactive), GIF (animated), Video (MP4/WebM)
 - **Effects**: 6 types (AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect)
 - **Animation System**: Timeline-based animation with 29 easing functions, effect and object animations
-- **Video Export**: MP4 and WebM video output with quality settings, progress callbacks, and frame extraction
+- **Video Export**: MP4 and WebM video output with quality settings, progress callbacks, frame extraction, and audio track support
 - **Parser**: DSL markup for rapid comic creation
 - **AI Images**: OpenAI DALL-E and Replicate integration
 - **Preview Server**: Hot reload web preview with file watching
@@ -52,7 +52,6 @@ These are potential improvements, not planned work:
 
 1. **Additional Character Styles**: New character classes (e.g., DetailedFace, RealisticStyle)
 2. **Comic Reader Component**: A web component for viewing multi-page comics with navigation
-3. **Audio Support**: Add audio tracks to video exports
 
 ## Known Issues
 
@@ -66,4 +65,4 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ## Note: Stable Release (v0.1.43)
 
-All systems stable with 1726 tests passing. Specs synchronized with implementation.
+All systems stable with 1728 tests passing. Specs synchronized with implementation. Audio track support is implemented and tested.

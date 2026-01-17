@@ -459,6 +459,35 @@ class TestVideoRendererDimensions:
                 os.unlink(output_path)
 
 
+@pytest.mark.skipif(not VIDEO_AVAILABLE, reason="Video dependencies not available")
+class TestVideoRendererAudio:
+    """Tests for Video renderer audio support."""
+
+    def test_audio_path_parameter_accepted(self) -> None:
+        page = Page(width=100, height=100)
+        page.build()
+        renderer = VideoRenderer(page)
+
+        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as f:
+            output_path = f.name
+
+        try:
+            # Passing audio_path=None should work fine
+            renderer.render(
+                output_path, fps=5, duration=0.2, audio_path=None
+            )
+            assert os.path.exists(output_path)
+        finally:
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+
+    def test_add_audio_track_method_exists(self) -> None:
+        page = Page(width=100, height=100)
+        renderer = VideoRenderer(page)
+        assert hasattr(renderer, "_add_audio_track")
+        assert callable(renderer._add_audio_track)
+
+
 class TestVideoRendererWithoutDependencies:
     """Tests for VideoRenderer without dependencies."""
 

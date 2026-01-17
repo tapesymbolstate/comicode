@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.9**
+**Current Git Tag: v0.1.10**
 
 All 5 phases have been implemented with **1502 tests passing** (1 skipped), ruff clean, and mypy passing. Current version: **v0.1.0**.
 
@@ -314,6 +314,9 @@ Files modified:
 - fontTools, svgwrite, openai, and replicate modules configured with `ignore_missing_imports = true`
 - This is the correct approach since these libraries don't have type stubs (contrary to previous notes)
 - mypy strict mode continues to pass with 0 errors
+
+### Documentation Sync (v0.1.10)
+- Updated specs/README.md test count from 1460 to 1502 (1 skipped) to match actual test count
 
 ### Documentation Update (2026-01-18)
 

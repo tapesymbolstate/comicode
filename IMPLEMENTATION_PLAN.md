@@ -4,7 +4,7 @@
 
 **Current Git Tag: v0.1.45**
 
-All 8 phases have been implemented with **1743 tests passing** (1739 pass + 4 skip), ruff clean, and mypy passing.
+All 8 phases have been implemented with **1743 tests** (1739 pass + 4 skip), ruff clean, and mypy passing.
 
 ### Completed Phases Summary
 
@@ -65,4 +65,4 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ## Note: Stable Release (v0.1.45)
 
-All systems stable with 1743 tests passing. Specs synchronized with implementation. Multi-page book parser support added with `parse_book_markup()` function for parsing multiple pages from a single markup file with page separators (=== or ---).
+All systems stable with 1743 tests (1739 pass + 4 skip). Specs synchronized with implementation. Multi-page book parser support added with `parse_book_markup()` function for parsing multiple pages from a single markup file with page separators (=== or ---).

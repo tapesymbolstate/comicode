@@ -93,7 +93,7 @@
 
 ## Current Known Issues (실제 결과물 검증 결과)
 
-**No known issues.** As of 2026-01-18, all 1728 tests pass (1724 pass + 4 skip), all 15 examples (01-15) execute successfully and produce correct output, and mypy/ruff pass.
+**No known issues.** As of 2026-01-18, all 1743 tests pass (1739 pass + 4 skip), all 15 examples (01-15) execute successfully and produce correct output, and mypy/ruff pass.
 
 ## Implementation Strategy
 

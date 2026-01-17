@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-All 5 phases have been implemented with **1460 tests passing** (1 skipped), ruff clean, and mypy passing (8 unused type:ignore warnings). Current version: **v0.1.0**.
+All 5 phases have been implemented with **1465 tests passing** (1 skipped), ruff clean, and mypy passing (8 unused type:ignore warnings). Current version: **v0.1.0**.
 
 ### Completed Phases Summary
 
@@ -229,13 +229,18 @@ All 5 phases have been implemented with **1460 tests passing** (1 skipped), ruff
    - 09_using_templates.py: Using built-in templates (FourKoma, TwoByTwo, ActionPage, WebComic)
    - 10_error_handling.py: Error handling and fallbacks
 
+8. **Clean up temporary files in Page.show()** - COMPLETE: Implemented atexit-based cleanup mechanism in `Page.show()`. Temporary files are now registered for automatic cleanup on Python process exit. Added 5 new tests for cleanup functionality:
+   - Temporary file registration on atexit
+   - Automatic cleanup on process exit
+   - Multiple temp file handling
+   - Cleanup with existing/non-existing files
+   - Error handling during cleanup
+
 ### P3 - Low (Minor improvements)
 
 These items are nice-to-have cleanups:
 
-6. **Clean up temporary files in Page.show()** - The `Page.show()` method creates temporary files that are never cleaned up:
-   - Should use context manager or cleanup callback
-   - Or document that temp files are user's responsibility
+(All P3 items have been completed)
 
 ## Future Enhancements (Ideas)
 

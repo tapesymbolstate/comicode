@@ -1,9 +1,17 @@
 """Tests for Page class."""
 
+import os
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
-from comix.page.page import Page, SinglePanel, Strip
+from comix.page.page import (
+    Page,
+    SinglePanel,
+    Strip,
+    _temp_preview_files,
+    _cleanup_temp_preview_files,
+)
 from comix.cobject.panel.panel import Panel
 from comix.cobject.character.character import Stickman
 
@@ -141,3 +149,85 @@ class TestStrip:
         assert len(strip._panels) == 3
         assert strip.width == 300
         assert strip.height == 1200
+
+
+class TestPageShow:
+    """Tests for Page.show() temporary file cleanup."""
+
+    def test_show_registers_temp_file(self):
+        """Test that show() registers temp file for cleanup."""
+        page = Page(width=100, height=100)
+        initial_count = len(_temp_preview_files)
+
+        with patch("webbrowser.open"):
+            page.show()
+
+        assert len(_temp_preview_files) == initial_count + 1
+        assert _temp_preview_files[-1].endswith(".svg")
+
+        # Clean up for other tests
+        if os.path.exists(_temp_preview_files[-1]):
+            os.remove(_temp_preview_files[-1])
+        _temp_preview_files.pop()
+
+    def test_cleanup_removes_temp_files(self):
+        """Test that cleanup function removes registered files."""
+        # Create a temp file manually
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            temp_path = f.name
+            f.write(b"<svg></svg>")
+
+        _temp_preview_files.append(temp_path)
+        assert os.path.exists(temp_path)
+
+        _cleanup_temp_preview_files()
+
+        assert not os.path.exists(temp_path)
+        assert len(_temp_preview_files) == 0
+
+    def test_cleanup_handles_missing_files(self):
+        """Test that cleanup handles already-deleted files gracefully."""
+        nonexistent_path = "/tmp/nonexistent_file_12345.svg"
+        _temp_preview_files.append(nonexistent_path)
+
+        # Should not raise an exception
+        _cleanup_temp_preview_files()
+
+        assert len(_temp_preview_files) == 0
+
+    def test_cleanup_handles_multiple_files(self):
+        """Test that cleanup removes multiple temp files."""
+        temp_paths = []
+        for i in range(3):
+            with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+                temp_paths.append(f.name)
+                f.write(b"<svg></svg>")
+                _temp_preview_files.append(f.name)
+
+        for path in temp_paths:
+            assert os.path.exists(path)
+
+        _cleanup_temp_preview_files()
+
+        for path in temp_paths:
+            assert not os.path.exists(path)
+        assert len(_temp_preview_files) == 0
+
+    def test_show_creates_valid_svg(self):
+        """Test that show() creates a valid SVG file."""
+        page = Page(width=100, height=100)
+        panel = Panel(width=80, height=80)
+        panel.move_to((50, 50))
+        page.add(panel)
+
+        with patch("webbrowser.open"):
+            page.show()
+
+        temp_path = _temp_preview_files[-1]
+        assert os.path.exists(temp_path)
+        content = Path(temp_path).read_text()
+        assert "<svg" in content
+
+        # Clean up
+        os.remove(temp_path)
+        _temp_preview_files.pop()

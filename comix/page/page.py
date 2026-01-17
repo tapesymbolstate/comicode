@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import atexit
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Self
 
@@ -12,6 +13,26 @@ from comix.layout.grid import GridLayout
 
 if TYPE_CHECKING:
     from comix.effect.effect import Effect
+
+# Track temporary files created by Page.show() for cleanup on exit
+_temp_preview_files: list[str] = []
+
+
+def _cleanup_temp_preview_files() -> None:
+    """Clean up temporary preview files created by Page.show()."""
+    import os
+
+    for filepath in _temp_preview_files:
+        try:
+            if os.path.exists(filepath):
+                os.remove(filepath)
+        except OSError:
+            pass  # Ignore errors during cleanup
+    _temp_preview_files.clear()
+
+
+# Register cleanup function to run on interpreter exit
+atexit.register(_cleanup_temp_preview_files)
 
 
 class Page:
@@ -196,12 +217,17 @@ class Page:
             raise NotImplementedError(f"Format '{format}' not yet implemented")
 
     def show(self) -> None:
-        """Preview the page in a web browser."""
+        """Preview the page in a web browser.
+
+        Creates a temporary SVG file and opens it in the default web browser.
+        The temporary file is automatically cleaned up when the Python process exits.
+        """
         import tempfile
         import webbrowser
 
         with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
             path = self.render(f.name, format="svg")
+            _temp_preview_files.append(path)
             webbrowser.open(f"file://{path}")
 
     def get_all_cobjects(self) -> list[CObject]:

@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 import svgwrite  # type: ignore[import-untyped]
 from svgwrite import Drawing
 from svgwrite.container import Group  # type: ignore[import-untyped]
+from svgwrite.path import Path as SVGPath  # type: ignore[import-untyped]
 from svgwrite.shapes import Circle as SVGCircle  # type: ignore[import-untyped]
 from svgwrite.shapes import Line as SVGLine
 from svgwrite.shapes import Polygon, Polyline, Rect
@@ -180,7 +181,7 @@ class SVGRenderer:
             self._render_bubble(data, group)
         elif obj_type in ("Text", "StyledText", "SFX"):
             self._render_text(data, group)
-        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Robot", "Character"):
+        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Robot", "Chibi", "Character"):
             self._render_character(data, group)
         elif obj_type == "Rectangle":
             self._render_rectangle(data, group)
@@ -469,6 +470,8 @@ class SVGRenderer:
             self._render_chubby_stickman(data, group, pos, points)
         elif style == "robot":
             self._render_robot(data, group, pos, points)
+        elif style == "chibi":
+            self._render_chibi(data, group, pos, points)
         else:
             self._render_generic(data, group)
 
@@ -986,6 +989,434 @@ class SVGRenderer:
                 stroke_width=2,
             )
             group.add(mouth)
+
+    def _render_chibi(
+        self, data: dict[str, Any], group: Group, pos: list[float], points: list[list[float]]
+    ) -> None:
+        """Render a chibi/super-deformed anime-style character.
+
+        Renders a cute chibi figure with:
+        - Very large head (40% of height)
+        - Small bean-shaped body
+        - Short stubby limbs
+        - Large expressive eyes
+        - Optional hair and blush
+        """
+        color = data.get("color", "#333333")
+        skin_color = data.get("skin_color", "#FFE4C4")
+        fill_color = data.get("fill_color", skin_color)
+        outfit_color = data.get("outfit_color", "#4A90D9")
+        hair_color = data.get("hair_color", "#333333")
+        hair_style = data.get("hair_style", "spiky")
+        blush = data.get("blush", False)
+        stroke_width = 2
+
+        if len(points) < 32:
+            return
+
+        # Head circle points (first 32 points)
+        head_points = points[:32]
+        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
+
+        # Calculate head center for features
+        head_center_x = sum(p[0] for p in head_points) / len(head_points)
+        head_center_y = sum(p[1] for p in head_points) / len(head_points)
+        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        height = data.get("character_height", 100)
+        head_radius = height * 0.20
+
+        # Render hair (behind head)
+        self._render_chibi_hair(group, head_pos, head_radius, hair_style, hair_color)
+
+        # Draw head circle with skin color
+        head = Polygon(
+            points=translated_head,
+            fill=fill_color,
+            stroke=color,
+            stroke_width=stroke_width,
+        )
+        group.add(head)
+
+        # Body oval points (next 20 points)
+        body_points = points[32:52]
+        if body_points:
+            translated_body = [(p[0] + pos[0], p[1] + pos[1]) for p in body_points]
+            # Body with outfit color
+            body = Polygon(
+                points=translated_body,
+                fill=outfit_color,
+                stroke=color,
+                stroke_width=stroke_width,
+            )
+            group.add(body)
+
+        # Limbs with rounded ends
+        # Points structure: left_arm_start, left_arm_end, left_hand(8pts),
+        # right_arm_start, right_arm_end, right_hand(8pts),
+        # left_leg_start, left_leg_end, left_foot(8pts),
+        # right_leg_start, right_leg_end, right_foot(8pts)
+        limb_start = 52
+
+        def render_limb(start_idx: int, is_leg: bool = False) -> None:
+            if start_idx + 10 > len(points):
+                return
+            # Limb line
+            p1 = points[start_idx]
+            p2 = points[start_idx + 1]
+            line = SVGLine(
+                start=(p1[0] + pos[0], p1[1] + pos[1]),
+                end=(p2[0] + pos[0], p2[1] + pos[1]),
+                stroke=color,
+                stroke_width=stroke_width + 2,  # Thicker for chibi style
+            )
+            group.add(line)
+            # Rounded end (hand/foot)
+            end_points = points[start_idx + 2 : start_idx + 10]
+            if end_points:
+                translated_end = [(p[0] + pos[0], p[1] + pos[1]) for p in end_points]
+                limb_fill = outfit_color if is_leg else fill_color
+                end_shape = Polygon(
+                    points=translated_end,
+                    fill=limb_fill,
+                    stroke=color,
+                    stroke_width=stroke_width,
+                )
+                group.add(end_shape)
+
+        # Render arms (skin color for hands)
+        render_limb(limb_start, is_leg=False)  # Left arm
+        render_limb(limb_start + 10, is_leg=False)  # Right arm
+        # Render legs (outfit color)
+        render_limb(limb_start + 20, is_leg=True)  # Left leg
+        render_limb(limb_start + 30, is_leg=True)  # Right leg
+
+        # Render face features (large chibi eyes)
+        expression = data.get("expression", {})
+        eye_type = expression.get("eyes", "normal")
+        mouth_type = expression.get("mouth", "normal")
+        eyebrow_type = expression.get("eyebrows", "normal")
+
+        # Chibi eyes are much larger and positioned higher
+        eye_y = head_pos[1] - head_radius * 0.05
+        eye_offset = head_radius * 0.40
+        eye_radius = head_radius * 0.22  # Much larger eyes for chibi style
+
+        # Render eyes (chibi-style large eyes)
+        self._render_chibi_eyes(group, head_pos, head_radius, eye_y, eye_offset, eye_radius, eye_type, color)
+
+        # Render eyebrows (smaller/cuter for chibi)
+        self._render_face_eyebrows(group, head_pos, head_radius, eye_y - eye_radius * 0.8, eye_offset, eyebrow_type, color)
+
+        # Render mouth (small and cute)
+        self._render_chibi_mouth(group, head_pos, head_radius, mouth_type, color)
+
+        # Render blush if enabled
+        if blush:
+            self._render_chibi_blush(group, head_pos, head_radius, eye_y, eye_offset)
+
+    def _render_chibi_hair(
+        self, group: Group, head_pos: list[float], head_radius: float, hair_style: str, hair_color: str
+    ) -> None:
+        """Render chibi hair based on style."""
+        cx, cy = head_pos
+
+        if hair_style == "none":
+            return
+
+        elif hair_style == "spiky":
+            # Spiky anime-style hair with several pointed tufts
+            spikes = [
+                # (angle, length_multiplier)
+                (-0.6, 1.3), (-0.3, 1.4), (0, 1.5), (0.3, 1.4), (0.6, 1.3),
+            ]
+            for angle, length in spikes:
+                import math
+                spike_base_x = cx + head_radius * 0.7 * math.sin(angle)
+                spike_base_y = cy - head_radius * 0.6
+                spike_tip_x = cx + head_radius * length * math.sin(angle)
+                spike_tip_y = cy - head_radius * length
+                # Draw triangle spike
+                spike = Polygon(
+                    points=[
+                        (spike_base_x - head_radius * 0.15, spike_base_y),
+                        (spike_tip_x, spike_tip_y),
+                        (spike_base_x + head_radius * 0.15, spike_base_y),
+                    ],
+                    fill=hair_color,
+                    stroke=hair_color,
+                    stroke_width=1,
+                )
+                group.add(spike)
+
+        elif hair_style == "long":
+            # Long hair falling down sides
+            # Left side
+            left_hair = Polygon(
+                points=[
+                    (cx - head_radius * 0.8, cy - head_radius * 0.3),
+                    (cx - head_radius * 1.0, cy + head_radius * 0.8),
+                    (cx - head_radius * 0.5, cy + head_radius * 0.6),
+                    (cx - head_radius * 0.4, cy),
+                ],
+                fill=hair_color,
+                stroke=hair_color,
+                stroke_width=1,
+            )
+            group.add(left_hair)
+            # Right side
+            right_hair = Polygon(
+                points=[
+                    (cx + head_radius * 0.8, cy - head_radius * 0.3),
+                    (cx + head_radius * 1.0, cy + head_radius * 0.8),
+                    (cx + head_radius * 0.5, cy + head_radius * 0.6),
+                    (cx + head_radius * 0.4, cy),
+                ],
+                fill=hair_color,
+                stroke=hair_color,
+                stroke_width=1,
+            )
+            group.add(right_hair)
+            # Top bangs
+            bangs = Polygon(
+                points=[
+                    (cx - head_radius * 0.6, cy - head_radius * 0.5),
+                    (cx - head_radius * 0.2, cy - head_radius * 0.2),
+                    (cx, cy - head_radius * 0.4),
+                    (cx + head_radius * 0.2, cy - head_radius * 0.2),
+                    (cx + head_radius * 0.6, cy - head_radius * 0.5),
+                    (cx, cy - head_radius * 1.1),
+                ],
+                fill=hair_color,
+                stroke=hair_color,
+                stroke_width=1,
+            )
+            group.add(bangs)
+
+        elif hair_style == "short":
+            # Simple short hair cap
+            hair_cap = Polygon(
+                points=[
+                    (cx - head_radius * 0.85, cy - head_radius * 0.2),
+                    (cx - head_radius * 0.75, cy - head_radius * 0.8),
+                    (cx - head_radius * 0.3, cy - head_radius * 1.05),
+                    (cx, cy - head_radius * 1.1),
+                    (cx + head_radius * 0.3, cy - head_radius * 1.05),
+                    (cx + head_radius * 0.75, cy - head_radius * 0.8),
+                    (cx + head_radius * 0.85, cy - head_radius * 0.2),
+                ],
+                fill=hair_color,
+                stroke=hair_color,
+                stroke_width=1,
+            )
+            group.add(hair_cap)
+
+        elif hair_style == "twintails":
+            # Two pigtails
+            # Top hair
+            top_hair = Polygon(
+                points=[
+                    (cx - head_radius * 0.7, cy - head_radius * 0.6),
+                    (cx, cy - head_radius * 1.15),
+                    (cx + head_radius * 0.7, cy - head_radius * 0.6),
+                ],
+                fill=hair_color,
+                stroke=hair_color,
+                stroke_width=1,
+            )
+            group.add(top_hair)
+            # Left twintail
+            left_tail = Polygon(
+                points=[
+                    (cx - head_radius * 0.7, cy - head_radius * 0.4),
+                    (cx - head_radius * 1.3, cy + head_radius * 0.3),
+                    (cx - head_radius * 1.1, cy + head_radius * 0.8),
+                    (cx - head_radius * 0.8, cy + head_radius * 0.4),
+                    (cx - head_radius * 0.5, cy),
+                ],
+                fill=hair_color,
+                stroke=hair_color,
+                stroke_width=1,
+            )
+            group.add(left_tail)
+            # Right twintail
+            right_tail = Polygon(
+                points=[
+                    (cx + head_radius * 0.7, cy - head_radius * 0.4),
+                    (cx + head_radius * 1.3, cy + head_radius * 0.3),
+                    (cx + head_radius * 1.1, cy + head_radius * 0.8),
+                    (cx + head_radius * 0.8, cy + head_radius * 0.4),
+                    (cx + head_radius * 0.5, cy),
+                ],
+                fill=hair_color,
+                stroke=hair_color,
+                stroke_width=1,
+            )
+            group.add(right_tail)
+
+    def _render_chibi_eyes(
+        self, group: Group, head_pos: list[float], head_radius: float,
+        eye_y: float, eye_offset: float, eye_radius: float, eye_type: str, color: str
+    ) -> None:
+        """Render large chibi-style eyes with highlights."""
+        left_x = head_pos[0] - eye_offset
+        right_x = head_pos[0] + eye_offset
+
+        if eye_type == "closed" or eye_type == "curved":
+            # Happy closed eyes (^_^)
+            for x in [left_x, right_x]:
+                # Draw arc-like closed eye
+                eye = SVGPath(
+                    d=f"M {x - eye_radius} {eye_y} Q {x} {eye_y - eye_radius} {x + eye_radius} {eye_y}",
+                    fill="none",
+                    stroke=color,
+                    stroke_width=2,
+                )
+                group.add(eye)
+        elif eye_type == "stars":
+            # Sparkly star eyes
+            for x in [left_x, right_x]:
+                # Draw star shape
+                import math
+                star_points = []
+                for i in range(10):
+                    angle = math.pi / 2 + i * math.pi / 5
+                    r = eye_radius if i % 2 == 0 else eye_radius * 0.5
+                    star_points.append((x + r * math.cos(angle), eye_y - r * math.sin(angle)))
+                star = Polygon(points=star_points, fill="#FFD700", stroke=color, stroke_width=1)
+                group.add(star)
+        elif eye_type == "tears":
+            # Crying eyes with tear drops
+            for x in [left_x, right_x]:
+                # Large eye circle
+                eye = SVGCircle(center=(x, eye_y), r=eye_radius, fill="white", stroke=color, stroke_width=2)
+                group.add(eye)
+                # Pupil
+                pupil = SVGCircle(center=(x, eye_y), r=eye_radius * 0.5, fill=color, stroke="none")
+                group.add(pupil)
+                # Highlight
+                highlight = SVGCircle(center=(x - eye_radius * 0.25, eye_y - eye_radius * 0.25), r=eye_radius * 0.2, fill="white", stroke="none")
+                group.add(highlight)
+                # Tear drop
+                tear = SVGPath(
+                    d=f"M {x + eye_radius * 0.3} {eye_y + eye_radius * 0.8} Q {x + eye_radius * 0.5} {eye_y + eye_radius * 1.5} {x + eye_radius * 0.3} {eye_y + eye_radius * 1.8}",
+                    fill="#87CEEB",
+                    stroke="#87CEEB",
+                    stroke_width=3,
+                )
+                group.add(tear)
+        elif eye_type == "wide":
+            # Surprised wide eyes
+            for x in [left_x, right_x]:
+                eye = SVGCircle(center=(x, eye_y), r=eye_radius * 1.2, fill="white", stroke=color, stroke_width=2)
+                group.add(eye)
+                pupil = SVGCircle(center=(x, eye_y + eye_radius * 0.1), r=eye_radius * 0.4, fill=color, stroke="none")
+                group.add(pupil)
+                highlight = SVGCircle(center=(x - eye_radius * 0.3, eye_y - eye_radius * 0.3), r=eye_radius * 0.25, fill="white", stroke="none")
+                group.add(highlight)
+        elif eye_type == "narrow":
+            # Angry narrow eyes
+            for x in [left_x, right_x]:
+                eye = Rect(
+                    insert=(x - eye_radius, eye_y - eye_radius * 0.3),
+                    size=(eye_radius * 2, eye_radius * 0.6),
+                    fill="white",
+                    stroke=color,
+                    stroke_width=2,
+                )
+                group.add(eye)
+                pupil = SVGCircle(center=(x, eye_y), r=eye_radius * 0.25, fill=color, stroke="none")
+                group.add(pupil)
+        else:
+            # Normal large chibi eyes with shine
+            for x in [left_x, right_x]:
+                # Large eye oval
+                eye = SVGCircle(center=(x, eye_y), r=eye_radius, fill="white", stroke=color, stroke_width=2)
+                group.add(eye)
+                # Large pupil
+                pupil = SVGCircle(center=(x, eye_y + eye_radius * 0.1), r=eye_radius * 0.5, fill=color, stroke="none")
+                group.add(pupil)
+                # Large highlight (signature chibi shine)
+                highlight = SVGCircle(center=(x - eye_radius * 0.25, eye_y - eye_radius * 0.25), r=eye_radius * 0.25, fill="white", stroke="none")
+                group.add(highlight)
+                # Small secondary highlight
+                highlight2 = SVGCircle(center=(x + eye_radius * 0.2, eye_y + eye_radius * 0.1), r=eye_radius * 0.1, fill="white", stroke="none")
+                group.add(highlight2)
+
+    def _render_chibi_mouth(
+        self, group: Group, head_pos: list[float], head_radius: float, mouth_type: str, color: str
+    ) -> None:
+        """Render small cute chibi mouth."""
+        cx, cy = head_pos
+        mouth_y = cy + head_radius * 0.35
+        mouth_width = head_radius * 0.25
+
+        if mouth_type == "smile" or mouth_type == "grin":
+            # Wide happy smile (cat mouth shape)
+            mouth = SVGPath(
+                d=f"M {cx - mouth_width} {mouth_y} Q {cx} {mouth_y + mouth_width * 0.8} {cx + mouth_width} {mouth_y}",
+                fill="none",
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+        elif mouth_type == "open" or mouth_type == "gasp":
+            # Open surprised mouth (small circle)
+            mouth = SVGCircle(center=(cx, mouth_y), r=mouth_width * 0.6, fill="#FFB6C1", stroke=color, stroke_width=2)
+            group.add(mouth)
+        elif mouth_type == "frown":
+            # Small sad mouth
+            mouth = SVGPath(
+                d=f"M {cx - mouth_width * 0.6} {mouth_y + mouth_width * 0.3} Q {cx} {mouth_y - mouth_width * 0.3} {cx + mouth_width * 0.6} {mouth_y + mouth_width * 0.3}",
+                fill="none",
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+        elif mouth_type == "smirk":
+            # Asymmetric smirk
+            mouth = SVGPath(
+                d=f"M {cx - mouth_width * 0.5} {mouth_y} Q {cx} {mouth_y + mouth_width * 0.3} {cx + mouth_width * 0.7} {mouth_y - mouth_width * 0.2}",
+                fill="none",
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+        elif mouth_type == "wavy":
+            # Nervous wavy mouth
+            mouth = SVGPath(
+                d=f"M {cx - mouth_width * 0.6} {mouth_y} Q {cx - mouth_width * 0.3} {mouth_y - mouth_width * 0.2} {cx} {mouth_y} Q {cx + mouth_width * 0.3} {mouth_y + mouth_width * 0.2} {cx + mouth_width * 0.6} {mouth_y}",
+                fill="none",
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+        else:
+            # Normal small line or dot mouth
+            mouth = SVGLine(
+                start=(cx - mouth_width * 0.4, mouth_y),
+                end=(cx + mouth_width * 0.4, mouth_y),
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+
+    def _render_chibi_blush(
+        self, group: Group, head_pos: list[float], head_radius: float, eye_y: float, eye_offset: float
+    ) -> None:
+        """Render cute blush marks on cheeks."""
+        blush_y = eye_y + head_radius * 0.3
+        blush_x_offset = eye_offset + head_radius * 0.15
+
+        for x in [head_pos[0] - blush_x_offset, head_pos[0] + blush_x_offset]:
+            # Pink oval blush
+            blush = SVGCircle(
+                center=(x, blush_y),
+                r=head_radius * 0.12,
+                fill="#FFB6C1",
+                stroke="none",
+                fill_opacity=0.6,
+            )
+            group.add(blush)
 
     def _render_simple_face(self, data: dict[str, Any], group: Group, pos: list[float]) -> None:
         """Render a simple face character with expression-based features.

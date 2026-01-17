@@ -228,7 +228,7 @@ class CairoRenderer:
             self._render_bubble(data)
         elif obj_type in ("Text", "StyledText", "SFX"):
             self._render_text(data)
-        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Robot", "Character"):
+        elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Robot", "Chibi", "Character"):
             self._render_character(data)
         elif obj_type == "Rectangle":
             self._render_rectangle(data)
@@ -501,6 +501,8 @@ class CairoRenderer:
             self._render_chubby_stickman(data, pos)
         elif style == "robot":
             self._render_robot(data, pos)
+        elif style == "chibi":
+            self._render_chibi(data, pos)
         else:
             self._render_generic(data)
 
@@ -948,6 +950,497 @@ class CairoRenderer:
             self._set_color(led_color)
             ctx.set_line_width(2)
             ctx.stroke()
+
+    def _render_chibi(self, data: dict[str, Any], pos: list[float]) -> None:
+        """Render a chibi/super-deformed anime-style character.
+
+        Renders a cute chibi figure with:
+        - Very large head (40% of height)
+        - Small bean-shaped body
+        - Short stubby limbs
+        - Large expressive eyes
+        - Optional hair and blush
+        """
+        ctx = self._ctx
+        assert ctx is not None
+
+        points = data.get("points", [])
+        color = data.get("color", "#333333")
+        skin_color = data.get("skin_color", "#FFE4C4")
+        fill_color = data.get("fill_color", skin_color)
+        outfit_color = data.get("outfit_color", "#4A90D9")
+        hair_color = data.get("hair_color", "#333333")
+        hair_style = data.get("hair_style", "spiky")
+        blush = data.get("blush", False)
+        stroke_width = 2
+
+        if len(points) < 32:
+            return
+
+        # Head circle points (first 32 points)
+        head_points = points[:32]
+
+        # Calculate head center for features
+        head_center_x = sum(p[0] for p in head_points) / len(head_points)
+        head_center_y = sum(p[1] for p in head_points) / len(head_points)
+        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        height = data.get("character_height", 100)
+        head_radius = height * 0.20
+
+        # Render hair (behind head)
+        self._render_chibi_hair_cairo(head_pos, head_radius, hair_style, hair_color)
+
+        # Draw head circle with skin color
+        ctx.new_path()
+        for i, p in enumerate(head_points):
+            x, y = p[0] + pos[0], p[1] + pos[1]
+            if i == 0:
+                ctx.move_to(x, y)
+            else:
+                ctx.line_to(x, y)
+        ctx.close_path()
+        self._set_color(fill_color)
+        ctx.fill_preserve()
+        self._set_color(color)
+        ctx.set_line_width(stroke_width)
+        ctx.stroke()
+
+        # Body oval points (next 20 points)
+        body_points = points[32:52]
+        if body_points:
+            ctx.new_path()
+            for i, p in enumerate(body_points):
+                x, y = p[0] + pos[0], p[1] + pos[1]
+                if i == 0:
+                    ctx.move_to(x, y)
+                else:
+                    ctx.line_to(x, y)
+            ctx.close_path()
+            self._set_color(outfit_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+
+        # Limbs with rounded ends
+        limb_start = 52
+
+        def render_limb(start_idx: int, is_leg: bool = False) -> None:
+            if start_idx + 10 > len(points):
+                return
+            # Limb line
+            p1 = points[start_idx]
+            p2 = points[start_idx + 1]
+            ctx.new_path()
+            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
+            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            self._set_color(color)
+            ctx.set_line_width(stroke_width + 2)  # Thicker for chibi style
+            ctx.stroke()
+
+            # Rounded end (hand/foot)
+            end_points = points[start_idx + 2 : start_idx + 10]
+            if end_points:
+                ctx.new_path()
+                for i, p in enumerate(end_points):
+                    x, y = p[0] + pos[0], p[1] + pos[1]
+                    if i == 0:
+                        ctx.move_to(x, y)
+                    else:
+                        ctx.line_to(x, y)
+                ctx.close_path()
+                limb_fill = outfit_color if is_leg else fill_color
+                self._set_color(limb_fill)
+                ctx.fill_preserve()
+                self._set_color(color)
+                ctx.set_line_width(stroke_width)
+                ctx.stroke()
+
+        # Render arms (skin color for hands)
+        render_limb(limb_start, is_leg=False)  # Left arm
+        render_limb(limb_start + 10, is_leg=False)  # Right arm
+        # Render legs (outfit color)
+        render_limb(limb_start + 20, is_leg=True)  # Left leg
+        render_limb(limb_start + 30, is_leg=True)  # Right leg
+
+        # Render face features (large chibi eyes)
+        expression = data.get("expression", {})
+        eye_type = expression.get("eyes", "normal")
+        mouth_type = expression.get("mouth", "normal")
+        eyebrow_type = expression.get("eyebrows", "normal")
+
+        # Chibi eyes are much larger and positioned higher
+        eye_y = head_pos[1] - head_radius * 0.05
+        eye_offset = head_radius * 0.40
+        eye_radius = head_radius * 0.22  # Much larger eyes for chibi style
+
+        # Render eyes (chibi-style large eyes)
+        self._render_chibi_eyes_cairo(head_pos, head_radius, eye_y, eye_offset, eye_radius, eye_type, color)
+
+        # Render eyebrows
+        self._render_face_eyebrows_cairo(head_pos, head_radius, eye_y - eye_radius * 0.8, eye_offset, eyebrow_type, color)
+
+        # Render mouth (small and cute)
+        self._render_chibi_mouth_cairo(head_pos, head_radius, mouth_type, color)
+
+        # Render blush if enabled
+        if blush:
+            self._render_chibi_blush_cairo(head_pos, head_radius, eye_y, eye_offset)
+
+    def _render_chibi_hair_cairo(
+        self, head_pos: list[float], head_radius: float, hair_style: str, hair_color: str
+    ) -> None:
+        """Render chibi hair based on style using Cairo."""
+        ctx = self._ctx
+        assert ctx is not None
+
+        cx, cy = head_pos
+
+        if hair_style == "none":
+            return
+
+        elif hair_style == "spiky":
+            # Spiky anime-style hair with several pointed tufts
+            import math
+            spikes = [(-0.6, 1.3), (-0.3, 1.4), (0, 1.5), (0.3, 1.4), (0.6, 1.3)]
+            for angle, length in spikes:
+                spike_base_x = cx + head_radius * 0.7 * math.sin(angle)
+                spike_base_y = cy - head_radius * 0.6
+                spike_tip_x = cx + head_radius * length * math.sin(angle)
+                spike_tip_y = cy - head_radius * length
+                ctx.new_path()
+                ctx.move_to(spike_base_x - head_radius * 0.15, spike_base_y)
+                ctx.line_to(spike_tip_x, spike_tip_y)
+                ctx.line_to(spike_base_x + head_radius * 0.15, spike_base_y)
+                ctx.close_path()
+                self._set_color(hair_color)
+                ctx.fill()
+
+        elif hair_style == "long":
+            # Long hair falling down sides
+            # Left side
+            ctx.new_path()
+            ctx.move_to(cx - head_radius * 0.8, cy - head_radius * 0.3)
+            ctx.line_to(cx - head_radius * 1.0, cy + head_radius * 0.8)
+            ctx.line_to(cx - head_radius * 0.5, cy + head_radius * 0.6)
+            ctx.line_to(cx - head_radius * 0.4, cy)
+            ctx.close_path()
+            self._set_color(hair_color)
+            ctx.fill()
+            # Right side
+            ctx.new_path()
+            ctx.move_to(cx + head_radius * 0.8, cy - head_radius * 0.3)
+            ctx.line_to(cx + head_radius * 1.0, cy + head_radius * 0.8)
+            ctx.line_to(cx + head_radius * 0.5, cy + head_radius * 0.6)
+            ctx.line_to(cx + head_radius * 0.4, cy)
+            ctx.close_path()
+            self._set_color(hair_color)
+            ctx.fill()
+            # Top bangs
+            ctx.new_path()
+            ctx.move_to(cx - head_radius * 0.6, cy - head_radius * 0.5)
+            ctx.line_to(cx - head_radius * 0.2, cy - head_radius * 0.2)
+            ctx.line_to(cx, cy - head_radius * 0.4)
+            ctx.line_to(cx + head_radius * 0.2, cy - head_radius * 0.2)
+            ctx.line_to(cx + head_radius * 0.6, cy - head_radius * 0.5)
+            ctx.line_to(cx, cy - head_radius * 1.1)
+            ctx.close_path()
+            self._set_color(hair_color)
+            ctx.fill()
+
+        elif hair_style == "short":
+            # Simple short hair cap
+            ctx.new_path()
+            ctx.move_to(cx - head_radius * 0.85, cy - head_radius * 0.2)
+            ctx.line_to(cx - head_radius * 0.75, cy - head_radius * 0.8)
+            ctx.line_to(cx - head_radius * 0.3, cy - head_radius * 1.05)
+            ctx.line_to(cx, cy - head_radius * 1.1)
+            ctx.line_to(cx + head_radius * 0.3, cy - head_radius * 1.05)
+            ctx.line_to(cx + head_radius * 0.75, cy - head_radius * 0.8)
+            ctx.line_to(cx + head_radius * 0.85, cy - head_radius * 0.2)
+            ctx.close_path()
+            self._set_color(hair_color)
+            ctx.fill()
+
+        elif hair_style == "twintails":
+            # Two pigtails
+            # Top hair
+            ctx.new_path()
+            ctx.move_to(cx - head_radius * 0.7, cy - head_radius * 0.6)
+            ctx.line_to(cx, cy - head_radius * 1.15)
+            ctx.line_to(cx + head_radius * 0.7, cy - head_radius * 0.6)
+            ctx.close_path()
+            self._set_color(hair_color)
+            ctx.fill()
+            # Left twintail
+            ctx.new_path()
+            ctx.move_to(cx - head_radius * 0.7, cy - head_radius * 0.4)
+            ctx.line_to(cx - head_radius * 1.3, cy + head_radius * 0.3)
+            ctx.line_to(cx - head_radius * 1.1, cy + head_radius * 0.8)
+            ctx.line_to(cx - head_radius * 0.8, cy + head_radius * 0.4)
+            ctx.line_to(cx - head_radius * 0.5, cy)
+            ctx.close_path()
+            self._set_color(hair_color)
+            ctx.fill()
+            # Right twintail
+            ctx.new_path()
+            ctx.move_to(cx + head_radius * 0.7, cy - head_radius * 0.4)
+            ctx.line_to(cx + head_radius * 1.3, cy + head_radius * 0.3)
+            ctx.line_to(cx + head_radius * 1.1, cy + head_radius * 0.8)
+            ctx.line_to(cx + head_radius * 0.8, cy + head_radius * 0.4)
+            ctx.line_to(cx + head_radius * 0.5, cy)
+            ctx.close_path()
+            self._set_color(hair_color)
+            ctx.fill()
+
+    def _render_chibi_eyes_cairo(
+        self, head_pos: list[float], head_radius: float,
+        eye_y: float, eye_offset: float, eye_radius: float, eye_type: str, color: str
+    ) -> None:
+        """Render large chibi-style eyes with highlights using Cairo."""
+        ctx = self._ctx
+        assert ctx is not None
+        import math
+
+        left_x = head_pos[0] - eye_offset
+        right_x = head_pos[0] + eye_offset
+
+        if eye_type == "closed" or eye_type == "curved":
+            # Happy closed eyes (^_^)
+            for x in [left_x, right_x]:
+                ctx.new_path()
+                ctx.move_to(x - eye_radius, eye_y)
+                ctx.curve_to(
+                    x - eye_radius * 0.5, eye_y - eye_radius,
+                    x + eye_radius * 0.5, eye_y - eye_radius,
+                    x + eye_radius, eye_y
+                )
+                self._set_color(color)
+                ctx.set_line_width(2)
+                ctx.stroke()
+
+        elif eye_type == "stars":
+            # Sparkly star eyes
+            for x in [left_x, right_x]:
+                ctx.new_path()
+                for i in range(10):
+                    angle = math.pi / 2 + i * math.pi / 5
+                    r = eye_radius if i % 2 == 0 else eye_radius * 0.5
+                    px = x + r * math.cos(angle)
+                    py = eye_y - r * math.sin(angle)
+                    if i == 0:
+                        ctx.move_to(px, py)
+                    else:
+                        ctx.line_to(px, py)
+                ctx.close_path()
+                self._set_color("#FFD700")
+                ctx.fill_preserve()
+                self._set_color(color)
+                ctx.set_line_width(1)
+                ctx.stroke()
+
+        elif eye_type == "tears":
+            # Crying eyes with tear drops
+            for x in [left_x, right_x]:
+                # Large eye circle
+                ctx.new_path()
+                ctx.arc(x, eye_y, eye_radius, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill_preserve()
+                self._set_color(color)
+                ctx.set_line_width(2)
+                ctx.stroke()
+                # Pupil
+                ctx.new_path()
+                ctx.arc(x, eye_y, eye_radius * 0.5, 0, 2 * math.pi)
+                self._set_color(color)
+                ctx.fill()
+                # Highlight
+                ctx.new_path()
+                ctx.arc(x - eye_radius * 0.25, eye_y - eye_radius * 0.25, eye_radius * 0.2, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill()
+                # Tear drop
+                ctx.new_path()
+                ctx.move_to(x + eye_radius * 0.3, eye_y + eye_radius * 0.8)
+                ctx.curve_to(
+                    x + eye_radius * 0.5, eye_y + eye_radius * 1.2,
+                    x + eye_radius * 0.5, eye_y + eye_radius * 1.5,
+                    x + eye_radius * 0.3, eye_y + eye_radius * 1.8
+                )
+                self._set_color("#87CEEB")
+                ctx.set_line_width(3)
+                ctx.stroke()
+
+        elif eye_type == "wide":
+            # Surprised wide eyes
+            for x in [left_x, right_x]:
+                ctx.new_path()
+                ctx.arc(x, eye_y, eye_radius * 1.2, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill_preserve()
+                self._set_color(color)
+                ctx.set_line_width(2)
+                ctx.stroke()
+                # Pupil
+                ctx.new_path()
+                ctx.arc(x, eye_y + eye_radius * 0.1, eye_radius * 0.4, 0, 2 * math.pi)
+                self._set_color(color)
+                ctx.fill()
+                # Highlight
+                ctx.new_path()
+                ctx.arc(x - eye_radius * 0.3, eye_y - eye_radius * 0.3, eye_radius * 0.25, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill()
+
+        elif eye_type == "narrow":
+            # Angry narrow eyes
+            for x in [left_x, right_x]:
+                ctx.new_path()
+                ctx.rectangle(x - eye_radius, eye_y - eye_radius * 0.3, eye_radius * 2, eye_radius * 0.6)
+                self._set_color("#FFFFFF")
+                ctx.fill_preserve()
+                self._set_color(color)
+                ctx.set_line_width(2)
+                ctx.stroke()
+                # Pupil
+                ctx.new_path()
+                ctx.arc(x, eye_y, eye_radius * 0.25, 0, 2 * math.pi)
+                self._set_color(color)
+                ctx.fill()
+
+        else:
+            # Normal large chibi eyes with shine
+            for x in [left_x, right_x]:
+                # Large eye oval
+                ctx.new_path()
+                ctx.arc(x, eye_y, eye_radius, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill_preserve()
+                self._set_color(color)
+                ctx.set_line_width(2)
+                ctx.stroke()
+                # Large pupil
+                ctx.new_path()
+                ctx.arc(x, eye_y + eye_radius * 0.1, eye_radius * 0.5, 0, 2 * math.pi)
+                self._set_color(color)
+                ctx.fill()
+                # Large highlight (signature chibi shine)
+                ctx.new_path()
+                ctx.arc(x - eye_radius * 0.25, eye_y - eye_radius * 0.25, eye_radius * 0.25, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill()
+                # Small secondary highlight
+                ctx.new_path()
+                ctx.arc(x + eye_radius * 0.2, eye_y + eye_radius * 0.1, eye_radius * 0.1, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill()
+
+    def _render_chibi_mouth_cairo(
+        self, head_pos: list[float], head_radius: float, mouth_type: str, color: str
+    ) -> None:
+        """Render small cute chibi mouth using Cairo."""
+        ctx = self._ctx
+        assert ctx is not None
+        import math
+
+        cx, cy = head_pos
+        mouth_y = cy + head_radius * 0.35
+        mouth_width = head_radius * 0.25
+
+        if mouth_type == "smile" or mouth_type == "grin":
+            # Wide happy smile (cat mouth shape)
+            ctx.new_path()
+            ctx.move_to(cx - mouth_width, mouth_y)
+            ctx.curve_to(
+                cx - mouth_width * 0.5, mouth_y + mouth_width * 0.8,
+                cx + mouth_width * 0.5, mouth_y + mouth_width * 0.8,
+                cx + mouth_width, mouth_y
+            )
+            self._set_color(color)
+            ctx.set_line_width(2)
+            ctx.stroke()
+
+        elif mouth_type == "open" or mouth_type == "gasp":
+            # Open surprised mouth (small circle)
+            ctx.new_path()
+            ctx.arc(cx, mouth_y, mouth_width * 0.6, 0, 2 * math.pi)
+            self._set_color("#FFB6C1")
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(2)
+            ctx.stroke()
+
+        elif mouth_type == "frown":
+            # Small sad mouth
+            ctx.new_path()
+            ctx.move_to(cx - mouth_width * 0.6, mouth_y + mouth_width * 0.3)
+            ctx.curve_to(
+                cx - mouth_width * 0.3, mouth_y - mouth_width * 0.3,
+                cx + mouth_width * 0.3, mouth_y - mouth_width * 0.3,
+                cx + mouth_width * 0.6, mouth_y + mouth_width * 0.3
+            )
+            self._set_color(color)
+            ctx.set_line_width(2)
+            ctx.stroke()
+
+        elif mouth_type == "smirk":
+            # Asymmetric smirk
+            ctx.new_path()
+            ctx.move_to(cx - mouth_width * 0.5, mouth_y)
+            ctx.curve_to(
+                cx - mouth_width * 0.2, mouth_y + mouth_width * 0.3,
+                cx + mouth_width * 0.3, mouth_y,
+                cx + mouth_width * 0.7, mouth_y - mouth_width * 0.2
+            )
+            self._set_color(color)
+            ctx.set_line_width(2)
+            ctx.stroke()
+
+        elif mouth_type == "wavy":
+            # Nervous wavy mouth
+            ctx.new_path()
+            ctx.move_to(cx - mouth_width * 0.6, mouth_y)
+            ctx.curve_to(
+                cx - mouth_width * 0.3, mouth_y - mouth_width * 0.2,
+                cx - mouth_width * 0.1, mouth_y + mouth_width * 0.2,
+                cx, mouth_y
+            )
+            ctx.curve_to(
+                cx + mouth_width * 0.1, mouth_y - mouth_width * 0.2,
+                cx + mouth_width * 0.3, mouth_y + mouth_width * 0.2,
+                cx + mouth_width * 0.6, mouth_y
+            )
+            self._set_color(color)
+            ctx.set_line_width(2)
+            ctx.stroke()
+
+        else:
+            # Normal small line or dot mouth
+            ctx.new_path()
+            ctx.move_to(cx - mouth_width * 0.4, mouth_y)
+            ctx.line_to(cx + mouth_width * 0.4, mouth_y)
+            self._set_color(color)
+            ctx.set_line_width(2)
+            ctx.stroke()
+
+    def _render_chibi_blush_cairo(
+        self, head_pos: list[float], head_radius: float, eye_y: float, eye_offset: float
+    ) -> None:
+        """Render cute blush marks on cheeks using Cairo."""
+        ctx = self._ctx
+        assert ctx is not None
+        import math
+
+        blush_y = eye_y + head_radius * 0.3
+        blush_x_offset = eye_offset + head_radius * 0.15
+
+        for x in [head_pos[0] - blush_x_offset, head_pos[0] + blush_x_offset]:
+            ctx.new_path()
+            ctx.arc(x, blush_y, head_radius * 0.12, 0, 2 * math.pi)
+            # Set pink color with transparency
+            ctx.set_source_rgba(1.0, 0.71, 0.76, 0.6)  # #FFB6C1 with 0.6 opacity
+            ctx.fill()
 
     def _render_simple_face(self, data: dict[str, Any], pos: list[float]) -> None:
         """Render a simple face character with expression-based features.

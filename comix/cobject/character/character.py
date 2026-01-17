@@ -661,3 +661,167 @@ class Robot(Character):
         data["body_width_ratio"] = 0.26
         data["joint_size"] = self.character_height * 0.03
         return data
+
+
+class Chibi(Character):
+    """Chibi/super-deformed anime-style character.
+
+    A cute, stylized character with exaggerated proportions:
+    - Very large head (40% of height) with big expressive eyes
+    - Small, simplified body (bean-shaped torso)
+    - Short stubby limbs
+    - Rounded, cute aesthetic
+
+    Suitable for comedic scenes, cute moments, and kawaii-style comics.
+    """
+
+    def __init__(
+        self,
+        name: str = "Chibi",
+        hair_style: str = "spiky",
+        hair_color: str = "#333333",
+        skin_color: str = "#FFE4C4",
+        outfit_color: str = "#4A90D9",
+        blush: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize Chibi character.
+
+        Args:
+            name: Character name
+            hair_style: Hair style ("spiky", "long", "short", "twintails", "none")
+            hair_color: Color for hair
+            skin_color: Skin tone color (default bisque)
+            outfit_color: Color for simple outfit/body
+            blush: Whether to show cute blush marks on cheeks
+            **kwargs: Additional Character parameters
+        """
+        kwargs.setdefault("style", "chibi")
+        kwargs.setdefault("color", "#333333")
+        kwargs.setdefault("fill_color", skin_color)
+        self.hair_style = hair_style
+        self.hair_color = hair_color
+        self.skin_color = skin_color
+        self.outfit_color = outfit_color
+        self.blush = blush
+        super().__init__(name=name, **kwargs)
+
+    def generate_points(self) -> None:
+        """Generate chibi figure points.
+
+        Structure:
+        - Head: Large circle (40% of height)
+        - Body: Small bean/oval shape
+        - Arms: Short stubby limbs
+        - Legs: Short stubby limbs
+        """
+        h = self.character_height
+
+        # Chibi proportions: huge head, tiny body
+        head_radius = h * 0.20  # 40% of height for head diameter
+        body_height = h * 0.22
+        body_width = h * 0.16
+        limb_length = h * 0.12
+        limb_thickness = h * 0.05
+
+        points = []
+
+        # Head position - takes up top portion
+        head_y = h / 2 - head_radius
+        head_bottom = head_y - head_radius
+        body_top = head_bottom - h * 0.02  # Small gap
+        body_bottom = body_top - body_height
+
+        # Generate large head circle points
+        for angle in np.linspace(0, 2 * np.pi, 32):
+            points.append([
+                head_radius * np.cos(angle),
+                head_y + head_radius * np.sin(angle)
+            ])
+
+        # Generate body oval (bean shape) points
+        body_center_y = (body_top + body_bottom) / 2
+        for angle in np.linspace(0, 2 * np.pi, 20):
+            points.append([
+                body_width * np.cos(angle),
+                body_center_y + (body_height / 2) * np.sin(angle)
+            ])
+
+        # Arms - short and stubby
+        arm_y = body_top - body_height * 0.2
+
+        # Left arm
+        left_arm_angle = np.radians(self._pose.left_arm)
+        left_arm_end_x = -body_width - limb_length * np.cos(left_arm_angle)
+        left_arm_end_y = arm_y - limb_length * np.sin(left_arm_angle)
+        points.append([-body_width, arm_y])
+        points.append([left_arm_end_x, left_arm_end_y])
+        # Rounded hand
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                left_arm_end_x + limb_thickness * np.cos(angle),
+                left_arm_end_y + limb_thickness * np.sin(angle)
+            ])
+
+        # Right arm
+        right_arm_angle = np.radians(self._pose.right_arm)
+        right_arm_end_x = body_width + limb_length * np.cos(right_arm_angle)
+        right_arm_end_y = arm_y - limb_length * np.sin(right_arm_angle)
+        points.append([body_width, arm_y])
+        points.append([right_arm_end_x, right_arm_end_y])
+        # Rounded hand
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                right_arm_end_x + limb_thickness * np.cos(angle),
+                right_arm_end_y + limb_thickness * np.sin(angle)
+            ])
+
+        # Legs - short and stubby
+        leg_start_y = body_bottom
+
+        # Left leg
+        left_leg_angle = np.radians(90 + self._pose.left_leg)
+        left_leg_end_x = -body_width * 0.4 - limb_length * np.cos(left_leg_angle)
+        left_leg_end_y = leg_start_y - limb_length * np.sin(left_leg_angle)
+        points.append([-body_width * 0.4, leg_start_y])
+        points.append([left_leg_end_x, left_leg_end_y])
+        # Rounded foot
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                left_leg_end_x + limb_thickness * 1.3 * np.cos(angle),
+                left_leg_end_y + limb_thickness * 0.8 * np.sin(angle)
+            ])
+
+        # Right leg
+        right_leg_angle = np.radians(90 + self._pose.right_leg)
+        right_leg_end_x = body_width * 0.4 + limb_length * np.cos(right_leg_angle)
+        right_leg_end_y = leg_start_y - limb_length * np.sin(right_leg_angle)
+        points.append([body_width * 0.4, leg_start_y])
+        points.append([right_leg_end_x, right_leg_end_y])
+        # Rounded foot
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                right_leg_end_x + limb_thickness * 1.3 * np.cos(angle),
+                right_leg_end_y + limb_thickness * 0.8 * np.sin(angle)
+            ])
+
+        self._points = np.array(points, dtype=np.float64)
+
+        if self.facing == "left":
+            self._points[:, 0] *= -1
+
+    def get_render_data(self) -> dict[str, Any]:
+        """Get data for rendering."""
+        data = super().get_render_data()
+        # Add chibi-specific render info
+        data["hair_style"] = self.hair_style
+        data["hair_color"] = self.hair_color
+        data["skin_color"] = self.skin_color
+        data["outfit_color"] = self.outfit_color
+        data["blush"] = self.blush
+        data["head_radius_ratio"] = 0.20  # 40% diameter
+        data["body_height_ratio"] = 0.22
+        data["body_width_ratio"] = 0.16
+        data["limb_length_ratio"] = 0.12
+        data["limb_thickness"] = self.character_height * 0.05
+        return data

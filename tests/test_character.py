@@ -4,6 +4,7 @@ import numpy as np
 
 from comix.cobject.character.character import (
     Character,
+    Chibi,
     ChubbyStickman,
     Expression,
     Pose,
@@ -550,3 +551,165 @@ class TestRobot:
         """Test default outline color."""
         robot = Robot()
         assert robot.color == "#333333"
+
+
+class TestChibi:
+    """Tests for Chibi character class."""
+
+    def test_default_init(self):
+        """Test default chibi initialization."""
+        chibi = Chibi()
+        assert chibi.name == "Chibi"
+        assert chibi.style == "chibi"
+        assert chibi.character_height == 100.0
+
+    def test_custom_name(self):
+        """Test chibi with custom name."""
+        chibi = Chibi("Miku")
+        assert chibi.name == "Miku"
+
+    def test_custom_hair_style(self):
+        """Test chibi with different hair styles."""
+        styles = ["spiky", "long", "short", "twintails", "none"]
+        for style in styles:
+            chibi = Chibi(hair_style=style)
+            assert chibi.hair_style == style
+
+    def test_custom_colors(self):
+        """Test chibi with custom colors."""
+        chibi = Chibi(
+            hair_color="#FF00FF",
+            skin_color="#FFD700",
+            outfit_color="#00FF00"
+        )
+        assert chibi.hair_color == "#FF00FF"
+        assert chibi.skin_color == "#FFD700"
+        assert chibi.outfit_color == "#00FF00"
+
+    def test_blush_option(self):
+        """Test chibi with blush enabled."""
+        chibi = Chibi(blush=True)
+        assert chibi.blush is True
+        data = chibi.get_render_data()
+        assert data["blush"] is True
+
+    def test_generates_points(self):
+        """Test chibi generates valid points."""
+        chibi = Chibi()
+        # Should generate head (32) + body (20) + 4 limbs (10 each)
+        # = 32 + 20 + 40 = 92+ points
+        assert len(chibi._points) >= 80
+
+    def test_facing_flips_points(self):
+        """Test facing direction flips points correctly."""
+        chibi_right = Chibi(facing="right")
+        chibi_left = Chibi(facing="left")
+        # X coordinates should be flipped
+        x_right = chibi_right._points[:, 0]
+        x_left = chibi_left._points[:, 0]
+        # The flipped version should have opposite signs
+        assert not np.allclose(x_right, x_left)
+
+    def test_custom_height(self):
+        """Test chibi with custom height."""
+        chibi = Chibi(height=150.0)
+        assert chibi.character_height == 150.0
+
+    def test_get_render_data(self):
+        """Test render data contains chibi-specific properties."""
+        chibi = Chibi(
+            hair_style="twintails",
+            hair_color="#FF69B4",
+            skin_color="#FFE4C4",
+            outfit_color="#4A90D9",
+            blush=True
+        )
+        data = chibi.get_render_data()
+        assert data["style"] == "chibi"
+        assert data["hair_style"] == "twintails"
+        assert data["hair_color"] == "#FF69B4"
+        assert data["skin_color"] == "#FFE4C4"
+        assert data["outfit_color"] == "#4A90D9"
+        assert data["blush"] is True
+        assert data["head_radius_ratio"] == 0.20
+        assert data["body_height_ratio"] == 0.22
+        assert data["body_width_ratio"] == 0.16
+
+    def test_set_expression(self):
+        """Test setting expression on chibi."""
+        chibi = Chibi()
+        result = chibi.set_expression("happy")
+        assert result is chibi
+        assert chibi._expression.name == "happy"
+
+    def test_set_pose(self):
+        """Test setting pose on chibi."""
+        chibi = Chibi()
+        result = chibi.set_pose("waving")
+        assert result is chibi
+        assert chibi._pose.name == "waving"
+
+    def test_say_creates_bubble(self):
+        """Test say method creates speech bubble."""
+        chibi = Chibi().move_to((100, 100))
+        bubble = chibi.say("Kawaii!")
+        assert bubble.text == "Kawaii!"
+        assert bubble.bubble_type == "speech"
+        assert bubble.tail_target is chibi
+
+    def test_think_creates_bubble(self):
+        """Test think method creates thought bubble."""
+        chibi = Chibi().move_to((100, 100))
+        bubble = chibi.think("Hmm...")
+        assert bubble.text == "Hmm..."
+        assert bubble.bubble_type == "thought"
+
+    def test_shout_creates_bubble(self):
+        """Test shout method creates shout bubble."""
+        chibi = Chibi().move_to((100, 100))
+        bubble = chibi.shout("SUGOI!")
+        assert bubble.text == "SUGOI!"
+        assert bubble.bubble_type == "shout"
+
+    def test_whisper_creates_bubble(self):
+        """Test whisper method creates whisper bubble."""
+        chibi = Chibi().move_to((100, 100))
+        bubble = chibi.whisper("*shhh*")
+        assert bubble.text == "*shhh*"
+        assert bubble.bubble_type == "whisper"
+
+    def test_all_poses(self):
+        """Test chibi with different poses."""
+        poses = ["standing", "sitting", "walking", "running", "pointing",
+                 "waving", "jumping", "dancing", "kneeling", "cheering", "thinking"]
+        for pose_name in poses:
+            chibi = Chibi(pose=pose_name)
+            assert chibi._pose.name == pose_name
+            # Should still generate valid points
+            assert len(chibi._points) >= 80
+
+    def test_all_expressions(self):
+        """Test chibi with different expressions."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            chibi = Chibi(expression=expr_name)
+            assert chibi._expression.name == expr_name
+            data = chibi.get_render_data()
+            assert data["expression"]["name"] == expr_name
+
+    def test_default_fill_color_is_skin_color(self):
+        """Test default fill color matches skin color."""
+        chibi = Chibi()
+        assert chibi.fill_color == "#FFE4C4"  # Default bisque skin tone
+
+    def test_default_outline_color(self):
+        """Test default outline color."""
+        chibi = Chibi()
+        assert chibi.color == "#333333"
+
+    def test_limb_thickness(self):
+        """Test limb thickness is calculated correctly."""
+        chibi = Chibi(height=100)
+        data = chibi.get_render_data()
+        assert data["limb_thickness"] == 5.0  # height * 0.05

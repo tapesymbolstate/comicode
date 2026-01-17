@@ -7,7 +7,7 @@ from pathlib import Path
 from comix.page.page import Page
 from comix.cobject.panel.panel import Panel
 from comix.cobject.bubble.bubble import SpeechBubble, ThoughtBubble
-from comix.cobject.character.character import Stickman, SimpleFace, ChubbyStickman, Robot
+from comix.cobject.character.character import Stickman, SimpleFace, ChubbyStickman, Robot, Chibi
 from comix.cobject.text.text import Text, SFX
 from comix.cobject.shapes.shapes import Rectangle, Circle, Line
 from comix.cobject.panel.panel import Border
@@ -359,6 +359,114 @@ class TestCairoRenderer:
             led_color="#FF00FF",
         ).move_to((200, 150))
         page.add(robot)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_chibi(self):
+        """Test rendering a chibi character."""
+        page = Page(width=400, height=300)
+        chibi = Chibi(name="ChibiChan").move_to((200, 150))
+        page.add(chibi)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_chibi_with_expression(self):
+        """Test rendering a chibi with expression."""
+        page = Page(width=400, height=300)
+        chibi = Chibi(name="HappyChibi", expression="happy").move_to((200, 150))
+        page.add(chibi)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_chibi_all_expressions(self):
+        """Test rendering chibi with all expression types."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            page = Page(width=400, height=300)
+            chibi = Chibi(name="Expressive", expression=expr_name).move_to((200, 150))
+            page.add(chibi)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_chibi_with_pose(self):
+        """Test rendering chibi with different poses."""
+        for pose_name in ["standing", "waving", "jumping", "cheering"]:
+            page = Page(width=400, height=300)
+            chibi = Chibi(name="Poser", pose=pose_name).move_to((200, 150))
+            page.add(chibi)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_chibi_facing_left(self):
+        """Test rendering a chibi facing left."""
+        page = Page(width=400, height=300)
+        chibi = Chibi(name="Lefty", facing="left").move_to((200, 150))
+        page.add(chibi)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_chibi_hair_styles(self):
+        """Test rendering a chibi with different hair styles."""
+        styles = ["spiky", "long", "short", "twintails", "none"]
+        for style in styles:
+            page = Page(width=400, height=300)
+            chibi = Chibi(name="Hairy", hair_style=style).move_to((200, 150))
+            page.add(chibi)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_chibi_with_blush(self):
+        """Test rendering a chibi with blush marks."""
+        page = Page(width=400, height=300)
+        chibi = Chibi(name="Blushing", blush=True).move_to((200, 150))
+        page.add(chibi)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_chibi_custom_colors(self):
+        """Test rendering a chibi with custom colors."""
+        page = Page(width=400, height=300)
+        chibi = Chibi(
+            name="ColorChibi",
+            color="#FF0000",
+            skin_color="#FFD700",
+            outfit_color="#00FF00",
+            hair_color="#0000FF",
+        ).move_to((200, 150))
+        page.add(chibi)
 
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
             renderer = CairoRenderer(page)

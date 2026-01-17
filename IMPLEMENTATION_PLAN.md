@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-All 4 phases have been implemented with **1159 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **1195 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -18,7 +18,7 @@ All 4 phases have been implemented with **1159 tests passing**, mypy clean, and 
 
 - **CObject hierarchy**: Full transformation API (move_to, shift, scale, rotate) with convenience methods (center_in, to_corner, to_edge, hide/show, copy, scale_to_fit)
 - **Bubble system**: 5 types (Speech, Thought, Shout, Whisper, Narrator) with auto-positioning
-- **Character system**: Stickman, SimpleFace, ChubbyStickman, Robot with full Expression/Pose support
+- **Character system**: Stickman, SimpleFace, ChubbyStickman, Robot, Chibi with full Expression/Pose support
 - **Layout**: GridLayout, FlowLayout, ConstraintLayout with priority-based solving
 - **Renderers**: SVG (always available), Cairo PNG/PDF (optional)
 - **Effects**: AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect (6 effect types)
@@ -99,6 +99,16 @@ All 4 phases have been implemented with **1159 tests passing**, mypy clean, and 
   - Full expression support (11 expressions) with robot-specific rendering
   - Full pose support (12 poses)
   - Both SVG and Cairo renderers fully support Robot rendering (32 new tests)
+- **Chibi Character**: New cute/super-deformed anime-style character for kawaii and chibi comics:
+  - Large head (40% of total height) with big expressive eyes
+  - Small compact body with stubby limbs
+  - 5 hair styles: spiky, long, short, twintails, none
+  - Customizable colors: hair_color, skin_color, outfit_color
+  - Optional blush marks for extra cuteness
+  - Chibi-style facial features (large eyes with highlights, small cute mouth)
+  - Full expression support (11 expressions) with chibi-specific rendering
+  - Full pose support (12 poses)
+  - Both SVG and Cairo renderers fully support Chibi rendering (36 new tests)
 
 ### Technical Stack
 
@@ -113,7 +123,7 @@ All 4 phases have been implemented with **1159 tests passing**, mypy clean, and 
 These are potential improvements, not planned work:
 
 1. **Animation Export**: Animated GIF/video for webtoon scroll effects
-2. **Additional Character Styles**: New character classes beyond Stickman/SimpleFace/ChubbyStickman/Robot (e.g., DetailedFace, AnimeStyle, Chibi)
+2. **Additional Character Styles**: New character classes beyond Stickman/SimpleFace/ChubbyStickman/Robot/Chibi (e.g., DetailedFace, AnimeStyle)
 3. **Web Renderer**: HTML output with interactive features
 
 ## Known Issues

@@ -1439,7 +1439,7 @@ page.render("output.png")
 
 ## 6. 개발 로드맵
 
-> **Note**: All 8 phases are complete as of v0.1.48. See IMPLEMENTATION_PLAN.md for details.
+> **Note**: All 8 phases are complete as of v0.1.49. See IMPLEMENTATION_PLAN.md for details.
 > Current status: 1743 tests (1739 pass + 4 skip), mypy clean, ruff clean, 15 working examples.
 
 ### Phase 1: 코어 (MVP) ✅

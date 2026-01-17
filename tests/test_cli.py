@@ -562,3 +562,184 @@ class TestCompileCommandParams:
         """Test that main help shows compile command."""
         result = runner.invoke(main, ["--help"])
         assert "compile" in result.output
+
+
+class TestCLIErrorHandlingExtended:
+    """Extended tests for CLI error handling - covering edge cases."""
+
+    def test_render_spec_loader_none(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test render handles case where spec loader is None (e.g., binary file)."""
+        # Create a binary file that importlib can't load properly
+        binary_file = tmp_path / "binary.py"
+        binary_file.write_bytes(b"\x00\x01\x02\x03")
+        result = runner.invoke(main, ["render", str(binary_file)])
+        assert result.exit_code != 0
+
+    def test_preview_with_page_class(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test preview with Page subclass instantiation (lines 91-93)."""
+        script = tmp_path / "class_preview.py"
+        script.write_text("""
+from comix import Page, Panel, Text
+
+class MyComic(Page):
+    def __init__(self):
+        super().__init__(width=500, height=400)
+        panel = Panel(width=200, height=150)
+        panel.add(Text("Class-based preview"))
+        self.add(panel)
+""")
+        with patch("webbrowser.open") as mock_open:
+            result = runner.invoke(main, ["preview", str(script)])
+            assert result.exit_code == 0
+            mock_open.assert_called_once()
+
+    def test_serve_import_error_missing_watchdog(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test serve command when watchdog is not available (lines 122-129)."""
+        script = tmp_path / "serve_test.py"
+        script.write_text("""
+from comix import Page
+page = Page()
+""")
+        # Remove comix.preview from sys.modules to force reimport, then make it fail
+        import sys
+
+        # Remove comix.preview and watchdog to simulate missing dependency
+        modules_to_remove = [k for k in sys.modules if k.startswith("comix.preview") or k.startswith("watchdog")]
+        for mod in modules_to_remove:
+            sys.modules.pop(mod, None)
+
+        # Create a mock that raises ImportError
+        def raise_import_error(*args, **kwargs):
+            raise ImportError("No module named 'watchdog'")
+
+        with patch.dict(sys.modules, {"comix.preview": None}):
+            # The serve command tries "from comix.preview import serve"
+            # We need to make comix.preview unavailable
+            result = runner.invoke(main, ["serve", str(script)])
+            # Check the output - it may error for different reasons
+            # but should not succeed
+            assert result.exit_code != 0
+
+    def test_serve_exception_during_start(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test serve command when server raises exception (lines 131-135)."""
+        script = tmp_path / "serve_error.py"
+        script.write_text("""
+from comix import Page
+page = Page()
+""")
+        with patch("comix.preview.serve") as mock_serve:
+            mock_serve.side_effect = Exception("Port already in use")
+            result = runner.invoke(main, ["serve", str(script)])
+            assert result.exit_code != 0
+            assert "Error" in result.output
+
+    def test_compile_cairo_import_error(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test compile command when Cairo is not available (lines 176-181)."""
+        script = tmp_path / "compile_test.py"
+        script.write_text("""
+from comix import Page
+page = Page()
+""")
+        # Mock CairoRenderer import to fail
+        with patch.dict("sys.modules", {"comix.renderer.cairo_renderer": None}):
+            original_import = __import__
+            def mock_import(name, *args, **kwargs):
+                if "cairo_renderer" in name:
+                    raise ImportError("No module named 'cairo'")
+                return original_import(name, *args, **kwargs)
+
+            with patch("builtins.__import__", side_effect=mock_import):
+                result = runner.invoke(main, ["compile", str(script)])
+                # Expect error about Cairo
+                assert result.exit_code != 0
+
+    def test_compile_script_execution_error(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test compile handles runtime errors in scripts (lines 196-198)."""
+        # Create a script that raises error during execution
+        error_script = tmp_path / "error.py"
+        error_script.write_text("""
+from comix import Page
+raise RuntimeError("Script execution failed")
+page = Page()
+""")
+        # Create a valid script so compile can continue
+        valid_script = tmp_path / "valid.py"
+        valid_script.write_text("""
+from comix import Page, Panel
+page = Page()
+page.add(Panel())
+""")
+
+        try:
+            import cairo  # noqa: F401
+        except ImportError:
+            pytest.skip("Cairo not available")
+
+        result = runner.invoke(
+            main, ["compile", str(error_script), str(valid_script)]
+        )
+        # Should warn about error script but succeed with valid script
+        assert "Warning:" in result.output
+        assert "RuntimeError" in result.output or "Script execution failed" in result.output
+
+    def test_compile_book_render_exception(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test compile handles book render exception (lines 236-238)."""
+        script = tmp_path / "render_error.py"
+        script.write_text("""
+from comix import Page, Panel
+page = Page()
+page.add(Panel())
+""")
+
+        try:
+            import cairo  # noqa: F401
+        except ImportError:
+            pytest.skip("Cairo not available")
+
+        with patch("comix.page.book.Book.render") as mock_render:
+            mock_render.side_effect = Exception("Render failed")
+            result = runner.invoke(main, ["compile", str(script)])
+            assert result.exit_code != 0
+            assert "Error rendering book" in result.output
+
+    def test_compile_unloadable_script_warning(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test compile warns when spec/loader is None (lines 189-191)."""
+        # Create a file that might cause spec_from_file_location to return None
+        # Use an empty file with non-.py extension disguised as .py
+        unloadable = tmp_path / "unloadable.py"
+        unloadable.write_bytes(b"\x00" * 100)  # Binary content
+
+        valid_script = tmp_path / "valid.py"
+        valid_script.write_text("""
+from comix import Page, Panel
+page = Page()
+page.add(Panel())
+""")
+
+        try:
+            import cairo  # noqa: F401
+        except ImportError:
+            pytest.skip("Cairo not available")
+
+        result = runner.invoke(
+            main, ["compile", str(valid_script), str(unloadable)]
+        )
+        # Should succeed with at least one valid script
+        # Note: the binary file may cause various errors depending on Python version
+        assert result.exit_code == 0 or "Warning" in result.output

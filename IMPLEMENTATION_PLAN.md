@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Multi-page PDF Export
 
-All 4 phases have been implemented with **1058 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **1075 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -55,6 +55,8 @@ All 4 phases have been implemented with **1058 tests passing**, mypy clean, and 
   - **Mouth**: normal (straight line), smile (upward curve), frown (downward curve), open (surprised O), wavy (uncertain)
   - **Eyebrows**: normal (none), raised (surprised arcs), worried (angled up to center), furrowed (angry angled down)
   The 6 preset expressions (neutral, happy, sad, angry, surprised, confused) now render visually distinct faces. Added 20 new tests for SVG and Cairo expression rendering.
+- **CLI Error Handling Test Coverage**: Extended test coverage for CLI error handling paths including spec/loader failures, ImportError scenarios (missing watchdog/Cairo dependencies), script execution errors, book render exceptions, and Page class instantiation in preview command (8 new tests).
+- **Parser Edge Case Test Coverage**: Comprehensive tests for parser edge cases including unrecognized hash comments (treated as comments), elements appearing without panel markers (background, narrator, SFX, character), character reuse with expression updates, and invalid syntax handling (9 new tests).
 
 ### Technical Stack
 

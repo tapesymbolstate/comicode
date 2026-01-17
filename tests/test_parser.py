@@ -728,3 +728,164 @@ class TestParserExplicitFacingInMarkup:
         assert isinstance(action, CharacterAction)
         assert action.expression == "smug"
         assert action.name == "Bob"
+
+
+class TestParserEdgeCases:
+    """Tests for parser edge cases and uncovered code paths."""
+
+    def test_unrecognized_hash_comments_ignored(self):
+        """Test that unrecognized # lines are treated as comments (lines 193-194)."""
+        markup = """
+        # panel 1
+        Alice(left): "Hello"
+        # This is a comment, not a panel marker
+        ## Another comment style
+        ### Triple hash
+        #not-a-panel
+        Bob(right): "Hi"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        # Should have 1 panel with 2 character actions
+        assert len(spec.panels) >= 1
+        assert len(spec.panels[0].actions) == 2
+        assert spec.panels[0].actions[0].name == "Alice"
+        assert spec.panels[0].actions[1].name == "Bob"
+
+    def test_background_without_panel_marker(self):
+        """Test background directive creates panel if none exists (lines 252-254)."""
+        markup = """
+        [background: A forest scene]
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        assert spec.rows == 1
+        assert spec.cols == 1
+        assert len(spec.panels) >= 1
+        assert spec.panels[0].background == "A forest scene"
+
+    def test_narrator_without_panel_marker(self):
+        """Test narrator creates panel if none exists (lines 269-271)."""
+        markup = """
+        narrator: "Long ago, in a distant land..."
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        assert spec.rows == 1
+        assert spec.cols == 1
+        assert len(spec.panels) >= 1
+        assert isinstance(spec.panels[0].actions[0], NarratorAction)
+        assert spec.panels[0].actions[0].text == "Long ago, in a distant land..."
+
+    def test_sfx_without_panel_marker(self):
+        """Test SFX creates panel if none exists (lines 285-287)."""
+        markup = """
+        sfx: BOOM
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        assert spec.rows == 1
+        assert spec.cols == 1
+        assert len(spec.panels) >= 1
+        assert isinstance(spec.panels[0].actions[0], SFXAction)
+        assert spec.panels[0].actions[0].text == "BOOM"
+
+    def test_character_without_panel_marker(self):
+        """Test character dialogue creates panel if none exists."""
+        markup = """
+        Alice(left): "Hello world"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        assert spec.rows == 1
+        assert spec.cols == 1
+        assert len(spec.panels) >= 1
+        assert isinstance(spec.panels[0].actions[0], CharacterAction)
+
+    def test_invalid_character_syntax_returns_false(self):
+        """Test that malformed character syntax is ignored (line 319)."""
+        markup = """
+        # panel 1
+        Alice(left): "Valid dialogue"
+        This is not a valid character line
+        Bob(right): "Also valid"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        # Should have 2 valid actions, ignoring the invalid line
+        assert len(spec.panels[0].actions) == 2
+        assert spec.panels[0].actions[0].name == "Alice"
+        assert spec.panels[0].actions[1].name == "Bob"
+
+    def test_same_character_multiple_times_updates_expression(self):
+        """Test that same character speaking multiple times reuses character and updates expression (lines 372-373)."""
+        markup = """
+        # panel 1
+        Alice(left, happy): "First line"
+        Alice(left, angry): "Second line - now angry!"
+        """
+        parser = MarkupParser(markup)
+        page = parser.to_page()
+
+        # Get the panel
+        panel = page._panels[0]
+
+        # Count characters and bubbles
+        from comix.cobject.character.character import Stickman
+        from comix.cobject.bubble.bubble import Bubble
+
+        characters = [obj for obj in panel.submobjects if isinstance(obj, Stickman)]
+        bubbles = [obj for obj in panel.submobjects if isinstance(obj, Bubble)]
+
+        # Should have 1 character (reused) and 2 bubbles
+        assert len(characters) == 1, "Character should be reused, not duplicated"
+        assert len(bubbles) == 2, "Should have two speech bubbles"
+
+        # The character should have the last expression set (angry)
+        assert characters[0]._expression.name == "angry"
+
+    def test_multiple_hash_comment_variations(self):
+        """Test various hash comment formats are ignored."""
+        markup = """
+        # panel 1
+        Alice(left): "Line 1"
+        #this-looks-like-tag
+        # random comment
+        #123
+        Bob(right): "Line 2"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        # All non-standard # lines should be ignored
+        assert len(spec.panels[0].actions) == 2
+
+    def test_multiple_elements_without_page_declaration(self):
+        """Test parsing multiple element types without page declaration."""
+        markup = """
+        narrator: "The story begins..."
+        sfx: WHOOSH
+        [background: dark alley]
+        Alice(left): "Who's there?"
+        """
+        parser = MarkupParser(markup)
+        spec = parser.parse()
+
+        # Should create default 1x1 page and panel
+        assert spec.rows == 1
+        assert spec.cols == 1
+        assert len(spec.panels) >= 1
+
+        # All actions should be in the first panel
+        actions = spec.panels[0].actions
+        assert len(actions) == 4
+        assert isinstance(actions[0], NarratorAction)
+        assert isinstance(actions[1], SFXAction)
+        assert isinstance(actions[2], BackgroundDirective)
+        assert isinstance(actions[3], CharacterAction)

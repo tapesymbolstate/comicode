@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.14**
+**Current Git Tag: v0.1.15**
 
 All 5 phases have been implemented with **1517 tests passing**, ruff clean, and mypy passing. Current version: **v0.1.0**.
 
@@ -262,6 +262,12 @@ These are potential improvements, not planned work:
 None currently tracked.
 
 ## Verification Notes (2026-01-18)
+
+### Code Quality Improvements (v0.1.15)
+
+- **Moved function-level imports to module level**: Refactored both SVG and Cairo renderers to move `import math` and `import base64` from inside functions to module level imports. This improves code consistency and avoids redundant import lookups during rendering.
+  - `svg_renderer.py`: Added base64 and math imports at module level, removed 5 inline imports
+  - `cairo_renderer.py`: Added base64 import at module level, removed 6 redundant inline math/base64 imports
 
 ### Test Cleanup (v0.1.14)
 

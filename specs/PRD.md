@@ -105,7 +105,9 @@ comix/
 │
 ├── page/                    # Scene에 대응
 │   ├── __init__.py
-│   └── page.py              # Page, SinglePanel, Strip 클래스
+│   ├── page.py              # Page, SinglePanel, Strip 클래스
+│   ├── book.py              # Book 클래스 (multi-page PDF 컴파일)
+│   └── templates.py         # FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage
 │
 ├── cobject/                 # Mobject에 대응 (Comix Object)
 │   ├── cobject.py           # 기본 클래스
@@ -124,7 +126,7 @@ comix/
 │   │
 │   ├── character/           # 캐릭터 관련
 │   │   ├── __init__.py
-│   │   └── character.py     # Character, Stickman, SimpleFace, Expression, Pose 클래스
+│   │   └── character.py     # Character, Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Cartoon, Superhero, Expression, Pose 클래스
 │   │
 │   ├── shapes/              # 기본 도형
 │   │   ├── __init__.py
@@ -136,7 +138,13 @@ comix/
 │
 ├── effect/                  # Animation에 대응 (웹툰용)
 │   ├── __init__.py
-│   └── effect.py            # Effect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, AppearEffect, ImpactEffect
+│   └── effect.py            # Effect base class + 6 effects:
+│                            #   - ShakeEffect (tremor/vibration)
+│                            #   - ZoomEffect (radial speed lines)
+│                            #   - MotionLines (parallel speed lines)
+│                            #   - FocusLines (converging dramatic lines)
+│                            #   - AppearEffect (sparkle, fade, flash, reveal styles)
+│                            #   - ImpactEffect (explosion burst)
 │
 ├── layout/                  # 레이아웃 시스템
 │   ├── grid.py              # 그리드 레이아웃
@@ -152,7 +160,8 @@ comix/
 ├── renderer/                # 렌더링 백엔드
 │   ├── __init__.py
 │   ├── svg_renderer.py      # SVG 출력
-│   └── cairo_renderer.py    # PNG/PDF 출력 (선택적, pycairo 필요)
+│   ├── cairo_renderer.py    # PNG/PDF 출력 (선택적, pycairo 필요)
+│   └── html_renderer.py     # Interactive HTML 출력 (zoom, pan, themes)
 │
 ├── parser/                  # 마크업 파서 (선택적)
 │   ├── __init__.py
@@ -1430,32 +1439,52 @@ page.render("output.png")
 
 ## 6. 개발 로드맵
 
-> **Note**: All phases are complete as of v0.1.0. See IMPLEMENTATION_PLAN.md for details.
+> **Note**: All 6 phases are complete as of v0.1.30. See IMPLEMENTATION_PLAN.md for details.
+> Current status: 1607 tests passing, mypy clean, ruff clean, 13 working examples.
 
 ### Phase 1: 코어 (MVP) ✅
-- [x] CObject 기본 클래스
-- [x] Panel, Bubble, Text
-- [x] Stickman 캐릭터
+- [x] CObject 기본 클래스 (위치, 크기, 회전, 불투명도, z-index)
+- [x] Panel, Bubble (5종류), Text, SFX
+- [x] Character 클래스 (8종류: Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Cartoon, Superhero)
+- [x] Expression 시스템 (11개: neutral, happy, sad, angry, surprised, confused, sleepy, excited, scared, smirk, crying)
+- [x] Pose 시스템 (12개: standing, sitting, waving, pointing, walking, running, jumping, dancing, lying, kneeling, cheering, thinking)
 - [x] SVG Renderer
 - [x] Page 클래스
-- [x] 기본 CLI
+- [x] 기본 CLI (render, preview, serve, compile, info)
 
 ### Phase 2: 스타일링 ✅
 - [x] Style 시스템
-- [x] 프리셋 (manga, webtoon, comic)
-- [x] Font 관리
+- [x] 프리셋 (MANGA_STYLE, WEBTOON_STYLE, COMIC_STYLE, MINIMAL_STYLE)
+- [x] Font 관리 (CJK 지원 포함)
+- [x] Theme 시스템 (ColorPalette, ThemeRegistry)
 - [x] 커스텀 말풍선 모양
 
 ### Phase 3: 레이아웃 ✅
 - [x] GridLayout
 - [x] FlowLayout
-- [x] 자동 말풍선 배치
+- [x] ConstraintLayout (priority-based solving)
+- [x] 자동 말풍선 배치 (collision detection)
 
 ### Phase 4: 확장 ✅
-- [x] AI 이미지 연동
-- [x] 마크업 파서
-- [x] 웹 미리보기
-- [x] 웹툰용 Effect 시스템
+- [x] Cairo Renderer (PNG/PDF)
+- [x] AI 이미지 연동 (OpenAI DALL-E, Replicate)
+- [x] 마크업 파서 (DSL for rapid comic creation)
+- [x] 웹 미리보기 서버 (hot reload)
+- [x] Effect 시스템 (6종류: ShakeEffect, ZoomEffect, MotionLines, FocusLines, AppearEffect, ImpactEffect)
+
+### Phase 5: Multi-page PDF Export ✅
+- [x] Book 클래스 (multi-page PDF 컴파일)
+- [x] CLI compile 명령어
+
+### Phase 6: Interactive HTML Export ✅
+- [x] HTMLRenderer
+- [x] Zoom 컨트롤 (mouse wheel, +/- buttons, keyboard)
+- [x] Pan 기능 (mouse drag, touch swipe)
+- [x] Theme toggle (dark/light modes)
+- [x] Fullscreen mode
+- [x] 키보드 단축키 (+ zoom in, - zoom out, 0 fit, T theme, F fullscreen)
+- [x] Multi-page navigation (arrow keys)
+- [x] Touch/mobile 지원
 
 ---
 

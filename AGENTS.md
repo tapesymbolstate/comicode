@@ -25,16 +25,17 @@ comicode/
 │   │   └── image/            # Image, AIImage
 │   ├── page/                 # Page, Strip, SinglePanel
 │   ├── effect/               # Visual effects for webtoons
+│   ├── animation/            # Timeline, easing functions, animation system
 │   ├── layout/               # GridLayout, FlowLayout
 │   ├── style/                # Style system with presets
-│   ├── renderer/             # SVG, Cairo (PNG/PDF), HTML renderers
+│   ├── renderer/             # SVG, Cairo (PNG/PDF), HTML, GIF, Video renderers
 │   ├── parser/               # Markup parser (DSL)
 │   ├── preview/              # Hot-reload preview server
 │   └── utils/                # Geometry, bezier utilities
 ├── specs/                    # PRD and specifications
 │   └── PRD.md                # Full architecture design
 ├── tests/                    # Test files (27 test modules)
-├── examples/                 # 13 working examples
+├── examples/                 # 15 working examples
 ├── main.py                   # Entry point
 └── pyproject.toml            # Project config
 ```

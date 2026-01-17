@@ -1439,8 +1439,8 @@ page.render("output.png")
 
 ## 6. 개발 로드맵
 
-> **Note**: All 6 phases are complete as of v0.1.30. See IMPLEMENTATION_PLAN.md for details.
-> Current status: 1607 tests passing, mypy clean, ruff clean, 13 working examples.
+> **Note**: All 8 phases are complete as of v0.1.41. See IMPLEMENTATION_PLAN.md for details.
+> Current status: 1722 tests passing, mypy clean, ruff clean, 15 working examples.
 
 ### Phase 1: 코어 (MVP) ✅
 - [x] CObject 기본 클래스 (위치, 크기, 회전, 불투명도, z-index)
@@ -1485,6 +1485,21 @@ page.render("output.png")
 - [x] 키보드 단축키 (+ zoom in, - zoom out, 0 fit, T theme, F fullscreen)
 - [x] Multi-page navigation (arrow keys)
 - [x] Touch/mobile 지원
+
+### Phase 7: Animation Export ✅
+- [x] Animation 시스템 (Timeline, 29 easing functions)
+- [x] PropertyAnimation (opacity, position, scale, rotation)
+- [x] EffectAnimation (intensity, radius, pattern: pulse/blink/fade)
+- [x] ObjectAnimation (multiple properties simultaneously)
+- [x] AnimationGroup (parallel/sequential composition)
+- [x] GIFRenderer (Pillow + Cairo backend)
+
+### Phase 8: Video Export ✅
+- [x] VideoRenderer (MP4/WebM via imageio-ffmpeg)
+- [x] Quality settings (low/medium/high)
+- [x] Progress callbacks
+- [x] Frame extraction for post-processing
+- [x] Codec and bitrate configuration
 
 ---
 

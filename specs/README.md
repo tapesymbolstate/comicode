@@ -6,7 +6,7 @@ This directory contains specifications for the Comix comic creation library, wri
 
 Comix is a Python library for creating comics programmatically, inspired by Manim's API design but focused on comic/manga creation instead of mathematical animations.
 
-**Current Status**: All core features implemented and working. 1607 tests passing, all 13 examples working, mypy and ruff pass.
+**Current Status**: All 8 phases implemented and working. 1722 tests passing, all 15 examples working, mypy and ruff pass.
 
 ## Active Specs
 
@@ -47,7 +47,7 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 
 ### Examples Status (examples/output/)
 
-All 13 examples (01-13) execute successfully and produce correct output.
+All 15 examples (01-15) execute successfully and produce correct output.
 
 ## Features
 
@@ -93,6 +93,8 @@ standing, sitting, waving, pointing, walking, running, jumping, dancing, lying, 
 - **PDF** - Document output (optional, requires pycairo)
 - **Multi-page PDF** - Book class for compiling pages
 - **Interactive HTML** - Standalone HTML with zoom, pan, themes
+- **Animated GIF** - Timeline-based animation export (optional, requires Pillow)
+- **Video (MP4/WebM)** - Video export with ffmpeg (optional, requires imageio-ffmpeg)
 
 ## Acceptance Criteria Flow
 
@@ -104,7 +106,7 @@ getting-started.md
          └─> working-examples.md (examples 01-05 implemented)
 ```
 
-All acceptance criteria are met. The library is feature-complete for v0.1.30 with all 6 phases implemented.
+All acceptance criteria are met. The library is feature-complete for v0.1.41 with all 8 phases implemented.
 
 ## How to Use These Specs
 
@@ -158,9 +160,9 @@ Each spec follows this structure:
 
 Potential features not yet scoped:
 
-- **Animation Export** - Animated GIF/video for webtoon scroll effects
-- **Canvas Renderer** - HTML Canvas output (alternative to SVG-based HTML)
+- **Additional Character Styles** - New character types (DetailedFace, RealisticStyle)
 - **Comic Reader Component** - Web component for viewing multi-page comics
+- **Audio Support** - Add audio tracks to video exports
 
 ## Contributing
 
@@ -185,6 +187,6 @@ See `IMPLEMENTATION_PLAN.md` for current implementation status.
 
 ---
 
-**Version**: 0.1.30 (as of 2026-01-18)
+**Version**: 0.1.41 (as of 2026-01-18)
 **Last Updated**: 2026-01-18
 **Maintainer**: Claude Code Ralph Agent

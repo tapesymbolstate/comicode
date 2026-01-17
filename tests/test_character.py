@@ -12,6 +12,7 @@ from comix.cobject.character.character import (
     Robot,
     SimpleFace,
     Stickman,
+    Superhero,
 )
 
 
@@ -880,3 +881,253 @@ class TestAnime:
         assert data["head_height_ratio"] == 0.14
         # Shoulders are wider than head
         assert data["shoulder_width_ratio"] > data["head_width_ratio"]
+
+
+class TestSuperhero:
+    """Tests for Superhero character class."""
+
+    def test_default_init(self):
+        """Test default initialization."""
+        hero = Superhero()
+        assert hero.name == "Superhero"
+        assert hero.style == "superhero"
+        assert hero.costume_primary == "#DC2626"
+        assert hero.costume_secondary == "#1D4ED8"
+        assert hero.skin_color == "#FBBF24"
+        assert hero.cape is True
+        assert hero.cape_color == "#DC2626"
+        assert hero.mask == "domino"
+        assert hero.emblem == "star"
+        assert hero.emblem_color == "#FBBF24"
+        assert hero.boots is True
+        assert hero.gloves is True
+
+    def test_custom_name(self):
+        """Test custom character name."""
+        hero = Superhero(name="Captain Amazing")
+        assert hero.name == "Captain Amazing"
+
+    def test_custom_costume_colors(self):
+        """Test custom costume colors."""
+        hero = Superhero(
+            costume_primary="#00FF00",
+            costume_secondary="#FF00FF",
+        )
+        assert hero.costume_primary == "#00FF00"
+        assert hero.costume_secondary == "#FF00FF"
+
+    def test_custom_skin_color(self):
+        """Test custom skin color."""
+        hero = Superhero(skin_color="#8B4513")
+        assert hero.skin_color == "#8B4513"
+
+    def test_cape_disabled(self):
+        """Test disabling cape."""
+        hero = Superhero(cape=False)
+        assert hero.cape is False
+
+    def test_custom_cape_color(self):
+        """Test custom cape color."""
+        hero = Superhero(cape_color="#000000")
+        assert hero.cape_color == "#000000"
+
+    def test_mask_options(self):
+        """Test different mask options."""
+        for mask_type in ["domino", "full", "cowl", "none"]:
+            hero = Superhero(mask=mask_type)
+            assert hero.mask == mask_type
+
+    def test_emblem_options(self):
+        """Test different emblem options."""
+        for emblem_type in ["star", "diamond", "circle", "shield", "none"]:
+            hero = Superhero(emblem=emblem_type)
+            assert hero.emblem == emblem_type
+
+    def test_custom_emblem_color(self):
+        """Test custom emblem color."""
+        hero = Superhero(emblem_color="#FFFFFF")
+        assert hero.emblem_color == "#FFFFFF"
+
+    def test_boots_option(self):
+        """Test boots option."""
+        hero_no_boots = Superhero(boots=False)
+        assert hero_no_boots.boots is False
+
+        hero_with_boots = Superhero(boots=True)
+        assert hero_with_boots.boots is True
+
+    def test_gloves_option(self):
+        """Test gloves option."""
+        hero_no_gloves = Superhero(gloves=False)
+        assert hero_no_gloves.gloves is False
+
+        hero_with_gloves = Superhero(gloves=True)
+        assert hero_with_gloves.gloves is True
+
+    def test_generates_points(self):
+        """Test that superhero generates outline points."""
+        hero = Superhero()
+        assert len(hero._points) >= 24  # At least head points
+        assert hero._points.shape[1] == 2  # Each point has x, y
+
+    def test_generates_cape_points_when_enabled(self):
+        """Test that superhero generates cape points when enabled."""
+        hero_with_cape = Superhero(cape=True)
+        hero_no_cape = Superhero(cape=False)
+        # Hero with cape should have more points
+        assert len(hero_with_cape._points) > len(hero_no_cape._points)
+
+    def test_facing_flips_points(self):
+        """Test that facing left flips x coordinates."""
+        hero_right = Superhero(facing="right")
+        hero_left = Superhero(facing="left")
+
+        # X coordinates should be flipped
+        assert not np.allclose(hero_right._points[:, 0], hero_left._points[:, 0])
+        # Y coordinates should be the same
+        assert np.allclose(hero_right._points[:, 1], hero_left._points[:, 1])
+
+    def test_custom_height(self):
+        """Test custom height parameter."""
+        hero = Superhero(height=200)
+        assert hero.character_height == 200.0
+        data = hero.get_render_data()
+        assert data["character_height"] == 200.0
+
+    def test_get_render_data(self):
+        """Test render data includes superhero-specific fields."""
+        hero = Superhero()
+        data = hero.get_render_data()
+        assert data["style"] == "superhero"
+        assert "costume_primary" in data
+        assert data["costume_primary"] == "#DC2626"
+        assert "costume_secondary" in data
+        assert data["costume_secondary"] == "#1D4ED8"
+        assert "skin_color" in data
+        assert "cape" in data
+        assert data["cape"] is True
+        assert "cape_color" in data
+        assert "mask" in data
+        assert data["mask"] == "domino"
+        assert "emblem" in data
+        assert data["emblem"] == "star"
+        assert "emblem_color" in data
+        assert "boots" in data
+        assert "gloves" in data
+        assert "head_height_ratio" in data
+        assert "shoulder_width_ratio" in data
+        assert "waist_width_ratio" in data
+
+    def test_set_expression(self):
+        """Test setting expression."""
+        hero = Superhero()
+        hero.set_expression("happy")
+        assert hero._expression.name == "happy"
+        assert hero._expression.mouth == "smile"
+
+    def test_set_pose(self):
+        """Test setting pose."""
+        hero = Superhero()
+        hero.set_pose("cheering")
+        assert hero._pose.name == "cheering"
+
+    def test_say_creates_bubble(self):
+        """Test say method creates speech bubble."""
+        hero = Superhero().move_to((100, 100))
+        bubble = hero.say("Fear not, citizen!")
+        assert bubble.text == "Fear not, citizen!"
+        assert bubble.bubble_type == "speech"
+
+    def test_think_creates_bubble(self):
+        """Test think method creates thought bubble."""
+        hero = Superhero().move_to((100, 100))
+        bubble = hero.think("I must save them...")
+        assert bubble.text == "I must save them..."
+        assert bubble.bubble_type == "thought"
+
+    def test_shout_creates_bubble(self):
+        """Test shout method creates shout bubble."""
+        hero = Superhero().move_to((100, 100))
+        bubble = hero.shout("STOP RIGHT THERE!")
+        assert bubble.text == "STOP RIGHT THERE!"
+        assert bubble.bubble_type == "shout"
+
+    def test_whisper_creates_bubble(self):
+        """Test whisper method creates whisper bubble."""
+        hero = Superhero().move_to((100, 100))
+        bubble = hero.whisper("*secret identity*")
+        assert bubble.text == "*secret identity*"
+        assert bubble.bubble_type == "whisper"
+
+    def test_all_poses(self):
+        """Test superhero with different poses."""
+        poses = ["standing", "sitting", "walking", "running", "pointing",
+                 "waving", "jumping", "dancing", "kneeling", "cheering", "thinking"]
+        for pose_name in poses:
+            hero = Superhero(pose=pose_name)
+            assert hero._pose.name == pose_name
+            # Should still generate valid points
+            assert len(hero._points) >= 24
+
+    def test_all_expressions(self):
+        """Test superhero with different expressions."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            hero = Superhero(expression=expr_name)
+            assert hero._expression.name == expr_name
+            data = hero.get_render_data()
+            assert data["expression"]["name"] == expr_name
+
+    def test_default_fill_color_is_skin_color(self):
+        """Test default fill color matches skin color."""
+        hero = Superhero()
+        assert hero.fill_color == "#FBBF24"  # Default gold skin tone
+
+    def test_default_outline_color(self):
+        """Test default outline color."""
+        hero = Superhero()
+        assert hero.color == "#1F2937"  # Dark gray
+
+    def test_heroic_proportions(self):
+        """Test superhero has heroic proportions (V-taper)."""
+        hero = Superhero(height=100)
+        data = hero.get_render_data()
+        # Heroic proportions: broad shoulders, narrow waist
+        assert data["shoulder_width_ratio"] == 0.28
+        assert data["waist_width_ratio"] == 0.14
+        # Shoulders should be twice as wide as waist
+        assert data["shoulder_width_ratio"] == 2 * data["waist_width_ratio"]
+
+    def test_method_chaining(self):
+        """Test method chaining works correctly."""
+        hero = Superhero()
+        result = hero.move_to((100, 100)).set_expression("angry").set_pose("pointing")
+        assert result is hero
+        assert np.allclose(hero.position, (100, 100))
+        assert hero._expression.name == "angry"
+        assert hero._pose.name == "pointing"
+
+    def test_full_costume_customization(self):
+        """Test full costume customization."""
+        hero = Superhero(
+            name="Dark Knight",
+            costume_primary="#1A1A1A",
+            costume_secondary="#2D2D2D",
+            skin_color="#FFE4C4",
+            cape=True,
+            cape_color="#1A1A1A",
+            mask="cowl",
+            emblem="shield",
+            emblem_color="#FBBF24",
+            boots=True,
+            gloves=True,
+        )
+        assert hero.costume_primary == "#1A1A1A"
+        assert hero.costume_secondary == "#2D2D2D"
+        assert hero.mask == "cowl"
+        assert hero.emblem == "shield"
+        data = hero.get_render_data()
+        assert data["costume_primary"] == "#1A1A1A"
+        assert data["mask"] == "cowl"
+        assert data["emblem"] == "shield"

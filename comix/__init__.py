@@ -34,6 +34,7 @@ from comix.cobject.character.character import (
     Robot,
     SimpleFace,
     Stickman,
+    Superhero,
 )
 from comix.cobject.shapes.shapes import Rectangle, Circle, Line
 from comix.cobject.image.image import Image
@@ -170,6 +171,7 @@ __all__ = [
     "Robot",
     "SimpleFace",
     "Stickman",
+    "Superhero",
     # Shapes
     "Rectangle",
     "Circle",

@@ -1030,3 +1030,255 @@ class Anime(Character):
         data["arm_length_ratio"] = 0.26
         data["leg_length_ratio"] = 0.32
         return data
+
+
+class Superhero(Character):
+    """Superhero character with heroic proportions and costume details.
+
+    A character designed for action comics with:
+    - Heroic proportions (broad shoulders, narrow waist)
+    - Muscular build with defined body shape
+    - Customizable costume with cape option
+    - Mask/helmet options for secret identity
+    - Dynamic pose-ready structure
+    - Emblem/logo placement on chest
+
+    Suitable for superhero comics, action sequences, and dramatic heroic scenes.
+    """
+
+    def __init__(
+        self,
+        name: str = "Superhero",
+        costume_primary: str = "#DC2626",  # Primary costume color (red)
+        costume_secondary: str = "#1D4ED8",  # Secondary costume color (blue)
+        skin_color: str = "#FBBF24",  # Skin tone (default gold/tan)
+        cape: bool = True,
+        cape_color: str = "#DC2626",
+        mask: str = "domino",  # "domino", "full", "cowl", "none"
+        emblem: str = "star",  # "star", "diamond", "circle", "shield", "none"
+        emblem_color: str = "#FBBF24",  # Emblem color (default gold)
+        boots: bool = True,
+        gloves: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize Superhero character.
+
+        Args:
+            name: Character name
+            costume_primary: Primary costume color (default red)
+            costume_secondary: Secondary costume color (default blue)
+            skin_color: Skin tone color
+            cape: Whether to draw a cape
+            cape_color: Color for the cape
+            mask: Mask type ("domino", "full", "cowl", "none")
+            emblem: Chest emblem type ("star", "diamond", "circle", "shield", "none")
+            emblem_color: Color for the chest emblem
+            boots: Whether to draw boots (different color from legs)
+            gloves: Whether to draw gloves (different color from arms)
+            **kwargs: Additional Character parameters
+        """
+        kwargs.setdefault("style", "superhero")
+        kwargs.setdefault("color", "#1F2937")  # Dark gray outline
+        kwargs.setdefault("fill_color", skin_color)
+        self.costume_primary = costume_primary
+        self.costume_secondary = costume_secondary
+        self.skin_color = skin_color
+        self.cape = cape
+        self.cape_color = cape_color
+        self.mask = mask
+        self.emblem = emblem
+        self.emblem_color = emblem_color
+        self.boots = boots
+        self.gloves = gloves
+        super().__init__(name=name, **kwargs)
+
+    def generate_points(self) -> None:
+        """Generate superhero figure points.
+
+        Structure:
+        - Head: Slightly angular/heroic face shape
+        - Neck: Thick muscular neck
+        - Torso: Broad shoulders tapering to narrow waist (heroic V-shape)
+        - Arms: Muscular with defined biceps
+        - Legs: Strong legs with defined thighs
+        - Cape: Optional flowing cape points
+        """
+        h = self.character_height
+
+        # Heroic proportions: head is ~1/8 of height, broader shoulders
+        head_height = h * 0.12
+        head_width = h * 0.09
+        neck_height = h * 0.04
+        neck_width = h * 0.05  # Thicker neck
+        shoulder_width = h * 0.28  # Broader shoulders
+        chest_width = h * 0.24
+        waist_width = h * 0.14  # Narrow waist for V-taper
+        hip_width = h * 0.16
+        body_height = h * 0.32
+        arm_length = h * 0.26
+        arm_width = h * 0.04  # Thicker arms
+        leg_length = h * 0.34
+        leg_width = h * 0.05  # Thicker legs
+
+        points = []
+
+        # Calculate vertical positions
+        head_top = h / 2
+        head_center_y = head_top - head_height / 2
+        head_bottom = head_top - head_height
+        neck_bottom = head_bottom - neck_height
+        shoulder_y = neck_bottom
+        chest_y = shoulder_y - body_height * 0.3
+        waist_y = shoulder_y - body_height * 0.7
+        hip_y = shoulder_y - body_height
+
+        # Generate head shape (more angular/heroic jawline)
+        for i, angle in enumerate(np.linspace(0, 2 * np.pi, 24)):
+            # Make the jaw more defined (wider at cheeks, narrower at chin)
+            if np.sin(angle) < -0.3:  # Lower face
+                width_mod = 0.75 + 0.15 * (1 + np.sin(angle))
+            else:
+                width_mod = 1.0
+            points.append([
+                head_width * width_mod * np.cos(angle),
+                head_center_y + head_height * 0.5 * np.sin(angle)
+            ])
+
+        # Neck points (thick muscular neck)
+        points.append([-neck_width, head_bottom])
+        points.append([-neck_width, neck_bottom])
+        points.append([neck_width, neck_bottom])
+        points.append([neck_width, head_bottom])
+
+        # Torso - heroic V-shape (shoulders to waist)
+        # Left shoulder to left hip
+        points.append([-shoulder_width / 2, shoulder_y])
+        points.append([-chest_width / 2, chest_y])
+        points.append([-waist_width / 2, waist_y])
+        points.append([-hip_width / 2, hip_y])
+        # Right hip to right shoulder
+        points.append([hip_width / 2, hip_y])
+        points.append([waist_width / 2, waist_y])
+        points.append([chest_width / 2, chest_y])
+        points.append([shoulder_width / 2, shoulder_y])
+
+        # Arms - muscular with bicep bulge
+        arm_y = shoulder_y - h * 0.015
+
+        # Left arm
+        left_arm_angle = np.radians(self._pose.left_arm)
+        # Upper arm (shoulder to elbow)
+        left_elbow_x = -shoulder_width / 2 - arm_length * 0.45 * np.cos(left_arm_angle)
+        left_elbow_y = arm_y - arm_length * 0.45 * np.sin(left_arm_angle)
+        # Forearm (elbow to hand)
+        left_hand_x = -shoulder_width / 2 - arm_length * np.cos(left_arm_angle)
+        left_hand_y = arm_y - arm_length * np.sin(left_arm_angle)
+
+        points.append([-shoulder_width / 2, arm_y])  # Shoulder
+        points.append([left_elbow_x, left_elbow_y])  # Elbow
+        points.append([left_hand_x, left_hand_y])  # Hand
+        # Fist/hand (8 points for rectangular fist shape)
+        fist_size = arm_width * 1.2
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                left_hand_x + fist_size * np.cos(angle),
+                left_hand_y + fist_size * 0.8 * np.sin(angle)
+            ])
+
+        # Right arm
+        right_arm_angle = np.radians(self._pose.right_arm)
+        right_elbow_x = shoulder_width / 2 + arm_length * 0.45 * np.cos(right_arm_angle)
+        right_elbow_y = arm_y - arm_length * 0.45 * np.sin(right_arm_angle)
+        right_hand_x = shoulder_width / 2 + arm_length * np.cos(right_arm_angle)
+        right_hand_y = arm_y - arm_length * np.sin(right_arm_angle)
+
+        points.append([shoulder_width / 2, arm_y])  # Shoulder
+        points.append([right_elbow_x, right_elbow_y])  # Elbow
+        points.append([right_hand_x, right_hand_y])  # Hand
+        # Fist/hand
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                right_hand_x + fist_size * np.cos(angle),
+                right_hand_y + fist_size * 0.8 * np.sin(angle)
+            ])
+
+        # Legs - strong with defined thighs
+        leg_gap = hip_width * 0.35
+
+        # Left leg
+        left_leg_angle = np.radians(90 + self._pose.left_leg)
+        left_knee_x = -leg_gap - leg_length * 0.48 * np.cos(left_leg_angle)
+        left_knee_y = hip_y - leg_length * 0.48 * np.sin(left_leg_angle)
+        left_foot_x = -leg_gap - leg_length * np.cos(left_leg_angle)
+        left_foot_y = hip_y - leg_length * np.sin(left_leg_angle)
+
+        points.append([-leg_gap, hip_y])  # Hip
+        points.append([left_knee_x, left_knee_y])  # Knee
+        points.append([left_foot_x, left_foot_y])  # Foot
+        # Boot/foot shape
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                left_foot_x + leg_width * 1.5 * np.cos(angle),
+                left_foot_y + leg_width * 0.8 * np.sin(angle)
+            ])
+
+        # Right leg
+        right_leg_angle = np.radians(90 + self._pose.right_leg)
+        right_knee_x = leg_gap + leg_length * 0.48 * np.cos(right_leg_angle)
+        right_knee_y = hip_y - leg_length * 0.48 * np.sin(right_leg_angle)
+        right_foot_x = leg_gap + leg_length * np.cos(right_leg_angle)
+        right_foot_y = hip_y - leg_length * np.sin(right_leg_angle)
+
+        points.append([leg_gap, hip_y])  # Hip
+        points.append([right_knee_x, right_knee_y])  # Knee
+        points.append([right_foot_x, right_foot_y])  # Foot
+        # Boot/foot shape
+        for angle in np.linspace(0, 2 * np.pi, 8):
+            points.append([
+                right_foot_x + leg_width * 1.5 * np.cos(angle),
+                right_foot_y + leg_width * 0.8 * np.sin(angle)
+            ])
+
+        # Cape points (if enabled) - 6 points for flowing cape shape
+        if self.cape:
+            cape_attach_left = -shoulder_width / 2 + h * 0.02
+            cape_attach_right = shoulder_width / 2 - h * 0.02
+            cape_bottom = hip_y - h * 0.15  # Cape extends below hips
+            cape_mid = (shoulder_y + cape_bottom) / 2
+            cape_width = shoulder_width * 1.2
+
+            # Cape flows outward slightly
+            points.append([cape_attach_left, shoulder_y])  # Left attach
+            points.append([-cape_width / 2, cape_mid])  # Left flow
+            points.append([-cape_width / 2 * 0.8, cape_bottom])  # Left bottom
+            points.append([cape_width / 2 * 0.8, cape_bottom])  # Right bottom
+            points.append([cape_width / 2, cape_mid])  # Right flow
+            points.append([cape_attach_right, shoulder_y])  # Right attach
+
+        self._points = np.array(points, dtype=np.float64)
+
+        if self.facing == "left":
+            self._points[:, 0] *= -1
+
+    def get_render_data(self) -> dict[str, Any]:
+        """Get data for rendering."""
+        data = super().get_render_data()
+        # Add superhero-specific render info
+        data["costume_primary"] = self.costume_primary
+        data["costume_secondary"] = self.costume_secondary
+        data["skin_color"] = self.skin_color
+        data["cape"] = self.cape
+        data["cape_color"] = self.cape_color
+        data["mask"] = self.mask
+        data["emblem"] = self.emblem
+        data["emblem_color"] = self.emblem_color
+        data["boots"] = self.boots
+        data["gloves"] = self.gloves
+        data["head_height_ratio"] = 0.12
+        data["head_width_ratio"] = 0.09
+        data["shoulder_width_ratio"] = 0.28
+        data["waist_width_ratio"] = 0.14
+        data["body_height_ratio"] = 0.32
+        data["arm_length_ratio"] = 0.26
+        data["leg_length_ratio"] = 0.34
+        return data

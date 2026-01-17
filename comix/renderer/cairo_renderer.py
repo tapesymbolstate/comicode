@@ -505,6 +505,8 @@ class CairoRenderer:
             self._render_chibi(data, pos)
         elif style == "anime":
             self._render_anime(data, pos)
+        elif style == "superhero":
+            self._render_superhero(data, pos)
         else:
             self._render_generic(data)
 
@@ -2756,5 +2758,344 @@ class CairoRenderer:
             ctx.move_to(cx - mouth_width * 0.7, mouth_y)
             ctx.line_to(cx + mouth_width * 0.7, mouth_y)
             ctx.stroke()
+
+        ctx.restore()
+
+    def _render_superhero(self, data: dict[str, Any], pos: list[float]) -> None:
+        """Render a superhero character with heroic proportions and costume.
+
+        Renders a muscular character with:
+        - Heroic proportions (broad shoulders, narrow waist)
+        - Customizable costume with primary/secondary colors
+        - Optional cape
+        - Mask options (domino, full, cowl, none)
+        - Chest emblem (star, diamond, circle, shield, none)
+        - Boots and gloves
+        """
+        ctx = self._ctx
+        assert ctx is not None
+
+        points = data.get("points", [])
+        color = data.get("color", "#1F2937")
+        skin_color = data.get("skin_color", "#FBBF24")
+        costume_primary = data.get("costume_primary", "#DC2626")
+        costume_secondary = data.get("costume_secondary", "#1D4ED8")
+        cape_enabled = data.get("cape", True)
+        cape_color = data.get("cape_color", "#DC2626")
+        mask = data.get("mask", "domino")
+        emblem = data.get("emblem", "star")
+        emblem_color = data.get("emblem_color", "#FBBF24")
+        boots = data.get("boots", True)
+        gloves = data.get("gloves", True)
+        stroke_width = 2
+
+        if len(points) < 24:
+            return
+
+        height = data.get("character_height", 100)
+
+        # Calculate point indices based on structure
+        head_end = 24  # Head points
+        neck_end = head_end + 4  # Neck points
+        torso_end = neck_end + 8  # Torso points
+        # Each arm: shoulder, elbow, hand + 8 fist points = 11 points
+        left_arm_end = torso_end + 11
+        right_arm_end = left_arm_end + 11
+        # Each leg: hip, knee, foot + 8 boot points = 11 points
+        left_leg_end = right_arm_end + 11
+        right_leg_end = left_leg_end + 11
+        # Cape: 6 points if enabled
+
+        # Render cape first (behind character)
+        if cape_enabled and len(points) >= right_leg_end + 6:
+            cape_points = points[right_leg_end:right_leg_end + 6]
+            translated_cape = [(p[0] + pos[0], p[1] + pos[1]) for p in cape_points]
+            self._polygon_path(translated_cape)
+            self._set_color(cape_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+
+        # Head points (first 24 points - angular heroic face)
+        head_points = points[:head_end]
+        translated_head = [(p[0] + pos[0], p[1] + pos[1]) for p in head_points]
+
+        # Calculate head center for features
+        head_center_x = sum(p[0] for p in head_points) / len(head_points)
+        head_center_y = sum(p[1] for p in head_points) / len(head_points)
+        head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+        head_height = height * 0.12
+        head_width = height * 0.09
+
+        # Draw head with skin or mask color
+        head_fill = skin_color if mask == "none" else skin_color
+        if mask == "full":
+            head_fill = costume_primary
+        self._polygon_path(translated_head)
+        self._set_color(head_fill)
+        ctx.fill_preserve()
+        self._set_color(color)
+        ctx.set_line_width(stroke_width)
+        ctx.stroke()
+
+        # Neck points
+        if len(points) > neck_end:
+            neck_points = points[head_end:neck_end]
+            translated_neck = [(p[0] + pos[0], p[1] + pos[1]) for p in neck_points]
+            self._polygon_path(translated_neck)
+            self._set_color(skin_color)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+
+        # Torso - heroic V-shape
+        if len(points) > torso_end:
+            torso_points = points[neck_end:torso_end]
+            translated_torso = [(p[0] + pos[0], p[1] + pos[1]) for p in torso_points]
+            self._polygon_path(translated_torso)
+            self._set_color(costume_primary)
+            ctx.fill_preserve()
+            self._set_color(color)
+            ctx.set_line_width(stroke_width)
+            ctx.stroke()
+
+            # Render chest emblem
+            if emblem != "none":
+                torso_center_x = sum(p[0] for p in torso_points) / len(torso_points) + pos[0]
+                torso_center_y = sum(p[1] for p in torso_points) / len(torso_points) + pos[1]
+                emblem_y = torso_center_y - height * 0.05  # Upper chest
+                emblem_size = height * 0.06
+                self._render_superhero_emblem_cairo(torso_center_x, emblem_y, emblem_size, emblem, emblem_color, color)
+
+        # Arms
+        def render_arm(start_idx: int, is_left: bool) -> None:
+            if start_idx + 11 > len(points):
+                return
+            # Arm segments
+            p1 = points[start_idx]  # Shoulder
+            p2 = points[start_idx + 1]  # Elbow
+            p3 = points[start_idx + 2]  # Hand
+
+            # Upper arm (shoulder to elbow)
+            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
+            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            self._set_color(costume_primary)
+            ctx.set_line_width(stroke_width + 3)
+            ctx.stroke()
+
+            # Forearm (elbow to hand)
+            forearm_color = costume_secondary if gloves else costume_primary
+            ctx.move_to(p2[0] + pos[0], p2[1] + pos[1])
+            ctx.line_to(p3[0] + pos[0], p3[1] + pos[1])
+            self._set_color(forearm_color)
+            ctx.set_line_width(stroke_width + 3)
+            ctx.stroke()
+
+            # Fist/hand
+            fist_points = points[start_idx + 3:start_idx + 11]
+            if fist_points:
+                translated_fist = [(p[0] + pos[0], p[1] + pos[1]) for p in fist_points]
+                fist_fill = costume_secondary if gloves else skin_color
+                self._polygon_path(translated_fist)
+                self._set_color(fist_fill)
+                ctx.fill_preserve()
+                self._set_color(color)
+                ctx.set_line_width(stroke_width)
+                ctx.stroke()
+
+        # Render arms
+        render_arm(torso_end, is_left=True)  # Left arm
+        render_arm(left_arm_end, is_left=False)  # Right arm
+
+        # Legs
+        def render_leg(start_idx: int) -> None:
+            if start_idx + 11 > len(points):
+                return
+            # Leg segments
+            p1 = points[start_idx]  # Hip
+            p2 = points[start_idx + 1]  # Knee
+            p3 = points[start_idx + 2]  # Foot
+
+            # Upper leg (hip to knee)
+            ctx.move_to(p1[0] + pos[0], p1[1] + pos[1])
+            ctx.line_to(p2[0] + pos[0], p2[1] + pos[1])
+            self._set_color(costume_secondary)
+            ctx.set_line_width(stroke_width + 4)
+            ctx.stroke()
+
+            # Lower leg (knee to foot)
+            lower_color = costume_primary if boots else costume_secondary
+            ctx.move_to(p2[0] + pos[0], p2[1] + pos[1])
+            ctx.line_to(p3[0] + pos[0], p3[1] + pos[1])
+            self._set_color(lower_color)
+            ctx.set_line_width(stroke_width + 4)
+            ctx.stroke()
+
+            # Boot/foot
+            foot_points = points[start_idx + 3:start_idx + 11]
+            if foot_points:
+                translated_foot = [(p[0] + pos[0], p[1] + pos[1]) for p in foot_points]
+                foot_fill = costume_primary if boots else costume_secondary
+                self._polygon_path(translated_foot)
+                self._set_color(foot_fill)
+                ctx.fill_preserve()
+                self._set_color(color)
+                ctx.set_line_width(stroke_width)
+                ctx.stroke()
+
+        # Render legs
+        render_leg(right_arm_end)  # Left leg
+        render_leg(left_leg_end)  # Right leg
+
+        # Render face features
+        expression = data.get("expression", {})
+        eye_type = expression.get("eyes", "normal")
+        mouth_type = expression.get("mouth", "normal")
+        eyebrow_type = expression.get("eyebrows", "normal")
+
+        # Eye parameters
+        eye_y = head_pos[1] - head_height * 0.1
+        eye_offset = head_width * 0.4
+        eye_radius = head_height * 0.12
+
+        # Render mask first if applicable
+        if mask == "domino":
+            self._render_superhero_domino_mask_cairo(head_pos, head_width, eye_y, costume_primary, color)
+        elif mask == "cowl":
+            self._render_superhero_cowl_cairo(head_pos, head_height, head_width, costume_primary, color)
+
+        # Render eyes (on top of mask)
+        if mask != "full":
+            self._render_face_eyes_cairo(head_pos, head_height, eye_y, eye_offset, eye_radius, eye_type, color)
+            self._render_face_eyebrows_cairo(head_pos, head_height, eye_y - eye_radius, eye_offset, eyebrow_type, color)
+            self._render_face_mouth_cairo(head_pos, head_height, mouth_type, color)
+
+    def _render_superhero_emblem_cairo(
+        self, cx: float, cy: float, size: float,
+        emblem_type: str, emblem_color: str, outline_color: str
+    ) -> None:
+        """Render chest emblem based on type."""
+        ctx = self._ctx
+        assert ctx is not None
+        ctx.save()
+        ctx.set_line_width(1)
+
+        if emblem_type == "star":
+            # 5-pointed star
+            star_points = []
+            for i in range(10):
+                angle = math.radians(-90 + i * 36)
+                r = size if i % 2 == 0 else size * 0.4
+                star_points.append((cx + r * math.cos(angle), cy + r * math.sin(angle)))
+            self._polygon_path(star_points)
+            self._set_color(emblem_color)
+            ctx.fill_preserve()
+            self._set_color(outline_color)
+            ctx.stroke()
+
+        elif emblem_type == "diamond":
+            # Diamond shape
+            diamond_points = [
+                (cx, cy - size),
+                (cx + size * 0.7, cy),
+                (cx, cy + size),
+                (cx - size * 0.7, cy),
+            ]
+            self._polygon_path(diamond_points)
+            self._set_color(emblem_color)
+            ctx.fill_preserve()
+            self._set_color(outline_color)
+            ctx.stroke()
+
+        elif emblem_type == "circle":
+            # Circle emblem
+            ctx.arc(cx, cy, size, 0, 2 * math.pi)
+            self._set_color(emblem_color)
+            ctx.fill_preserve()
+            self._set_color(outline_color)
+            ctx.stroke()
+
+        elif emblem_type == "shield":
+            # Shield shape
+            shield_points = [
+                (cx - size * 0.8, cy - size),
+                (cx + size * 0.8, cy - size),
+                (cx + size * 0.8, cy + size * 0.3),
+                (cx, cy + size),
+                (cx - size * 0.8, cy + size * 0.3),
+            ]
+            self._polygon_path(shield_points)
+            self._set_color(emblem_color)
+            ctx.fill_preserve()
+            self._set_color(outline_color)
+            ctx.stroke()
+
+        ctx.restore()
+
+    def _render_superhero_domino_mask_cairo(
+        self, head_pos: list[float], head_width: float,
+        eye_y: float, mask_color: str, outline_color: str
+    ) -> None:
+        """Render a domino mask (eye mask)."""
+        ctx = self._ctx
+        assert ctx is not None
+        ctx.save()
+
+        cx, cy = head_pos
+        mask_height = head_width * 0.35
+        mask_width = head_width * 1.5
+
+        # Domino mask shape (covering eyes area)
+        mask_points = [
+            (cx - mask_width, eye_y - mask_height * 0.3),
+            (cx - mask_width * 0.6, eye_y - mask_height),
+            (cx, eye_y - mask_height * 0.8),
+            (cx + mask_width * 0.6, eye_y - mask_height),
+            (cx + mask_width, eye_y - mask_height * 0.3),
+            (cx + mask_width * 0.8, eye_y + mask_height * 0.6),
+            (cx, eye_y + mask_height * 0.4),
+            (cx - mask_width * 0.8, eye_y + mask_height * 0.6),
+        ]
+        self._polygon_path(mask_points)
+        self._set_color(mask_color)
+        ctx.fill_preserve()
+        self._set_color(outline_color)
+        ctx.set_line_width(1.5)
+        ctx.stroke()
+
+        ctx.restore()
+
+    def _render_superhero_cowl_cairo(
+        self, head_pos: list[float], head_height: float,
+        head_width: float, cowl_color: str, outline_color: str
+    ) -> None:
+        """Render a cowl (head covering with face opening)."""
+        ctx = self._ctx
+        assert ctx is not None
+        ctx.save()
+
+        cx, cy = head_pos
+
+        # Cowl covers top and sides of head
+        cowl_points = [
+            (cx - head_width * 1.1, cy + head_height * 0.1),
+            (cx - head_width * 1.2, cy - head_height * 0.3),
+            (cx - head_width * 0.8, cy - head_height * 0.6),
+            (cx, cy - head_height * 0.7),
+            (cx + head_width * 0.8, cy - head_height * 0.6),
+            (cx + head_width * 1.2, cy - head_height * 0.3),
+            (cx + head_width * 1.1, cy + head_height * 0.1),
+            (cx + head_width * 0.6, cy - head_height * 0.1),
+            (cx, cy - head_height * 0.15),
+            (cx - head_width * 0.6, cy - head_height * 0.1),
+        ]
+        self._polygon_path(cowl_points)
+        self._set_color(cowl_color)
+        ctx.fill_preserve()
+        self._set_color(outline_color)
+        ctx.set_line_width(1.5)
+        ctx.stroke()
 
         ctx.restore()

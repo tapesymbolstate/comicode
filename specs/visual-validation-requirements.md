@@ -1,5 +1,9 @@
 # Visual Validation Requirements - 시각적 검증 필수 사항
 
+> **Note**: This document contains **process guidelines** for developers, not implementation features.
+> The unchecked items are verification checklists to follow during development work.
+> As of v0.1.0, all rendering features are implemented and working correctly.
+
 ## What
 모든 구현 작업은 반드시 실제 렌더링 결과물을 육안으로 확인하고 검증해야 한다.
 

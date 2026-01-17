@@ -1423,30 +1423,32 @@ page.render("output.png")
 
 ## 6. 개발 로드맵
 
-### Phase 1: 코어 (MVP)
-- [ ] CObject 기본 클래스
-- [ ] Panel, Bubble, Text
-- [ ] Stickman 캐릭터
-- [ ] SVG Renderer
-- [ ] Page 클래스
-- [ ] 기본 CLI
+> **Note**: All phases are complete as of v0.1.0. See IMPLEMENTATION_PLAN.md for details.
 
-### Phase 2: 스타일링
-- [ ] Style 시스템
-- [ ] 프리셋 (manga, webtoon, comic)
-- [ ] Font 관리
-- [ ] 커스텀 말풍선 모양
+### Phase 1: 코어 (MVP) ✅
+- [x] CObject 기본 클래스
+- [x] Panel, Bubble, Text
+- [x] Stickman 캐릭터
+- [x] SVG Renderer
+- [x] Page 클래스
+- [x] 기본 CLI
 
-### Phase 3: 레이아웃
-- [ ] GridLayout
-- [ ] FlowLayout
-- [ ] 자동 말풍선 배치
+### Phase 2: 스타일링 ✅
+- [x] Style 시스템
+- [x] 프리셋 (manga, webtoon, comic)
+- [x] Font 관리
+- [x] 커스텀 말풍선 모양
 
-### Phase 4: 확장
-- [ ] AI 이미지 연동
-- [ ] 마크업 파서
-- [ ] 웹 미리보기
-- [ ] 웹툰용 Effect 시스템
+### Phase 3: 레이아웃 ✅
+- [x] GridLayout
+- [x] FlowLayout
+- [x] 자동 말풍선 배치
+
+### Phase 4: 확장 ✅
+- [x] AI 이미지 연동
+- [x] 마크업 파서
+- [x] 웹 미리보기
+- [x] 웹툰용 Effect 시스템
 
 ---
 

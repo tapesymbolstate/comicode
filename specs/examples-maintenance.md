@@ -1,17 +1,20 @@
 # Examples Maintenance - 예제 정리 및 관리 기준
 
+> **Note**: This document contains **process guidelines** for future maintenance.
+> All 10 examples (01-10) are currently working correctly as of v0.1.0.
+
 ## What
 examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 예제만 유지**하고, 버그가 있는 예제는 명확히 표시하거나 임시 제거한다.
 
 ## Why
 **망가진 예제가 있으면 사용자가 혼란스럽다.**
 
-현재 상황:
+현재 상황 (2026-01-18):
 - ✅ 01-10 예제 파일 모두 존재
-- ❌ 절반 이상이 시각적으로 깨져있음
-- ❌ 사용자가 어떤 예제를 신뢰해야 할지 모름
+- ✅ 모든 예제가 정상 작동
+- ✅ 시각적 출력 검증 완료
 
-**해결책: 작동하는 예제와 버그 있는 예제를 명확히 분리**
+**참고: 아래 정리 기준은 향후 예제가 깨질 경우를 위한 것입니다.**
 
 ## Acceptance Criteria
 

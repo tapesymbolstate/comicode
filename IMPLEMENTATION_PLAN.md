@@ -2,9 +2,9 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.13**
+**Current Git Tag: v0.1.14**
 
-All 5 phases have been implemented with **1517 tests passing** (1 skipped), ruff clean, and mypy passing. Current version: **v0.1.0**.
+All 5 phases have been implemented with **1517 tests passing**, ruff clean, and mypy passing. Current version: **v0.1.0**.
 
 ### Completed Phases Summary
 
@@ -262,6 +262,11 @@ These are potential improvements, not planned work:
 None currently tracked.
 
 ## Verification Notes (2026-01-18)
+
+### Test Cleanup (v0.1.14)
+
+- **Removed always-skipped placeholder test**: Removed `test_render_single_page` from `TestBookRender` class that was always skipped with `skipif(True, ...)`. The actual test implementation exists in `TestBookRenderWithCairo` class with proper Cairo availability checking via pytest fixture.
+- Test count now shows 1517 passed, 0 skipped
 
 ### Spec Documentation Sync (v0.1.13)
 

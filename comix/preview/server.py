@@ -26,8 +26,8 @@ try:
     WATCHDOG_AVAILABLE = True
 except ImportError:
     WATCHDOG_AVAILABLE = False
-    Observer = None  # type: ignore[assignment]  # Placeholder when watchdog not installed
-    FileSystemEventHandler = object  # type: ignore[misc, assignment]  # Placeholder when watchdog not installed
+    Observer = None  # Placeholder when watchdog not installed
+    FileSystemEventHandler = object  # Placeholder when watchdog not installed
 
 
 class PreviewError(Exception):
@@ -399,7 +399,7 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 if WATCHDOG_AVAILABLE:
 
-    class ScriptChangeHandler(FileSystemEventHandler):
+    class ScriptChangeHandler(FileSystemEventHandler):  # type: ignore[misc]
         """Watchdog handler for script file changes."""
 
         def __init__(self, loader: ScriptLoader, callback: Callable[[], None] | None = None) -> None:
@@ -460,7 +460,7 @@ class PreviewServer:
 
         self.loader = ScriptLoader(self.script_path)
         self._server: ThreadedHTTPServer | None = None
-        self._observer: Observer | None = None  # type: ignore[valid-type]
+        self._observer: Observer | None = None
         self._running = False
 
     def start(self, blocking: bool = True) -> None:

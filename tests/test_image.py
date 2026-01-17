@@ -561,3 +561,477 @@ class TestAIProvider:
         """Test invalid provider string raises error."""
         with pytest.raises(ValueError):
             AIProvider("invalid_provider")
+
+
+class TestAIImageCoverage:
+    """Additional tests to improve AIImage test coverage."""
+
+    def test_aiimage_creation_with_custom_model(self):
+        """Test creating AIImage with custom model parameter (line 108)."""
+        ai_img = AIImage(
+            prompt="test",
+            provider=AIProvider.OPENAI,
+            model="dall-e-2"
+        )
+        assert ai_img.model == "dall-e-2"
+
+    def test_aiimage_creation_with_custom_replicate_model(self):
+        """Test creating AIImage with custom Replicate model."""
+        ai_img = AIImage(
+            prompt="test",
+            provider=AIProvider.REPLICATE,
+            model="custom/model:version123"
+        )
+        assert ai_img.model == "custom/model:version123"
+
+    def test_aiimage_generate_sync_wrapper(self):
+        """Test synchronous generate() method (line 166)."""
+        ai_img = AIImage(prompt="test")
+
+        # Mock asyncio.run to return the ai_img directly
+        with patch('comix.cobject.image.ai_image.asyncio.run', return_value=ai_img) as mock_run:
+            result = ai_img.generate()
+            assert result is ai_img
+            mock_run.assert_called_once()
+
+    def test_aiimage_generation_success_state_openai(self):
+        """Test successful generation updates state flags (lines 186-188)."""
+        import asyncio
+        import sys
+
+        ai_img = AIImage(prompt="test prompt")
+
+        async def run_test():
+            # Mock successful OpenAI response
+            mock_response = MagicMock()
+            mock_image_data = MagicMock()
+            mock_image_data.b64_json = "fake_base64_data"
+            mock_image_data.revised_prompt = "revised prompt"
+            mock_response.data = [mock_image_data]
+
+            mock_client = MagicMock()
+
+            async def mock_generate(**kwargs):
+                return mock_response
+
+            mock_client.images.generate = mock_generate
+
+            # Create a mock openai module
+            mock_openai_module = MagicMock()
+            mock_openai_module.AsyncOpenAI = MagicMock(return_value=mock_client)
+
+            with patch.dict(os.environ, {"OPENAI_API_KEY": "fake_key"}):
+                with patch.dict(sys.modules, {'openai': mock_openai_module}):
+                    await ai_img._generate_openai()
+
+                    assert ai_img.get_base64_data() == "fake_base64_data"
+                    assert ai_img._generation_metadata["revised_prompt"] == "revised prompt"
+
+        asyncio.run(run_test())
+
+    def test_aiimage_openai_import_error(self):
+        """Test _generate_openai raises AIProviderNotAvailableError on import failure (lines 194-195)."""
+        import asyncio
+        import sys
+        import builtins
+
+        ai_img = AIImage(prompt="test")
+
+        async def run_test():
+            # Remove any cached openai module
+            for key in list(sys.modules.keys()):
+                if key == 'openai' or key.startswith('openai.'):
+                    del sys.modules[key]
+
+            original_import = builtins.__import__
+
+            def mock_import(name, *args, **kwargs):
+                if name == 'openai':
+                    raise ImportError("No module named 'openai'")
+                return original_import(name, *args, **kwargs)
+
+            with patch('builtins.__import__', side_effect=mock_import):
+                with pytest.raises(AIProviderNotAvailableError, match="OpenAI package not installed"):
+                    await ai_img._generate_openai()
+
+        asyncio.run(run_test())
+
+    def test_aiimage_openai_no_image_data(self):
+        """Test OpenAI generation fails when response has no b64_json (line 236)."""
+        import asyncio
+        import sys
+
+        ai_img = AIImage(prompt="test")
+
+        async def run_test():
+            mock_response = MagicMock()
+            mock_image_data = MagicMock()
+            mock_image_data.b64_json = None  # No b64_json
+            mock_response.data = [mock_image_data]
+
+            mock_client = MagicMock()
+
+            async def mock_generate(**kwargs):
+                return mock_response
+
+            mock_client.images.generate = mock_generate
+
+            mock_openai_module = MagicMock()
+            mock_openai_module.AsyncOpenAI = MagicMock(return_value=mock_client)
+
+            with patch.dict(os.environ, {"OPENAI_API_KEY": "fake_key"}):
+                with patch.dict(sys.modules, {'openai': mock_openai_module}):
+                    with pytest.raises(AIGenerationError, match="No image data in OpenAI response"):
+                        await ai_img._generate_openai()
+
+        asyncio.run(run_test())
+
+    def test_aiimage_openai_empty_response(self):
+        """Test OpenAI generation fails with empty response (line 238)."""
+        import asyncio
+        import sys
+
+        ai_img = AIImage(prompt="test")
+
+        async def run_test():
+            mock_response = MagicMock()
+            mock_response.data = []  # Empty data
+
+            mock_client = MagicMock()
+
+            async def mock_generate(**kwargs):
+                return mock_response
+
+            mock_client.images.generate = mock_generate
+
+            mock_openai_module = MagicMock()
+            mock_openai_module.AsyncOpenAI = MagicMock(return_value=mock_client)
+
+            with patch.dict(os.environ, {"OPENAI_API_KEY": "fake_key"}):
+                with patch.dict(sys.modules, {'openai': mock_openai_module}):
+                    with pytest.raises(AIGenerationError, match="Empty response from OpenAI"):
+                        await ai_img._generate_openai()
+
+        asyncio.run(run_test())
+
+    def test_aiimage_openai_with_style(self):
+        """Test OpenAI generation includes style parameter (lines 221-222)."""
+        import asyncio
+        import sys
+
+        ai_img = AIImage(prompt="test", style="vivid")
+
+        async def run_test():
+            mock_response = MagicMock()
+            mock_image_data = MagicMock()
+            mock_image_data.b64_json = "fake_data"
+            mock_image_data.revised_prompt = "revised"
+            mock_response.data = [mock_image_data]
+
+            mock_client = MagicMock()
+            captured_kwargs = {}
+
+            async def mock_generate(**kwargs):
+                captured_kwargs.update(kwargs)
+                return mock_response
+
+            mock_client.images.generate = mock_generate
+
+            mock_openai_module = MagicMock()
+            mock_openai_module.AsyncOpenAI = MagicMock(return_value=mock_client)
+
+            with patch.dict(os.environ, {"OPENAI_API_KEY": "fake_key"}):
+                with patch.dict(sys.modules, {'openai': mock_openai_module}):
+                    await ai_img._generate_openai()
+                    assert "style" in captured_kwargs
+                    assert captured_kwargs["style"] == "vivid"
+
+        asyncio.run(run_test())
+
+    def test_aiimage_openai_generic_exception(self):
+        """Test OpenAI generation wraps generic exceptions (lines 244-245)."""
+        import asyncio
+        import sys
+
+        ai_img = AIImage(prompt="test")
+
+        async def run_test():
+            mock_client = MagicMock()
+
+            async def mock_generate(**kwargs):
+                raise ValueError("Some unexpected error")
+
+            mock_client.images.generate = mock_generate
+
+            mock_openai_module = MagicMock()
+            mock_openai_module.AsyncOpenAI = MagicMock(return_value=mock_client)
+
+            with patch.dict(os.environ, {"OPENAI_API_KEY": "fake_key"}):
+                with patch.dict(sys.modules, {'openai': mock_openai_module}):
+                    with pytest.raises(AIGenerationError, match="OpenAI generation failed"):
+                        await ai_img._generate_openai()
+
+        asyncio.run(run_test())
+
+    def test_aiimage_replicate_import_error(self):
+        """Test _generate_replicate raises error on import failure (lines 251-252)."""
+        import asyncio
+        import sys
+        import builtins
+
+        ai_img = AIImage(prompt="test", provider=AIProvider.REPLICATE)
+
+        async def run_test():
+            # Remove replicate from modules
+            for key in list(sys.modules.keys()):
+                if key == 'replicate' or key.startswith('replicate.'):
+                    del sys.modules[key]
+
+            original_import = builtins.__import__
+
+            def mock_import(name, *args, **kwargs):
+                if name == 'replicate':
+                    raise ImportError("No module named 'replicate'")
+                return original_import(name, *args, **kwargs)
+
+            with patch('builtins.__import__', side_effect=mock_import):
+                with pytest.raises(AIProviderNotAvailableError, match="Replicate package not installed"):
+                    await ai_img._generate_replicate()
+
+        asyncio.run(run_test())
+
+    def test_aiimage_replicate_list_output_success(self):
+        """Test Replicate generation with list output format (lines 284-290)."""
+        import asyncio
+        import sys
+
+        ai_img = AIImage(
+            prompt="test",
+            provider=AIProvider.REPLICATE,
+        )
+
+        async def run_test():
+            mock_replicate = MagicMock()
+            mock_replicate.run = MagicMock(return_value=["https://example.com/image.png"])
+
+            async def mock_to_thread(func, *args, **kwargs):
+                return ["https://example.com/image.png"]
+
+            async def mock_download(url):
+                ai_img.set_base64_data("downloaded_data", "image/png")
+
+            with patch.dict(os.environ, {"REPLICATE_API_TOKEN": "fake_token"}):
+                with patch.dict(sys.modules, {'replicate': mock_replicate}):
+                    with patch('asyncio.to_thread', side_effect=mock_to_thread):
+                        with patch.object(ai_img, '_download_image', side_effect=mock_download):
+                            await ai_img._generate_replicate()
+                            assert ai_img._generation_metadata["output_url"] == "https://example.com/image.png"
+
+        asyncio.run(run_test())
+
+    def test_aiimage_replicate_string_output_success(self):
+        """Test Replicate generation with string output format (lines 291-296)."""
+        import asyncio
+        import sys
+
+        ai_img = AIImage(prompt="test", provider=AIProvider.REPLICATE)
+
+        async def run_test():
+            mock_replicate = MagicMock()
+
+            async def mock_to_thread(func, *args, **kwargs):
+                return "https://example.com/direct.png"
+
+            async def mock_download(url):
+                ai_img.set_base64_data("downloaded_data", "image/png")
+
+            with patch.dict(os.environ, {"REPLICATE_API_TOKEN": "fake_token"}):
+                with patch.dict(sys.modules, {'replicate': mock_replicate}):
+                    with patch('asyncio.to_thread', side_effect=mock_to_thread):
+                        with patch.object(ai_img, '_download_image', side_effect=mock_download):
+                            await ai_img._generate_replicate()
+                            assert ai_img._generation_metadata["output_url"] == "https://example.com/direct.png"
+
+        asyncio.run(run_test())
+
+    def test_aiimage_replicate_unexpected_output(self):
+        """Test Replicate generation fails with unexpected output format (lines 297-298)."""
+        import asyncio
+        import sys
+
+        ai_img = AIImage(prompt="test", provider=AIProvider.REPLICATE)
+
+        async def run_test():
+            mock_replicate = MagicMock()
+
+            async def mock_to_thread(func, *args, **kwargs):
+                return {"unexpected": "format"}
+
+            with patch.dict(os.environ, {"REPLICATE_API_TOKEN": "fake_token"}):
+                with patch.dict(sys.modules, {'replicate': mock_replicate}):
+                    with patch('asyncio.to_thread', side_effect=mock_to_thread):
+                        with pytest.raises(AIGenerationError, match="Unexpected Replicate output format"):
+                            await ai_img._generate_replicate()
+
+        asyncio.run(run_test())
+
+    def test_aiimage_replicate_with_negative_prompt(self):
+        """Test Replicate includes negative_prompt (lines 270-271)."""
+        import asyncio
+        import sys
+
+        ai_img = AIImage(
+            prompt="test",
+            provider=AIProvider.REPLICATE,
+            negative_prompt="bad quality"
+        )
+
+        async def run_test():
+            mock_replicate = MagicMock()
+            captured_params = {}
+
+            async def mock_to_thread(func, model, input):
+                captured_params.update(input)
+                return ["https://example.com/image.png"]
+
+            async def mock_download(url):
+                ai_img.set_base64_data("data", "image/png")
+
+            with patch.dict(os.environ, {"REPLICATE_API_TOKEN": "fake_token"}):
+                with patch.dict(sys.modules, {'replicate': mock_replicate}):
+                    with patch('asyncio.to_thread', side_effect=mock_to_thread):
+                        with patch.object(ai_img, '_download_image', side_effect=mock_download):
+                            await ai_img._generate_replicate()
+                            assert captured_params["negative_prompt"] == "bad quality"
+
+        asyncio.run(run_test())
+
+    def test_aiimage_replicate_with_seed(self):
+        """Test Replicate includes seed (lines 273-274)."""
+        import asyncio
+        import sys
+
+        ai_img = AIImage(
+            prompt="test",
+            provider=AIProvider.REPLICATE,
+            seed=42
+        )
+
+        async def run_test():
+            mock_replicate = MagicMock()
+            captured_params = {}
+
+            async def mock_to_thread(func, model, input):
+                captured_params.update(input)
+                return ["https://example.com/image.png"]
+
+            async def mock_download(url):
+                ai_img.set_base64_data("data", "image/png")
+
+            with patch.dict(os.environ, {"REPLICATE_API_TOKEN": "fake_token"}):
+                with patch.dict(sys.modules, {'replicate': mock_replicate}):
+                    with patch('asyncio.to_thread', side_effect=mock_to_thread):
+                        with patch.object(ai_img, '_download_image', side_effect=mock_download):
+                            await ai_img._generate_replicate()
+                            assert captured_params["seed"] == 42
+
+        asyncio.run(run_test())
+
+    def test_aiimage_replicate_generic_exception(self):
+        """Test Replicate generation wraps generic exceptions (lines 304-305)."""
+        import asyncio
+        import sys
+
+        ai_img = AIImage(prompt="test", provider=AIProvider.REPLICATE)
+
+        async def run_test():
+            mock_replicate = MagicMock()
+
+            async def mock_to_thread(*args, **kwargs):
+                raise RuntimeError("Network error")
+
+            with patch.dict(os.environ, {"REPLICATE_API_TOKEN": "fake_token"}):
+                with patch.dict(sys.modules, {'replicate': mock_replicate}):
+                    with patch('asyncio.to_thread', side_effect=mock_to_thread):
+                        with pytest.raises(AIGenerationError, match="Replicate generation failed"):
+                            await ai_img._generate_replicate()
+
+        asyncio.run(run_test())
+
+    def test_aiimage_download_image_success(self):
+        """Test _download_image successfully downloads and stores image (lines 309-323)."""
+        import asyncio
+
+        ai_img = AIImage(prompt="test")
+
+        async def run_test():
+            fake_image_data = b"fake image bytes for testing"
+
+            async def mock_to_thread(func):
+                return fake_image_data
+
+            with patch('asyncio.to_thread', side_effect=mock_to_thread):
+                await ai_img._download_image("https://example.com/image.png")
+
+                expected_b64 = base64.b64encode(fake_image_data).decode("utf-8")
+                assert ai_img.get_base64_data() == expected_b64
+
+        asyncio.run(run_test())
+
+    def test_aiimage_download_image_failure(self):
+        """Test _download_image raises AIGenerationError on failure (line 326)."""
+        import asyncio
+
+        ai_img = AIImage(prompt="test")
+
+        async def run_test():
+            async def mock_to_thread(func):
+                raise Exception("Network error")
+
+            with patch('asyncio.to_thread', side_effect=mock_to_thread):
+                with pytest.raises(AIGenerationError, match="Failed to download generated image"):
+                    await ai_img._download_image("https://example.com/image.png")
+
+        asyncio.run(run_test())
+
+    def test_aiimage_generate_async_sets_generated_flag(self):
+        """Test generate_async sets _generated=True and _needs_update=True (lines 186-188)."""
+        import asyncio
+
+        ai_img = AIImage(prompt="test")
+
+        async def run_test():
+            # Mock the provider-specific generation
+            async def mock_openai():
+                pass
+
+            with patch.object(ai_img, '_generate_openai', side_effect=mock_openai):
+                assert ai_img._generated is False
+
+                await ai_img.generate_async()
+
+                assert ai_img._generated is True
+                assert ai_img._needs_update is True
+
+        asyncio.run(run_test())
+
+    def test_aiimage_replicate_empty_list_output(self):
+        """Test Replicate generation with empty list output falls through to unexpected format."""
+        import asyncio
+        import sys
+
+        ai_img = AIImage(prompt="test", provider=AIProvider.REPLICATE)
+
+        async def run_test():
+            mock_replicate = MagicMock()
+
+            async def mock_to_thread(func, *args, **kwargs):
+                return []
+
+            with patch.dict(os.environ, {"REPLICATE_API_TOKEN": "fake_token"}):
+                with patch.dict(sys.modules, {'replicate': mock_replicate}):
+                    with patch('asyncio.to_thread', side_effect=mock_to_thread):
+                        with pytest.raises(AIGenerationError, match="Unexpected Replicate output format"):
+                            await ai_img._generate_replicate()
+
+        asyncio.run(run_test())

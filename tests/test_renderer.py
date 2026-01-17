@@ -946,6 +946,224 @@ class TestImageRendering:
         assert "No image" in svg_string  # Placeholder text
 
 
+class TestSimpleFaceExpressionRendering:
+    """Tests for SimpleFace expression rendering with all eye, mouth, and eyebrow types."""
+
+    def test_render_neutral_expression(self):
+        """Test neutral expression (default) renders correctly."""
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="Neutral").move_to((200, 150))
+        page.add(face)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should have face circle and basic features
+        assert "<circle" in svg_string
+        # Neutral expression has straight mouth line
+        assert "<line" in svg_string
+
+    def test_render_happy_expression_curved_eyes(self):
+        """Test happy expression with curved eyes (^_^)."""
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="Happy").move_to((200, 150))
+        face.set_expression("happy")  # Uses curved eyes and smile mouth
+        page.add(face)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Curved eyes are rendered as polylines
+        assert "<polyline" in svg_string
+
+    def test_render_sad_expression_droopy_eyes(self):
+        """Test sad expression with droopy eyes and frown mouth."""
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="Sad").move_to((200, 150))
+        face.set_expression("sad")  # Uses droopy eyes and frown mouth
+        page.add(face)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Droopy eyes and frown mouth should render
+        assert "<circle" in svg_string
+        assert "<polyline" in svg_string  # Frown is a polyline
+
+    def test_render_angry_expression_narrow_eyes(self):
+        """Test angry expression with narrow eyes and furrowed brows."""
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="Angry").move_to((200, 150))
+        face.set_expression("angry")  # Uses narrow eyes and furrowed eyebrows
+        page.add(face)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Narrow eyes are rendered as lines
+        assert "<line" in svg_string
+        assert "<circle" in svg_string  # Face circle
+
+    def test_render_surprised_expression_wide_eyes(self):
+        """Test surprised expression with wide eyes and raised brows."""
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="Surprised").move_to((200, 150))
+        face.set_expression("surprised")  # Uses wide eyes and open mouth
+        page.add(face)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Wide eyes have outer white circle with inner pupil
+        # Count circles - face + 2 outer eyes + 2 inner pupils = 5 or more
+        circle_count = svg_string.count("<circle")
+        assert circle_count >= 3  # At least face, outer eyes, inner pupils
+
+    def test_render_confused_expression_uneven_eyes(self):
+        """Test confused expression with uneven eyes and wavy mouth."""
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="Confused").move_to((200, 150))
+        face.set_expression("confused")  # Uses uneven eyes and wavy mouth
+        page.add(face)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Uneven eyes and wavy mouth - both rendered
+        assert "<circle" in svg_string
+        assert "<polyline" in svg_string  # Wavy mouth is a polyline
+
+    def test_render_all_expressions_in_one_page(self):
+        """Test rendering all 6 expressions on one page."""
+        page = Page(width=800, height=300)
+        expressions = ["neutral", "happy", "sad", "angry", "surprised", "confused"]
+
+        for i, expr in enumerate(expressions):
+            face = SimpleFace(name=expr).move_to((100 + i * 120, 150))
+            face.set_expression(expr)
+            page.add(face)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should render all 6 faces
+        circle_count = svg_string.count("<circle")
+        assert circle_count >= 6  # At least 6 face circles
+
+    def test_render_expression_with_custom_color(self):
+        """Test expression rendering with custom colors."""
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="Custom", color="#FF0000", fill_color="#FFFF00")
+        face.move_to((200, 150))
+        face.set_expression("happy")
+        page.add(face)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should contain custom colors
+        assert "#FF0000" in svg_string  # Stroke color
+        assert "#FFFF00" in svg_string  # Fill color
+
+    def test_render_mouth_types_via_custom_expression(self):
+        """Test each mouth type renders distinctly."""
+        from comix.cobject.character.character import Expression
+
+        mouth_types = ["normal", "smile", "frown", "open", "wavy"]
+
+        for mouth in mouth_types:
+            page = Page(width=400, height=300)
+            face = SimpleFace(name=f"Mouth_{mouth}").move_to((200, 150))
+            # Set custom expression with specific mouth type
+            face._expression = Expression(
+                name="custom", eyes="normal", mouth=mouth, eyebrows="normal"
+            )
+            page.add(face)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            # All mouth types should render successfully
+            assert "<circle" in svg_string  # Face circle
+            # Each mouth type renders a different element
+            if mouth == "normal":
+                assert "<line" in svg_string  # Straight line
+            elif mouth in ("smile", "frown", "wavy"):
+                assert "<polyline" in svg_string  # Curved/wavy path
+            elif mouth == "open":
+                # Open mouth is a circle (not filled)
+                assert svg_string.count("<circle") >= 2  # Face + mouth
+
+    def test_render_eyebrow_types_via_custom_expression(self):
+        """Test each eyebrow type renders distinctly."""
+        from comix.cobject.character.character import Expression
+
+        eyebrow_types = ["normal", "raised", "worried", "furrowed"]
+
+        for brow in eyebrow_types:
+            page = Page(width=400, height=300)
+            face = SimpleFace(name=f"Brows_{brow}").move_to((200, 150))
+            # Set custom expression with specific eyebrow type
+            face._expression = Expression(
+                name="custom", eyes="normal", mouth="normal", eyebrows=brow
+            )
+            page.add(face)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            # All eyebrow types should render successfully
+            assert "<circle" in svg_string  # Face circle
+            if brow == "normal":
+                # Normal has no visible eyebrows (cleaner look)
+                pass
+            elif brow == "raised":
+                assert "<polyline" in svg_string  # Raised brows are polylines
+            elif brow in ("worried", "furrowed"):
+                # These are rendered as lines
+                line_count = svg_string.count("<line")
+                assert line_count >= 2  # Mouth line + eyebrow lines
+
+    def test_render_eye_types_via_custom_expression(self):
+        """Test each eye type renders distinctly."""
+        from comix.cobject.character.character import Expression
+
+        eye_types = ["normal", "curved", "droopy", "narrow", "wide", "uneven"]
+
+        for eye in eye_types:
+            page = Page(width=400, height=300)
+            face = SimpleFace(name=f"Eyes_{eye}").move_to((200, 150))
+            # Set custom expression with specific eye type
+            face._expression = Expression(
+                name="custom", eyes=eye, mouth="normal", eyebrows="normal"
+            )
+            page.add(face)
+
+            renderer = SVGRenderer(page)
+            svg_string = renderer.render_to_string()
+
+            # All eye types should render successfully
+            assert "<circle" in svg_string  # Face circle always present
+            if eye == "normal":
+                # Normal eyes are filled circles
+                assert svg_string.count("<circle") >= 3  # Face + 2 eyes
+            elif eye == "curved":
+                # Curved eyes are polylines
+                assert "<polyline" in svg_string
+            elif eye == "droopy":
+                # Droopy are circles (just positioned lower)
+                assert svg_string.count("<circle") >= 3
+            elif eye == "narrow":
+                # Narrow eyes are lines
+                assert "<line" in svg_string
+            elif eye == "wide":
+                # Wide eyes have outer circle (white) + inner pupil
+                assert svg_string.count("<circle") >= 5  # Face + 2 outer + 2 inner
+            elif eye == "uneven":
+                # Uneven eyes are circles of different sizes
+                assert svg_string.count("<circle") >= 3
+
+
 class TestEffectElementStrokeDasharray:
     """Tests for effect elements with stroke dasharray."""
 

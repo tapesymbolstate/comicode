@@ -535,7 +535,14 @@ class CairoRenderer:
                     ctx.stroke()
 
     def _render_simple_face(self, data: dict[str, Any], pos: list[float]) -> None:
-        """Render a simple face character."""
+        """Render a simple face character with expression-based features.
+
+        Renders eyes, mouth, and eyebrows based on the expression data.
+        Supports all expression types defined in Expression class:
+        - Eyes: normal, curved, droopy, narrow, wide, uneven
+        - Mouth: normal, smile, frown, open, wavy
+        - Eyebrows: normal, raised, worried, furrowed
+        """
         ctx = self._ctx
         assert ctx is not None
 
@@ -551,40 +558,191 @@ class CairoRenderer:
         ctx.set_line_width(2)
         ctx.stroke()
 
-        # Draw eyes
-        eye_y = pos[1] - radius * 0.2
+        expression = data.get("expression", {})
+        eye_type = expression.get("eyes", "normal")
+        mouth_type = expression.get("mouth", "normal")
+        eyebrow_type = expression.get("eyebrows", "normal")
+
+        # Eye parameters
+        eye_y = pos[1] - radius * 0.15
         eye_offset = radius * 0.3
         eye_radius = radius * 0.1
 
-        # Left eye
-        ctx.arc(pos[0] - eye_offset, eye_y, eye_radius, 0, 2 * math.pi)
-        self._set_color(color)
-        ctx.fill()
+        # Render eyes based on type
+        self._render_face_eyes_cairo(pos, radius, eye_y, eye_offset, eye_radius, eye_type, color)
 
-        # Right eye
-        ctx.arc(pos[0] + eye_offset, eye_y, eye_radius, 0, 2 * math.pi)
-        self._set_color(color)
-        ctx.fill()
+        # Render eyebrows
+        self._render_face_eyebrows_cairo(pos, radius, eye_y, eye_offset, eyebrow_type, color)
 
-        # Draw mouth based on expression
-        expression = data.get("expression", {})
-        mouth_type = expression.get("mouth", "normal")
-        mouth_y = pos[1] + radius * 0.3
+        # Render mouth
+        self._render_face_mouth_cairo(pos, radius, mouth_type, color)
+
+    def _render_face_eyes_cairo(
+        self,
+        pos: list[float],
+        radius: float,
+        eye_y: float,
+        eye_offset: float,
+        eye_radius: float,
+        eye_type: str,
+        color: str,
+    ) -> None:
+        """Render eyes based on expression type (Cairo)."""
+        ctx = self._ctx
+        assert ctx is not None
+
+        left_x = pos[0] - eye_offset
+        right_x = pos[0] + eye_offset
+
+        self._set_color(color)
+
+        if eye_type == "curved":
+            # Happy curved eyes (^_^)
+            curve_width = eye_radius * 1.5
+            ctx.set_line_width(2)
+            for x in [left_x, right_x]:
+                ctx.move_to(x - curve_width, eye_y)
+                ctx.line_to(x, eye_y - eye_radius)
+                ctx.line_to(x + curve_width, eye_y)
+                ctx.stroke()
+        elif eye_type == "droopy":
+            # Sad droopy eyes
+            for x in [left_x, right_x]:
+                ctx.arc(x, eye_y + eye_radius * 0.3, eye_radius * 0.9, 0, 2 * math.pi)
+                ctx.fill()
+        elif eye_type == "narrow":
+            # Angry narrow eyes (horizontal lines)
+            ctx.set_line_width(2.5)
+            for x in [left_x, right_x]:
+                ctx.move_to(x - eye_radius * 1.2, eye_y)
+                ctx.line_to(x + eye_radius * 1.2, eye_y)
+                ctx.stroke()
+        elif eye_type == "wide":
+            # Surprised wide eyes
+            for x in [left_x, right_x]:
+                # Larger outer circle (white fill)
+                ctx.arc(x, eye_y, eye_radius * 1.5, 0, 2 * math.pi)
+                self._set_color("#FFFFFF")
+                ctx.fill_preserve()
+                self._set_color(color)
+                ctx.set_line_width(1.5)
+                ctx.stroke()
+                # Inner pupil
+                ctx.arc(x, eye_y, eye_radius * 0.6, 0, 2 * math.pi)
+                ctx.fill()
+        elif eye_type == "uneven":
+            # Confused uneven eyes (one bigger, one smaller)
+            # Left eye - smaller
+            ctx.arc(left_x, eye_y + eye_radius * 0.2, eye_radius * 0.8, 0, 2 * math.pi)
+            ctx.fill()
+            # Right eye - larger
+            ctx.arc(right_x, eye_y - eye_radius * 0.2, eye_radius * 1.2, 0, 2 * math.pi)
+            ctx.fill()
+        else:
+            # Normal round eyes
+            for x in [left_x, right_x]:
+                ctx.arc(x, eye_y, eye_radius, 0, 2 * math.pi)
+                ctx.fill()
+
+    def _render_face_eyebrows_cairo(
+        self,
+        pos: list[float],
+        radius: float,
+        eye_y: float,
+        eye_offset: float,
+        eyebrow_type: str,
+        color: str,
+    ) -> None:
+        """Render eyebrows based on expression type (Cairo)."""
+        ctx = self._ctx
+        assert ctx is not None
+
+        brow_y = eye_y - radius * 0.18
+        brow_width = radius * 0.18
+        left_x = pos[0] - eye_offset
+        right_x = pos[0] + eye_offset
+
+        self._set_color(color)
+
+        if eyebrow_type == "raised":
+            # Raised eyebrows (surprised/questioning)
+            raised_y = brow_y - radius * 0.08
+            ctx.set_line_width(2)
+            for x in [left_x, right_x]:
+                ctx.move_to(x - brow_width, raised_y + radius * 0.03)
+                ctx.line_to(x, raised_y - radius * 0.03)
+                ctx.line_to(x + brow_width, raised_y + radius * 0.03)
+                ctx.stroke()
+        elif eyebrow_type == "worried":
+            # Worried eyebrows (angled up toward center)
+            ctx.set_line_width(2)
+            # Left eyebrow - slants up to the right
+            ctx.move_to(left_x - brow_width, brow_y - radius * 0.04)
+            ctx.line_to(left_x + brow_width, brow_y + radius * 0.06)
+            ctx.stroke()
+            # Right eyebrow - slants up to the left
+            ctx.move_to(right_x - brow_width, brow_y + radius * 0.06)
+            ctx.line_to(right_x + brow_width, brow_y - radius * 0.04)
+            ctx.stroke()
+        elif eyebrow_type == "furrowed":
+            # Furrowed/angry eyebrows (angled down toward center)
+            ctx.set_line_width(2.5)
+            # Left eyebrow - slants down to the right
+            ctx.move_to(left_x - brow_width, brow_y + radius * 0.04)
+            ctx.line_to(left_x + brow_width, brow_y - radius * 0.08)
+            ctx.stroke()
+            # Right eyebrow - slants down to the left
+            ctx.move_to(right_x - brow_width, brow_y - radius * 0.08)
+            ctx.line_to(right_x + brow_width, brow_y + radius * 0.04)
+            ctx.stroke()
+        # "normal" eyebrows - no visible eyebrows for cleaner look
+
+    def _render_face_mouth_cairo(
+        self,
+        pos: list[float],
+        radius: float,
+        mouth_type: str,
+        color: str,
+    ) -> None:
+        """Render mouth based on expression type (Cairo)."""
+        ctx = self._ctx
+        assert ctx is not None
+
+        mouth_y = pos[1] + radius * 0.35
+        mouth_width = radius * 0.35
 
         self._set_color(color)
         ctx.set_line_width(2)
 
         if mouth_type in ("smile", "happy"):
-            # Smiling mouth (arc)
-            mouth_width = radius * 0.4
-            ctx.move_to(pos[0] - mouth_width, mouth_y - 5)
-            ctx.line_to(pos[0], mouth_y + 5)
-            ctx.line_to(pos[0] + mouth_width, mouth_y - 5)
+            # Smiling mouth (upward curve)
+            ctx.move_to(pos[0] - mouth_width, mouth_y - radius * 0.05)
+            ctx.line_to(pos[0], mouth_y + radius * 0.1)
+            ctx.line_to(pos[0] + mouth_width, mouth_y - radius * 0.05)
+            ctx.stroke()
+        elif mouth_type == "frown":
+            # Frowning mouth (downward curve)
+            ctx.move_to(pos[0] - mouth_width, mouth_y + radius * 0.05)
+            ctx.line_to(pos[0], mouth_y - radius * 0.1)
+            ctx.line_to(pos[0] + mouth_width, mouth_y + radius * 0.05)
+            ctx.stroke()
+        elif mouth_type == "open":
+            # Open mouth (surprised O)
+            ctx.arc(pos[0], mouth_y, radius * 0.15, 0, 2 * math.pi)
+            ctx.stroke()
+        elif mouth_type == "wavy":
+            # Wavy/uncertain mouth
+            segment = mouth_width / 3
+            ctx.move_to(pos[0] - mouth_width, mouth_y)
+            ctx.line_to(pos[0] - segment, mouth_y - radius * 0.04)
+            ctx.line_to(pos[0], mouth_y + radius * 0.04)
+            ctx.line_to(pos[0] + segment, mouth_y - radius * 0.04)
+            ctx.line_to(pos[0] + mouth_width, mouth_y)
             ctx.stroke()
         else:
-            # Neutral mouth (line)
-            ctx.move_to(pos[0] - radius * 0.3, mouth_y)
-            ctx.line_to(pos[0] + radius * 0.3, mouth_y)
+            # Normal mouth (straight line)
+            ctx.move_to(pos[0] - mouth_width, mouth_y)
+            ctx.line_to(pos[0] + mouth_width, mouth_y)
             ctx.stroke()
 
     def _render_rectangle(self, data: dict[str, Any]) -> None:

@@ -1036,3 +1036,162 @@ class TestCairoRendererEdgeCases:
             output_path = renderer.render(f.name, format="png")
             assert Path(output_path).exists()
             Path(output_path).unlink()
+
+
+class TestSimpleFaceExpressionCairo:
+    """Tests for SimpleFace expression rendering with Cairo renderer."""
+
+    def test_render_all_expressions_cairo(self):
+        """Test all 6 standard expressions render with Cairo."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised", "confused"]
+
+        for expr in expressions:
+            page = Page(width=400, height=300)
+            face = SimpleFace(name=expr).move_to((200, 150))
+            face.set_expression(expr)
+            page.add(face)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_curved_eyes_cairo(self):
+        """Test curved eyes (happy) render correctly with Cairo."""
+        from comix.cobject.character.character import Expression
+
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="CurvedEyes").move_to((200, 150))
+        face._expression = Expression(
+            name="custom", eyes="curved", mouth="smile", eyebrows="normal"
+        )
+        page.add(face)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_narrow_eyes_cairo(self):
+        """Test narrow eyes (angry) render correctly with Cairo."""
+        from comix.cobject.character.character import Expression
+
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="NarrowEyes").move_to((200, 150))
+        face._expression = Expression(
+            name="custom", eyes="narrow", mouth="frown", eyebrows="furrowed"
+        )
+        page.add(face)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_wide_eyes_cairo(self):
+        """Test wide eyes (surprised) render correctly with Cairo."""
+        from comix.cobject.character.character import Expression
+
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="WideEyes").move_to((200, 150))
+        face._expression = Expression(
+            name="custom", eyes="wide", mouth="open", eyebrows="raised"
+        )
+        page.add(face)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_uneven_eyes_cairo(self):
+        """Test uneven eyes (confused) render correctly with Cairo."""
+        from comix.cobject.character.character import Expression
+
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="UnevenEyes").move_to((200, 150))
+        face._expression = Expression(
+            name="custom", eyes="uneven", mouth="wavy", eyebrows="raised"
+        )
+        page.add(face)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_droopy_eyes_cairo(self):
+        """Test droopy eyes (sad) render correctly with Cairo."""
+        from comix.cobject.character.character import Expression
+
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="DroopyEyes").move_to((200, 150))
+        face._expression = Expression(
+            name="custom", eyes="droopy", mouth="frown", eyebrows="worried"
+        )
+        page.add(face)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_all_mouth_types_cairo(self):
+        """Test all mouth types render with Cairo."""
+        from comix.cobject.character.character import Expression
+
+        mouth_types = ["normal", "smile", "frown", "open", "wavy"]
+
+        for mouth in mouth_types:
+            page = Page(width=400, height=300)
+            face = SimpleFace(name=f"Mouth_{mouth}").move_to((200, 150))
+            face._expression = Expression(
+                name="custom", eyes="normal", mouth=mouth, eyebrows="normal"
+            )
+            page.add(face)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_all_eyebrow_types_cairo(self):
+        """Test all eyebrow types render with Cairo."""
+        from comix.cobject.character.character import Expression
+
+        eyebrow_types = ["normal", "raised", "worried", "furrowed"]
+
+        for brow in eyebrow_types:
+            page = Page(width=400, height=300)
+            face = SimpleFace(name=f"Brows_{brow}").move_to((200, 150))
+            face._expression = Expression(
+                name="custom", eyes="normal", mouth="normal", eyebrows=brow
+            )
+            page.add(face)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_expression_with_custom_colors_cairo(self):
+        """Test expression rendering with custom colors in Cairo."""
+        page = Page(width=400, height=300)
+        face = SimpleFace(name="Custom", color="#0000FF", fill_color="#00FF00")
+        face.move_to((200, 150))
+        face.set_expression("happy")
+        page.add(face)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()

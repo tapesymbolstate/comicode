@@ -506,11 +506,19 @@ class SVGRenderer:
                     group.add(line)
 
     def _render_simple_face(self, data: dict[str, Any], group: Group, pos: list[float]) -> None:
-        """Render a simple face character."""
+        """Render a simple face character with expression-based features.
+
+        Renders eyes, mouth, and eyebrows based on the expression data.
+        Supports all expression types defined in Expression class:
+        - Eyes: normal, curved, droopy, narrow, wide, uneven
+        - Mouth: normal, smile, frown, open, wavy
+        - Eyebrows: normal, raised, worried, furrowed
+        """
         radius = data.get("face_radius", 30)
         color = data.get("color", "#000000")
         fill = data.get("fill_color") or "#FFEB3B"
 
+        # Draw face circle
         face = SVGCircle(
             center=(pos[0], pos[1]),
             r=radius,
@@ -520,34 +528,246 @@ class SVGRenderer:
         )
         group.add(face)
 
-        eye_y = pos[1] - radius * 0.2
+        expression = data.get("expression", {})
+        eye_type = expression.get("eyes", "normal")
+        mouth_type = expression.get("mouth", "normal")
+        eyebrow_type = expression.get("eyebrows", "normal")
+
+        # Eye parameters
+        eye_y = pos[1] - radius * 0.15
         eye_offset = radius * 0.3
         eye_radius = radius * 0.1
 
-        left_eye = SVGCircle(
-            center=(pos[0] - eye_offset, eye_y),
-            r=eye_radius,
-            fill=color,
-        )
-        right_eye = SVGCircle(
-            center=(pos[0] + eye_offset, eye_y),
-            r=eye_radius,
-            fill=color,
-        )
-        group.add(left_eye)
-        group.add(right_eye)
+        # Render eyes based on type
+        self._render_face_eyes(group, pos, radius, eye_y, eye_offset, eye_radius, eye_type, color)
 
-        expression = data.get("expression", {})
-        mouth_type = expression.get("mouth", "normal")
+        # Render eyebrows
+        self._render_face_eyebrows(group, pos, radius, eye_y, eye_offset, eyebrow_type, color)
+
+        # Render mouth
+        self._render_face_mouth(group, pos, radius, mouth_type, color)
+
+    def _render_face_eyes(
+        self,
+        group: Group,
+        pos: list[float],
+        radius: float,
+        eye_y: float,
+        eye_offset: float,
+        eye_radius: float,
+        eye_type: str,
+        color: str,
+    ) -> None:
+        """Render eyes based on expression type."""
+        left_x = pos[0] - eye_offset
+        right_x = pos[0] + eye_offset
+
+        if eye_type == "curved":
+            # Happy curved eyes (^_^)
+            curve_width = eye_radius * 1.5
+            for x in [left_x, right_x]:
+                eye = Polyline(
+                    points=[
+                        (x - curve_width, eye_y),
+                        (x, eye_y - eye_radius),
+                        (x + curve_width, eye_y),
+                    ],
+                    fill="none",
+                    stroke=color,
+                    stroke_width=2,
+                )
+                group.add(eye)
+        elif eye_type == "droopy":
+            # Sad droopy eyes
+            for x in [left_x, right_x]:
+                eye = SVGCircle(
+                    center=(x, eye_y + eye_radius * 0.3),
+                    r=eye_radius * 0.9,
+                    fill=color,
+                )
+                group.add(eye)
+        elif eye_type == "narrow":
+            # Angry narrow eyes (horizontal lines)
+            for x in [left_x, right_x]:
+                eye = SVGLine(
+                    start=(x - eye_radius * 1.2, eye_y),
+                    end=(x + eye_radius * 1.2, eye_y),
+                    stroke=color,
+                    stroke_width=2.5,
+                )
+                group.add(eye)
+        elif eye_type == "wide":
+            # Surprised wide eyes
+            for x in [left_x, right_x]:
+                # Larger outer circle
+                outer = SVGCircle(
+                    center=(x, eye_y),
+                    r=eye_radius * 1.5,
+                    fill="white",
+                    stroke=color,
+                    stroke_width=1.5,
+                )
+                group.add(outer)
+                # Inner pupil
+                inner = SVGCircle(
+                    center=(x, eye_y),
+                    r=eye_radius * 0.6,
+                    fill=color,
+                )
+                group.add(inner)
+        elif eye_type == "uneven":
+            # Confused uneven eyes (one bigger, one smaller)
+            # Left eye - smaller
+            left_eye = SVGCircle(
+                center=(left_x, eye_y + eye_radius * 0.2),
+                r=eye_radius * 0.8,
+                fill=color,
+            )
+            group.add(left_eye)
+            # Right eye - larger
+            right_eye = SVGCircle(
+                center=(right_x, eye_y - eye_radius * 0.2),
+                r=eye_radius * 1.2,
+                fill=color,
+            )
+            group.add(right_eye)
+        else:
+            # Normal round eyes
+            for x in [left_x, right_x]:
+                eye = SVGCircle(
+                    center=(x, eye_y),
+                    r=eye_radius,
+                    fill=color,
+                )
+                group.add(eye)
+
+    def _render_face_eyebrows(
+        self,
+        group: Group,
+        pos: list[float],
+        radius: float,
+        eye_y: float,
+        eye_offset: float,
+        eyebrow_type: str,
+        color: str,
+    ) -> None:
+        """Render eyebrows based on expression type."""
+        brow_y = eye_y - radius * 0.18
+        brow_width = radius * 0.18
+        left_x = pos[0] - eye_offset
+        right_x = pos[0] + eye_offset
+
+        if eyebrow_type == "raised":
+            # Raised eyebrows (surprised/questioning)
+            raised_y = brow_y - radius * 0.08
+            for x in [left_x, right_x]:
+                brow = Polyline(
+                    points=[
+                        (x - brow_width, raised_y + radius * 0.03),
+                        (x, raised_y - radius * 0.03),
+                        (x + brow_width, raised_y + radius * 0.03),
+                    ],
+                    fill="none",
+                    stroke=color,
+                    stroke_width=2,
+                )
+                group.add(brow)
+        elif eyebrow_type == "worried":
+            # Worried eyebrows (angled up toward center)
+            # Left eyebrow - slants up to the right
+            left_brow = SVGLine(
+                start=(left_x - brow_width, brow_y - radius * 0.04),
+                end=(left_x + brow_width, brow_y + radius * 0.06),
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(left_brow)
+            # Right eyebrow - slants up to the left
+            right_brow = SVGLine(
+                start=(right_x - brow_width, brow_y + radius * 0.06),
+                end=(right_x + brow_width, brow_y - radius * 0.04),
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(right_brow)
+        elif eyebrow_type == "furrowed":
+            # Furrowed/angry eyebrows (angled down toward center)
+            # Left eyebrow - slants down to the right
+            left_brow = SVGLine(
+                start=(left_x - brow_width, brow_y + radius * 0.04),
+                end=(left_x + brow_width, brow_y - radius * 0.08),
+                stroke=color,
+                stroke_width=2.5,
+            )
+            group.add(left_brow)
+            # Right eyebrow - slants down to the left
+            right_brow = SVGLine(
+                start=(right_x - brow_width, brow_y - radius * 0.08),
+                end=(right_x + brow_width, brow_y + radius * 0.04),
+                stroke=color,
+                stroke_width=2.5,
+            )
+            group.add(right_brow)
+        # "normal" eyebrows - no visible eyebrows for cleaner look
+
+    def _render_face_mouth(
+        self,
+        group: Group,
+        pos: list[float],
+        radius: float,
+        mouth_type: str,
+        color: str,
+    ) -> None:
+        """Render mouth based on expression type."""
+        mouth_y = pos[1] + radius * 0.35
+        mouth_width = radius * 0.35
 
         if mouth_type in ("smile", "happy"):
-            mouth_y = pos[1] + radius * 0.3
-            mouth_width = radius * 0.4
+            # Smiling mouth (upward curve)
             mouth = Polyline(
                 points=[
-                    (pos[0] - mouth_width, mouth_y - 5),
-                    (pos[0], mouth_y + 5),
-                    (pos[0] + mouth_width, mouth_y - 5),
+                    (pos[0] - mouth_width, mouth_y - radius * 0.05),
+                    (pos[0], mouth_y + radius * 0.1),
+                    (pos[0] + mouth_width, mouth_y - radius * 0.05),
+                ],
+                fill="none",
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+        elif mouth_type == "frown":
+            # Frowning mouth (downward curve)
+            mouth = Polyline(
+                points=[
+                    (pos[0] - mouth_width, mouth_y + radius * 0.05),
+                    (pos[0], mouth_y - radius * 0.1),
+                    (pos[0] + mouth_width, mouth_y + radius * 0.05),
+                ],
+                fill="none",
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+        elif mouth_type == "open":
+            # Open mouth (surprised O)
+            mouth = SVGCircle(
+                center=(pos[0], mouth_y),
+                r=radius * 0.15,
+                fill="none",
+                stroke=color,
+                stroke_width=2,
+            )
+            group.add(mouth)
+        elif mouth_type == "wavy":
+            # Wavy/uncertain mouth
+            segment = mouth_width / 3
+            mouth = Polyline(
+                points=[
+                    (pos[0] - mouth_width, mouth_y),
+                    (pos[0] - segment, mouth_y - radius * 0.04),
+                    (pos[0], mouth_y + radius * 0.04),
+                    (pos[0] + segment, mouth_y - radius * 0.04),
+                    (pos[0] + mouth_width, mouth_y),
                 ],
                 fill="none",
                 stroke=color,
@@ -555,10 +775,10 @@ class SVGRenderer:
             )
             group.add(mouth)
         else:
-            mouth_y = pos[1] + radius * 0.3
+            # Normal mouth (straight line)
             mouth = SVGLine(
-                start=(pos[0] - radius * 0.3, mouth_y),
-                end=(pos[0] + radius * 0.3, mouth_y),
+                start=(pos[0] - mouth_width, mouth_y),
+                end=(pos[0] + mouth_width, mouth_y),
                 stroke=color,
                 stroke_width=2,
             )

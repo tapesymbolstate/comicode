@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Multi-page PDF Export
 
-All 4 phases have been implemented with **1038 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **1058 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -50,6 +50,11 @@ All 4 phases have been implemented with **1038 tests passing**, mypy clean, and 
 - **PreviewServer Test Coverage**: Extended test coverage for preview server (81% to 92%+ coverage). Tests cover /poll endpoint functionality, file change detection via polling, render error handling (build/layout errors), has_file_changed with deleted files, server double-start protection, port exhaustion handling, browser opening, spec loader errors, and comprehensive watchdog handler tests (debouncing, file filtering, callback=None) (13 new tests).
 - **SVG Renderer Extended Test Coverage**: Comprehensive tests for SVG renderer covering panel/bubble border styles (dashed, dotted), bubble emphasis effects with shadow rendering, rectangle corner radius, line stroke styles, empty text handling, generic object rendering fallback, and image fit modes (32 new tests). Fixed svgwrite validation issue by using fill-opacity instead of 8-character hex colors.
 - **Cairo Renderer Extended Test Coverage**: Additional edge case tests for Cairo renderer including generic object fallback rendering, unknown character styles, effect polygons without stroke, effect circle elements, bubble dashed borders, panel dotted borders, stickman with insufficient points, panel background images with rounded corners, and effects with zero opacity (12 new tests).
+- **SimpleFace Expression Rendering**: Enhanced SimpleFace character rendering to support all expression types. Both SVG and Cairo renderers now render expressive facial features based on Expression class properties:
+  - **Eyes**: normal (round), curved (^_^ happy), droopy (sad), narrow (angry lines), wide (surprised with pupils), uneven (confused)
+  - **Mouth**: normal (straight line), smile (upward curve), frown (downward curve), open (surprised O), wavy (uncertain)
+  - **Eyebrows**: normal (none), raised (surprised arcs), worried (angled up to center), furrowed (angry angled down)
+  The 6 preset expressions (neutral, happy, sad, angry, surprised, confused) now render visually distinct faces. Added 20 new tests for SVG and Cairo expression rendering.
 
 ### Technical Stack
 

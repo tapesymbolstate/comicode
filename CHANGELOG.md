@@ -2,6 +2,39 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.37] - 2026-01-18
+
+### Features
+- **Animation Export System** (Phase 7 Complete):
+  - Added `GIFRenderer` class for animated GIF output
+  - `Timeline` class for orchestrating animations with precise timing
+  - `Animation` base class with 29 easing functions (linear, quad, cubic, quart, quint, sine, expo, circ, elastic, bounce, back - each with in/out/inOut variants)
+  - `EffectAnimation` for animating visual effects
+  - `ObjectAnimation` for animating CObject properties (position, rotation, scale, opacity)
+  - `PropertyAnimation` for generic property animation
+  - `AnimationGroup` for parallel/sequential animation groups
+  - New example 14: Animation Export (`14_animation_export.py`)
+
+### Documentation
+- Updated IMPLEMENTATION_PLAN.md to reflect Phase 7 completion
+- Updated example count from 13 to 14
+
+## [v0.1.36] - 2026-01-18
+
+### Documentation
+- Updated IMPLEMENTATION_PLAN.md version number
+
+## [v0.1.35] - 2026-01-18
+
+### Documentation
+- Updated IMPLEMENTATION_PLAN.md version number
+
+## [v0.1.34] - 2026-01-18
+
+### Documentation
+- Updated AGENTS.md project structure documentation
+- Updated IMPLEMENTATION_PLAN.md version number
+
 ## [v0.1.33] - 2026-01-18
 
 ### Documentation

@@ -143,6 +143,45 @@ class TestCairoRenderer:
             assert Path(output_path).exists()
             Path(output_path).unlink()
 
+    def test_render_stickman_with_expression(self):
+        """Test rendering a stickman with expression features."""
+        page = Page(width=400, height=300)
+        char = Stickman(name="Happy", expression="happy").move_to((200, 150))
+        page.add(char)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_stickman_all_expressions(self):
+        """Test rendering stickman with all expression types."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised", "confused",
+                      "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            page = Page(width=400, height=300)
+            char = Stickman(name="Expressive", expression=expr_name).move_to((200, 150))
+            page.add(char)
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                renderer = CairoRenderer(page)
+                output_path = renderer.render(f.name, format="png")
+                assert Path(output_path).exists()
+                Path(output_path).unlink()
+
+    def test_render_stickman_with_expression_and_pose(self):
+        """Test rendering stickman with both expression and pose."""
+        page = Page(width=400, height=300)
+        char = Stickman(name="Waving", expression="happy", pose="waving").move_to((200, 150))
+        page.add(char)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
     def test_render_simple_face(self):
         """Test rendering a simple face character."""
         page = Page(width=400, height=300)

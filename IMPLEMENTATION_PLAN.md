@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-All 4 phases have been implemented with **1092 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **1122 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -18,7 +18,7 @@ All 4 phases have been implemented with **1092 tests passing**, mypy clean, and 
 
 - **CObject hierarchy**: Full transformation API (move_to, shift, scale, rotate) with convenience methods (center_in, to_corner, to_edge, hide/show, copy, scale_to_fit)
 - **Bubble system**: 5 types (Speech, Thought, Shout, Whisper, Narrator) with auto-positioning
-- **Character system**: Stickman, SimpleFace with Expression/Pose systems
+- **Character system**: Stickman, SimpleFace, ChubbyStickman with full Expression/Pose support
 - **Layout**: GridLayout, FlowLayout, ConstraintLayout with priority-based solving
 - **Renderers**: SVG (always available), Cairo PNG/PDF (optional)
 - **Effects**: AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect (6 effect types)
@@ -83,6 +83,11 @@ All 4 phases have been implemented with **1092 tests passing**, mypy clean, and 
   - Full expression support (eyes, mouth, eyebrows render on the face)
   - Full pose support (all 12 poses work correctly)
   - Both SVG and Cairo renderers fully support ChubbyStickman rendering (24 new tests)
+- **Stickman Expression Rendering**: Added face feature rendering to basic Stickman character:
+  - Eyes, mouth, and eyebrows now render inside the head circle
+  - All 11 expression types supported (neutral, happy, sad, angry, surprised, confused, sleepy, excited, scared, smirk, crying)
+  - Both SVG and Cairo renderers fully support Stickman expression rendering (6 new tests)
+  - Parity with ChubbyStickman and SimpleFace for expression support
 
 ### Technical Stack
 

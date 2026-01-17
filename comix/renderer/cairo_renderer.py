@@ -503,7 +503,13 @@ class CairoRenderer:
             self._render_generic(data)
 
     def _render_stickman(self, data: dict[str, Any], pos: list[float]) -> None:
-        """Render a stickman character."""
+        """Render a stickman character with expression support.
+
+        Renders a simple stick figure with:
+        - Head circle (first 16 points)
+        - Body lines (remaining points as pairs)
+        - Face features (eyes, mouth, eyebrows) based on expression
+        """
         ctx = self._ctx
         assert ctx is not None
 
@@ -522,6 +528,31 @@ class CairoRenderer:
             self._set_color(color)
             ctx.set_line_width(stroke_width)
             ctx.stroke()
+
+            # Render face features on the head
+            expression = data.get("expression", {})
+            eye_type = expression.get("eyes", "normal")
+            mouth_type = expression.get("mouth", "normal")
+            eyebrow_type = expression.get("eyebrows", "normal")
+
+            # Calculate head center from the head points
+            head_center_x = sum(p[0] for p in head_points) / len(head_points)
+            head_center_y = sum(p[1] for p in head_points) / len(head_points)
+            head_pos = [head_center_x + pos[0], head_center_y + pos[1]]
+
+            # Calculate head radius from character height
+            height = data.get("character_height", 100)
+            head_radius = height * 0.15  # Stickman head ratio
+
+            # Eye parameters (scaled for stickman head)
+            eye_y = head_pos[1] - head_radius * 0.15
+            eye_offset = head_radius * 0.35
+            eye_radius = head_radius * 0.12
+
+            # Render face features
+            self._render_face_eyes_cairo(head_pos, head_radius, eye_y, eye_offset, eye_radius, eye_type, color)
+            self._render_face_eyebrows_cairo(head_pos, head_radius, eye_y, eye_offset, eyebrow_type, color)
+            self._render_face_mouth_cairo(head_pos, head_radius, mouth_type, color)
 
         # Draw body lines (remaining points as pairs)
         body_points = points[16:]

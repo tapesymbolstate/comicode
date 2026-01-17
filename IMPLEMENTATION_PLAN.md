@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-All 4 phases have been implemented with **1122 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **1127 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -88,6 +88,7 @@ All 4 phases have been implemented with **1122 tests passing**, mypy clean, and 
   - All 11 expression types supported (neutral, happy, sad, angry, surprised, confused, sleepy, excited, scared, smirk, crying)
   - Both SVG and Cairo renderers fully support Stickman expression rendering (6 new tests)
   - Parity with ChubbyStickman and SimpleFace for expression support
+- **Optional Dependency Fallback Tests**: Added tests for ImportError handling in comix/__init__.py and comix/renderer/__init__.py. Tests verify fallback behavior when pycairo or watchdog dependencies are unavailable (5 new tests).
 
 ### Technical Stack
 

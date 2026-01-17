@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.4**
+**Current Git Tag: v0.1.5**
 
 All 5 phases have been implemented with **1465 tests passing** (1 skipped), ruff clean, and mypy passing (8 unused type:ignore warnings). Current version: **v0.1.0**.
 
@@ -259,6 +259,12 @@ These are potential improvements, not planned work:
 None currently tracked.
 
 ## Verification Notes (2026-01-18)
+
+### Cleanup (v0.1.5)
+
+- Removed accidental `book.pdf` artifact from repository root
+- Added `book.pdf` to `.gitignore` (it's the default output name for `comix compile`)
+- Examples output files in `examples/output/` remain tracked for documentation purposes
 
 ### Documentation Update (2026-01-18)
 

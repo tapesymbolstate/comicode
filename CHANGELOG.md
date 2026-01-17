@@ -2,6 +2,100 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.32] - 2026-01-18
+
+### Security
+- **Critical**: Fixed SSL certificate verification vulnerability in `ai_image.py`
+  - The `_download_image` method was using `verify=False` when downloading generated images from Replicate
+  - Now uses proper SSL certificate verification for secure downloads
+
+## [v0.1.31] - 2026-01-18
+
+### Documentation
+- Updated IMPLEMENTATION_PLAN.md to v0.1.31
+- Updated PRD.md to reflect all implemented features including Interactive HTML Export
+
+## [v0.1.30] - 2026-01-18
+
+### Documentation
+- Updated documentation to reflect 13 working examples in examples/ directory
+
+## [v0.1.29] - 2026-01-18
+
+### Examples
+- Added example 12: Parser DSL (`12_parser_dsl.py`) - Demonstrates markup DSL for rapid comic creation with 5 examples including Korean Unicode support
+- Added example 13: Visual Effects (`13_visual_effects.py`) - Showcases all 6 manga-style effects (ShakeEffect, ZoomEffect, MotionLines, FocusLines, AppearEffect, ImpactEffect)
+
+## [v0.1.28] - 2026-01-18
+
+### Documentation
+- Added `specs/html-export.md` specification for Interactive HTML Export feature
+- Updated documentation test counts
+
+## [v0.1.27] - 2026-01-18
+
+### Features
+- **Interactive HTML Export** (Phase 6 Complete):
+  - Added `HTMLRenderer` class wrapping SVGRenderer for HTML output
+  - Single-page and multi-page book export support
+  - **Zoom controls**: Mouse wheel, +/- buttons, keyboard shortcuts (+, -, 0)
+  - **Pan functionality**: Mouse drag, touch swipe support
+  - **Theme toggle**: Dark/light modes with T keyboard shortcut
+  - **Fullscreen mode**: F keyboard shortcut
+  - **Page navigation**: Arrow keys, prev/next buttons for multi-page comics
+  - Configurable feature toggles and zoom range
+  - Custom title support and hover effects on panels
+  - Page indicator for multi-page books
+  - Status bar with usage instructions
+  - Touch support for mobile devices
+  - Smooth animations for zoom transitions
+  - Responsive design
+
+## [v0.1.26] - 2026-01-18
+
+### Documentation
+- Added missing specs for extended features:
+  - `specs/effect-system.md`: Visual effects system specification
+  - `specs/parser-dsl.md`: Markup DSL parser specification
+  - `specs/ai-images.md`: AI image integration specification
+  - `specs/preview-server.md`: Preview server specification
+
+## [v0.1.25] - 2026-01-18
+
+### Documentation
+- Cleaned up IMPLEMENTATION_PLAN.md for readability and maintainability
+
+## [v0.1.24] - 2026-01-18
+
+### Bug Fixes
+- Fixed PreviewServer socket cleanup to properly release ports on shutdown
+- Updated documentation test counts
+
+## [v0.1.23] - 2026-01-18
+
+### Documentation
+- Updated specs for consistency across all specification documents
+- Added Book PDF character rendering test
+
+## [v0.1.22] - 2026-01-18
+
+### Tests
+- Added edge case tests for effects system
+- Added edge case tests for bubble positioning
+- Added edge case tests for character type resolution
+
+## [v0.1.21] - 2026-01-18
+
+### Tests
+- Added comprehensive pose and expression test coverage for all 8 character types
+- Ensures all 11 expressions and 12 poses work correctly across all character styles
+
+## [v0.1.20] - 2026-01-18
+
+### Documentation
+- Updated specs/README.md test count to 1536
+- Updated IMPLEMENTATION_PLAN.md and CHANGELOG.md
+
 ## [v0.1.19] - 2026-01-18
 
 ### Refactoring

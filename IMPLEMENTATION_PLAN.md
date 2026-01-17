@@ -40,6 +40,7 @@ All 4 phases have been implemented with **840 tests passing**, mypy clean, and r
 - **Constants Module**: Added centralized constants module (`comix/constants.py`) with standardized values for colors, dimensions, typography, borders, effects, server settings, quality levels, anchors, and directions. Exported from main package and used in CLI for VERSION. Includes 35 new tests for constants validation.
 - **AIImage Test Coverage**: Comprehensive test coverage for AI image generation (57% to 97% coverage). Tests cover OpenAI and Replicate provider flows, error handling, image downloading, and state management (20 new tests).
 - **CairoRenderer Test Coverage**: Extended test coverage for Cairo renderer (72% to 86% coverage). Tests cover image rendering, effects rendering, multi-page PDF, text handling, and character rendering (23 new tests).
+- **Test Warning Fixes**: Fixed RuntimeWarning in AIImage tests by properly handling unawaited coroutines in mock tests. Uses `AsyncMock` for async method mocking and properly closes coroutines in sync wrapper tests.
 
 ### Technical Stack
 

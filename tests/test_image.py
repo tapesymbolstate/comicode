@@ -588,8 +588,13 @@ class TestAIImageCoverage:
         """Test synchronous generate() method (line 166)."""
         ai_img = AIImage(prompt="test")
 
-        # Mock asyncio.run to return the ai_img directly
-        with patch('comix.cobject.image.ai_image.asyncio.run', return_value=ai_img) as mock_run:
+        # Mock asyncio.run to consume the coroutine and return ai_img
+        def mock_asyncio_run(coro):
+            # Close the coroutine to prevent the warning
+            coro.close()
+            return ai_img
+
+        with patch('comix.cobject.image.ai_image.asyncio.run', side_effect=mock_asyncio_run) as mock_run:
             result = ai_img.generate()
             assert result is ai_img
             mock_run.assert_called_once()
@@ -609,11 +614,12 @@ class TestAIImageCoverage:
             mock_image_data.revised_prompt = "revised prompt"
             mock_response.data = [mock_image_data]
 
+            # Create an AsyncMock for the images.generate method
+            from unittest.mock import AsyncMock
+            mock_generate = AsyncMock(return_value=mock_response)
+
             mock_client = MagicMock()
-
-            async def mock_generate(**kwargs):
-                return mock_response
-
+            mock_client.images = MagicMock()
             mock_client.images.generate = mock_generate
 
             # Create a mock openai module
@@ -660,6 +666,7 @@ class TestAIImageCoverage:
         """Test OpenAI generation fails when response has no b64_json (line 236)."""
         import asyncio
         import sys
+        from unittest.mock import AsyncMock
 
         ai_img = AIImage(prompt="test")
 
@@ -669,11 +676,10 @@ class TestAIImageCoverage:
             mock_image_data.b64_json = None  # No b64_json
             mock_response.data = [mock_image_data]
 
+            mock_generate = AsyncMock(return_value=mock_response)
+
             mock_client = MagicMock()
-
-            async def mock_generate(**kwargs):
-                return mock_response
-
+            mock_client.images = MagicMock()
             mock_client.images.generate = mock_generate
 
             mock_openai_module = MagicMock()
@@ -690,6 +696,7 @@ class TestAIImageCoverage:
         """Test OpenAI generation fails with empty response (line 238)."""
         import asyncio
         import sys
+        from unittest.mock import AsyncMock
 
         ai_img = AIImage(prompt="test")
 
@@ -697,11 +704,10 @@ class TestAIImageCoverage:
             mock_response = MagicMock()
             mock_response.data = []  # Empty data
 
+            mock_generate = AsyncMock(return_value=mock_response)
+
             mock_client = MagicMock()
-
-            async def mock_generate(**kwargs):
-                return mock_response
-
+            mock_client.images = MagicMock()
             mock_client.images.generate = mock_generate
 
             mock_openai_module = MagicMock()
@@ -718,6 +724,7 @@ class TestAIImageCoverage:
         """Test OpenAI generation includes style parameter (lines 221-222)."""
         import asyncio
         import sys
+        from unittest.mock import AsyncMock
 
         ai_img = AIImage(prompt="test", style="vivid")
 
@@ -728,13 +735,16 @@ class TestAIImageCoverage:
             mock_image_data.revised_prompt = "revised"
             mock_response.data = [mock_image_data]
 
-            mock_client = MagicMock()
             captured_kwargs = {}
 
-            async def mock_generate(**kwargs):
+            async def capture_generate(**kwargs):
                 captured_kwargs.update(kwargs)
                 return mock_response
 
+            mock_generate = AsyncMock(side_effect=capture_generate)
+
+            mock_client = MagicMock()
+            mock_client.images = MagicMock()
             mock_client.images.generate = mock_generate
 
             mock_openai_module = MagicMock()
@@ -752,15 +762,15 @@ class TestAIImageCoverage:
         """Test OpenAI generation wraps generic exceptions (lines 244-245)."""
         import asyncio
         import sys
+        from unittest.mock import AsyncMock
 
         ai_img = AIImage(prompt="test")
 
         async def run_test():
+            mock_generate = AsyncMock(side_effect=ValueError("Some unexpected error"))
+
             mock_client = MagicMock()
-
-            async def mock_generate(**kwargs):
-                raise ValueError("Some unexpected error")
-
+            mock_client.images = MagicMock()
             mock_client.images.generate = mock_generate
 
             mock_openai_module = MagicMock()

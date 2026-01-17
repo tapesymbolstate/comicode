@@ -222,15 +222,6 @@ class TestBookRender:
         with pytest.raises(ValueError, match="Cannot render an empty book"):
             book.render()
 
-    @pytest.mark.skipif(
-        True,  # Will be conditionally enabled based on Cairo availability
-        reason="Cairo not available"
-    )
-    def test_render_single_page(self):
-        """Test rendering a book with a single page."""
-        # This test is skipped if Cairo is not available
-        pass
-
     def test_render_adds_pdf_extension(self):
         """Test that render adds .pdf extension if missing."""
         book = Book()

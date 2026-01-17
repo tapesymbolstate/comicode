@@ -147,6 +147,10 @@ class Character(CObject):
     ) -> None:
         super().__init__(name=name, **kwargs)
 
+        # Validate height parameter
+        if height <= 0:
+            raise ValueError(f"Character height must be positive, got: {height}")
+
         self.style = style
         self.color = color
         self.fill_color = fill_color

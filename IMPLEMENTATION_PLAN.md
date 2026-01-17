@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-All 5 phases have been implemented with **1366 tests passing** (1 skipped), ruff clean, and mypy passing (8 unused type:ignore warnings). Current version: **v0.1.0**.
+All 5 phases have been implemented with **1370 tests passing** (1 skipped), ruff clean, and mypy passing (8 unused type:ignore warnings). Current version: **v0.1.0**.
 
 ### Completed Phases Summary
 
@@ -171,6 +171,7 @@ All 5 phases have been implemented with **1366 tests passing** (1 skipped), ruff
   - 05_bubble_types.py - Bubble type showcase (speech, thought, shout, whisper)
   - All examples execute without errors and produce PNG output
   - Includes examples/README.md with usage instructions
+- **Character Height Validation**: Added validation for positive height requirement. `Character(height=0)` or negative heights now raise `ValueError` with descriptive message. Also fixed parser/expression consistency by removing invalid "smug" expression (4 new tests).
 
 ### Technical Stack
 
@@ -182,20 +183,11 @@ All 5 phases have been implemented with **1366 tests passing** (1 skipped), ruff
 
 ## Prioritized Action Items
 
-### P1 - High (Code quality/consistency)
+### Completed P1 Items
 
-These items affect code correctness and API consistency:
+1. **Add Character height validation** - COMPLETE: Implemented in `comix/cobject/character/character.py` line 151-152. Raises `ValueError` for height <= 0.
 
-1. **Add Character height validation** - The `specs/character-basics.md` (line 56) specifies that `Character(height=0)` and negative heights should raise `ValueError`, but this validation is missing:
-   - Location: `comix/cobject/character/character.py` line 153
-   - Should raise: `ValueError: Character height must be positive, got: {height}`
-
-2. **Fix parser/character expression inconsistency** - The parser has 12 expressions in its `EXPRESSIONS` set but the Character module only has 11:
-   - Parser includes BOTH "smug" AND "smirk" (12 expressions total)
-   - Expression class only defines "smirk", not "smug"
-   - "smug" in parser is used in example Korean dialogue but maps to nothing
-   - Resolution: Either remove "smug" from parser OR add "smug" expression to Expression class (alias to smirk)
-   - Location: `comix/parser/parser.py` line 109-110
+2. **Fix parser/character expression inconsistency** - COMPLETE: Removed "smug" from parser's EXPRESSIONS set. Parser now has 11 expressions matching Expression class.
 
 ### P2 - Medium (Test coverage improvements)
 

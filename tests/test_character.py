@@ -1,6 +1,7 @@
 """Tests for Character classes."""
 
 import numpy as np
+import pytest
 
 from comix.cobject.character.character import (
     Anime,
@@ -219,6 +220,30 @@ class TestCharacter:
         assert bubble.text == "psst..."
         assert bubble.bubble_type == "whisper"
         assert bubble.tail_target is char
+
+    def test_height_zero_raises_error(self):
+        """Test that height=0 raises ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            Character(height=0)
+        assert "Character height must be positive" in str(exc_info.value)
+        assert "0" in str(exc_info.value)
+
+    def test_negative_height_raises_error(self):
+        """Test that negative height raises ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            Character(height=-50)
+        assert "Character height must be positive" in str(exc_info.value)
+        assert "-50" in str(exc_info.value)
+
+    def test_positive_height_is_valid(self):
+        """Test that positive height values are accepted."""
+        char = Character(height=150.0)
+        assert char.character_height == 150.0
+
+    def test_small_positive_height_is_valid(self):
+        """Test that small positive height values are accepted."""
+        char = Character(height=0.1)
+        assert char.character_height == 0.1
 
 
 class TestStickman:

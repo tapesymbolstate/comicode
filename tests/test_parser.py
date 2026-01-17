@@ -91,10 +91,10 @@ class TestParseModifiers:
         assert result["position"] == "left"
         assert result["expression"] == "happy"
 
-    def test_smug_expression(self):
-        """Test parsing 'smug' expression modifier."""
-        result = _parse_modifiers("right, smug")
-        assert result["expression"] == "smug"
+    def test_smirk_expression(self):
+        """Test parsing 'smirk' expression modifier."""
+        result = _parse_modifiers("right, smirk")
+        assert result["expression"] == "smirk"
         assert result["position"] == "right"
 
     def test_explicit_facing_front(self):
@@ -601,7 +601,7 @@ class TestEdgeCases:
 
     def test_expression_names_are_valid(self):
         """Test all documented expression names."""
-        expressions = ["neutral", "happy", "sad", "angry", "surprised", "confused", "smug",
+        expressions = ["neutral", "happy", "sad", "angry", "surprised", "confused",
                        "sleepy", "excited", "scared", "smirk", "crying"]
         for expr in expressions:
             markup = f"""
@@ -716,18 +716,18 @@ class TestParserExplicitFacingInMarkup:
         # Position right normally defaults facing to left, but explicit back overrides
         assert action.position == "right"
 
-    def test_smug_expression_in_markup(self):
-        """Test smug expression is correctly parsed in full markup."""
+    def test_smirk_expression_in_markup(self):
+        """Test smirk expression is correctly parsed in full markup."""
         markup = """
         # panel 1
-        Bob(right, smug): "I told you so"
+        Bob(right, smirk): "I told you so"
         """
         parser = MarkupParser(markup)
         spec = parser.parse()
 
         action = spec.panels[0].actions[0]
         assert isinstance(action, CharacterAction)
-        assert action.expression == "smug"
+        assert action.expression == "smirk"
         assert action.name == "Bob"
 
 

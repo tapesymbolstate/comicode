@@ -1,5 +1,7 @@
 """Tests for the constants module."""
 
+import pytest
+
 from comix.constants import (
     VERSION,
     Colors,
@@ -11,6 +13,8 @@ from comix.constants import (
     Quality,
     Anchors,
     Directions,
+    ValidValues,
+    validate_value,
 )
 
 
@@ -276,3 +280,129 @@ class TestModuleExports:
         import comix
 
         assert comix.VERSION == comix.__version__
+
+
+class TestValidValues:
+    """Tests for ValidValues constant sets."""
+
+    def test_border_styles_contains_expected_values(self) -> None:
+        """BORDER_STYLES should contain all valid border styles."""
+        expected = {"solid", "dashed", "dotted", "none"}
+        assert ValidValues.BORDER_STYLES == expected
+
+    def test_bubble_types_contains_expected_values(self) -> None:
+        """BUBBLE_TYPES should contain all valid bubble types."""
+        expected = {"speech", "thought", "shout", "whisper", "narrator"}
+        assert ValidValues.BUBBLE_TYPES == expected
+
+    def test_text_alignments_contains_expected_values(self) -> None:
+        """TEXT_ALIGNMENTS should contain all valid text alignments."""
+        expected = {"left", "center", "right"}
+        assert ValidValues.TEXT_ALIGNMENTS == expected
+
+    def test_quality_levels_contains_expected_values(self) -> None:
+        """QUALITY_LEVELS should contain all valid quality levels."""
+        expected = {"low", "medium", "high"}
+        assert ValidValues.QUALITY_LEVELS == expected
+
+    def test_facing_directions_contains_expected_values(self) -> None:
+        """FACING_DIRECTIONS should contain all valid facing directions."""
+        expected = {"left", "right", "front", "back"}
+        assert ValidValues.FACING_DIRECTIONS == expected
+
+    def test_position_directions_contains_expected_values(self) -> None:
+        """POSITION_DIRECTIONS should contain all valid position directions."""
+        expected = {"up", "down", "left", "right"}
+        assert ValidValues.POSITION_DIRECTIONS == expected
+
+    def test_edge_alignments_contains_expected_values(self) -> None:
+        """EDGE_ALIGNMENTS should contain all valid edge alignments."""
+        expected = {"top", "bottom", "left", "right", "center"}
+        assert ValidValues.EDGE_ALIGNMENTS == expected
+
+    def test_flow_directions_contains_expected_values(self) -> None:
+        """FLOW_DIRECTIONS should contain all valid flow directions."""
+        expected = {"horizontal", "vertical"}
+        assert ValidValues.FLOW_DIRECTIONS == expected
+
+    def test_all_sets_are_frozensets(self) -> None:
+        """All valid value sets should be frozensets (immutable)."""
+        sets = [
+            ValidValues.BORDER_STYLES,
+            ValidValues.BUBBLE_TYPES,
+            ValidValues.TEXT_ALIGNMENTS,
+            ValidValues.QUALITY_LEVELS,
+            ValidValues.FACING_DIRECTIONS,
+            ValidValues.POSITION_DIRECTIONS,
+            ValidValues.EDGE_ALIGNMENTS,
+            ValidValues.FLOW_DIRECTIONS,
+        ]
+        for s in sets:
+            assert isinstance(s, frozenset), f"{s} should be a frozenset"
+
+
+class TestValidateValue:
+    """Tests for the validate_value function."""
+
+    def test_valid_value_passes(self) -> None:
+        """Valid values should not raise an exception."""
+        # This should not raise
+        validate_value("solid", ValidValues.BORDER_STYLES, "style")
+        validate_value("dashed", ValidValues.BORDER_STYLES, "style")
+        validate_value("speech", ValidValues.BUBBLE_TYPES, "bubble_type")
+
+    def test_invalid_value_raises_value_error(self) -> None:
+        """Invalid values should raise ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            validate_value("invalid", ValidValues.BORDER_STYLES, "style")
+
+        error_message = str(exc_info.value)
+        assert "Invalid style" in error_message
+        assert "'invalid'" in error_message
+        assert "solid" in error_message
+
+    def test_error_message_includes_context(self) -> None:
+        """Error messages should include context when provided."""
+        with pytest.raises(ValueError) as exc_info:
+            validate_value("bad", ValidValues.BORDER_STYLES, "style", "Panel.set_border")
+
+        error_message = str(exc_info.value)
+        assert "Panel.set_border" in error_message
+
+    def test_error_message_lists_valid_values(self) -> None:
+        """Error messages should list all valid values."""
+        with pytest.raises(ValueError) as exc_info:
+            validate_value("bad", ValidValues.QUALITY_LEVELS, "quality")
+
+        error_message = str(exc_info.value)
+        assert "high" in error_message
+        assert "low" in error_message
+        assert "medium" in error_message
+
+    def test_validate_all_valid_border_styles(self) -> None:
+        """All valid border styles should pass validation."""
+        for style in ValidValues.BORDER_STYLES:
+            validate_value(style, ValidValues.BORDER_STYLES, "style")
+
+    def test_validate_all_valid_bubble_types(self) -> None:
+        """All valid bubble types should pass validation."""
+        for bubble_type in ValidValues.BUBBLE_TYPES:
+            validate_value(bubble_type, ValidValues.BUBBLE_TYPES, "bubble_type")
+
+
+class TestValidValuesExport:
+    """Tests for ValidValues and validate_value exports."""
+
+    def test_valid_values_exported_from_main_package(self) -> None:
+        """ValidValues should be accessible from the main comix package."""
+        import comix
+
+        assert hasattr(comix, "ValidValues")
+        assert comix.ValidValues is ValidValues
+
+    def test_validate_value_exported_from_main_package(self) -> None:
+        """validate_value should be accessible from the main comix package."""
+        import comix
+
+        assert hasattr(comix, "validate_value")
+        assert comix.validate_value is validate_value

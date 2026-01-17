@@ -94,7 +94,7 @@ class Book:
         """Get a page by index.
 
         Args:
-            index: Index of the page (0-based).
+            index: Index of the page (0-based). Negative indices are supported.
 
         Returns:
             The Page at the specified index.
@@ -102,7 +102,16 @@ class Book:
         Raises:
             IndexError: If index is out of range.
         """
-        return self._pages[index]
+        if not self._pages:
+            raise IndexError("Cannot get page from empty book. Add pages first.")
+        try:
+            return self._pages[index]
+        except IndexError:
+            raise IndexError(
+                f"Page index {index} out of range for book with {len(self._pages)} pages. "
+                f"Valid indices: 0 to {len(self._pages) - 1} "
+                f"(or {-len(self._pages)} to -1 for negative indexing)."
+            ) from None
 
     @property
     def pages(self) -> list[Page]:
@@ -185,4 +194,4 @@ class Book:
 
     def __getitem__(self, index: int) -> Page:
         """Get a page by index."""
-        return self._pages[index]
+        return self.get_page(index)

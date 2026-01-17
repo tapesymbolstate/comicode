@@ -1,6 +1,7 @@
 """Tests for Panel class."""
 
 import numpy as np
+import pytest
 
 from comix.cobject.panel.panel import Panel, Border
 from comix.cobject.cobject import CObject
@@ -109,6 +110,25 @@ class TestPanel:
         assert panel.border.width == 4.0
         assert panel.border.style == "dashed"
         assert panel.border.radius == 15.0
+
+    def test_set_border_validates_style(self):
+        """Test that set_border validates style parameter."""
+        panel = Panel()
+        # Valid styles should work
+        for style in ["solid", "dashed", "dotted", "none"]:
+            panel.set_border(style=style)
+            assert panel.border.style == style
+
+    def test_set_border_invalid_style_raises_error(self):
+        """Test that set_border raises ValueError for invalid style."""
+        panel = Panel()
+        with pytest.raises(ValueError) as exc_info:
+            panel.set_border(style="invalid_style")
+
+        error_msg = str(exc_info.value)
+        assert "Invalid style" in error_msg
+        assert "Panel.set_border" in error_msg
+        assert "invalid_style" in error_msg
 
     def test_get_content_bounds(self):
         """Test get_content_bounds method."""

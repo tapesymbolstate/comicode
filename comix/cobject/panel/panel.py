@@ -8,6 +8,7 @@ from typing import Any, Self
 import numpy as np
 
 from comix.cobject.cobject import CObject
+from comix.constants import ValidValues, validate_value
 
 
 @dataclass
@@ -88,12 +89,26 @@ class Panel(CObject):
         style: str | None = None,
         radius: float | None = None,
     ) -> Self:
-        """Set border properties."""
+        """Set border properties.
+
+        Args:
+            color: Border color (hex string, e.g., "#000000").
+            width: Border width in pixels.
+            style: Border style ("solid", "dashed", "dotted", "none").
+            radius: Corner radius for rounded borders.
+
+        Returns:
+            Self for method chaining.
+
+        Raises:
+            ValueError: If style is not a valid border style.
+        """
         if color is not None:
             self.border.color = color
         if width is not None:
             self.border.width = width
         if style is not None:
+            validate_value(style, ValidValues.BORDER_STYLES, "style", "Panel.set_border")
             self.border.style = style
         if radius is not None:
             self.border.radius = radius

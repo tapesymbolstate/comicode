@@ -242,3 +242,77 @@ class Directions:
     BACK: Final[str] = "back"
     HORIZONTAL: Final[str] = "horizontal"
     VERTICAL: Final[str] = "vertical"
+
+
+# =============================================================================
+# VALID VALUES - Sets of valid parameter values for validation
+# =============================================================================
+
+
+class ValidValues:
+    """Valid parameter values for validation."""
+
+    # Border styles
+    BORDER_STYLES: Final[frozenset[str]] = frozenset(
+        {"solid", "dashed", "dotted", "none"}
+    )
+
+    # Bubble types
+    BUBBLE_TYPES: Final[frozenset[str]] = frozenset(
+        {"speech", "thought", "shout", "whisper", "narrator"}
+    )
+
+    # Text alignments
+    TEXT_ALIGNMENTS: Final[frozenset[str]] = frozenset({"left", "center", "right"})
+
+    # Quality levels
+    QUALITY_LEVELS: Final[frozenset[str]] = frozenset({"low", "medium", "high"})
+
+    # Facing directions
+    FACING_DIRECTIONS: Final[frozenset[str]] = frozenset(
+        {"left", "right", "front", "back"}
+    )
+
+    # Positioning directions
+    POSITION_DIRECTIONS: Final[frozenset[str]] = frozenset(
+        {"up", "down", "left", "right"}
+    )
+
+    # Edge alignments
+    EDGE_ALIGNMENTS: Final[frozenset[str]] = frozenset(
+        {"top", "bottom", "left", "right", "center"}
+    )
+
+    # Flow directions
+    FLOW_DIRECTIONS: Final[frozenset[str]] = frozenset({"horizontal", "vertical"})
+
+
+# =============================================================================
+# VALIDATION UTILITIES
+# =============================================================================
+
+
+def validate_value(
+    value: str,
+    valid_set: frozenset[str],
+    param_name: str,
+    context: str = "",
+) -> None:
+    """Validate that a value is in a set of valid values.
+
+    Args:
+        value: The value to validate.
+        valid_set: Set of valid values.
+        param_name: Name of the parameter (for error messages).
+        context: Optional context string (e.g., class name).
+
+    Raises:
+        ValueError: If value is not in valid_set.
+    """
+    if value not in valid_set:
+        valid_list = ", ".join(sorted(valid_set))
+        ctx = f" in {context}" if context else ""
+        raise ValueError(
+            f"Invalid {param_name}{ctx}: '{value}'. "
+            f"Must be one of: {valid_list}"
+        )

@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-All 4 phases have been implemented with **1344 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **1366 tests passing** (1 skipped), mypy clean, and ruff clean. Current version: **v0.0.62**.
 
 ### Completed Phases Summary
 
@@ -149,6 +149,15 @@ All 4 phases have been implemented with **1344 tests passing**, mypy clean, and 
 - **Superhero mask='full' Renderer Tests**: Added explicit tests for `mask="full"` option in both SVG and Cairo renderers (2 new tests)
 - **Robot Expression Renderer Tests**: Extended Robot expression tests in both SVG and Cairo renderers to include all 11 expressions (previously only 9 were tested, missing smirk and crying) (4 new tests)
 - **Shape Stroke Styles**: Added `stroke_style` parameter to Rectangle and Circle classes for consistent API with Line class. Supports "solid", "dashed", and "dotted" styles. Both SVG and Cairo renderers fully support the new parameter (16 new tests)
+- **Input Validation System**: Added comprehensive parameter validation utilities:
+  - `ValidValues` class with frozensets for all valid parameter values (border styles, bubble types, text alignments, quality levels, directions, etc.)
+  - `validate_value()` utility function for consistent validation with descriptive error messages
+  - Both exported from main package for user access
+  - Added validation to `Panel.set_border()` for border style parameter (21 new tests)
+- **Improved Error Messages**: Enhanced error handling in `Book.get_page()`:
+  - Empty book now raises descriptive IndexError: "Cannot get page from empty book"
+  - Out of range indices show page count and valid index range
+  - `__getitem__` now delegates to `get_page()` for consistent error handling
 
 ### Technical Stack
 

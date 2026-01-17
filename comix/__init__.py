@@ -11,6 +11,8 @@ from comix.constants import (
     Quality,
     Anchors,
     Directions,
+    ValidValues,
+    validate_value,
 )
 from comix.cobject.cobject import CObject
 from comix.cobject.panel.panel import Panel, Border
@@ -152,6 +154,9 @@ __all__ = [
     "Quality",
     "Anchors",
     "Directions",
+    "ValidValues",
+    # Validation utilities
+    "validate_value",
     # Core objects
     "CObject",
     "Panel",

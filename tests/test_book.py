@@ -109,11 +109,44 @@ class TestBookBasic:
         assert book.get_page(0) is page1
         assert book.get_page(1) is page2
 
-    def test_get_page_index_error(self):
-        """Test that get_page raises IndexError for invalid index."""
+    def test_get_page_index_error_empty_book(self):
+        """Test that get_page raises IndexError with helpful message for empty book."""
         book = Book()
-        with pytest.raises(IndexError):
+        with pytest.raises(IndexError) as exc_info:
             book.get_page(0)
+        error_msg = str(exc_info.value)
+        assert "empty book" in error_msg
+
+    def test_get_page_index_error_out_of_range(self):
+        """Test that get_page raises IndexError with helpful message for out of range."""
+        book = Book()
+        book.add_page(Page())
+        book.add_page(Page())
+        with pytest.raises(IndexError) as exc_info:
+            book.get_page(5)
+        error_msg = str(exc_info.value)
+        assert "5" in error_msg  # The index that was requested
+        assert "2 pages" in error_msg  # The actual page count
+        assert "Valid indices" in error_msg
+
+    def test_get_page_negative_index(self):
+        """Test that negative indices work for get_page."""
+        book = Book()
+        page1 = Page()
+        page2 = Page()
+        book.add_page(page1, page2)
+        assert book.get_page(-1) is page2
+        assert book.get_page(-2) is page1
+
+    def test_getitem_uses_get_page(self):
+        """Test that __getitem__ delegates to get_page for error handling."""
+        book = Book()
+        book.add_page(Page())
+        with pytest.raises(IndexError) as exc_info:
+            _ = book[10]
+        error_msg = str(exc_info.value)
+        assert "10" in error_msg
+        assert "Valid indices" in error_msg
 
     def test_clear(self):
         """Test clearing all pages."""

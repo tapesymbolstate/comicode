@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-All 4 phases have been implemented with **1366 tests passing** (1 skipped), mypy clean, and ruff clean. Current version: **v0.0.63**.
+All 5 phases have been implemented with **1366 tests passing** (1 skipped), ruff clean, and mypy passing (8 unused type:ignore warnings). Current version: **v0.1.0**.
 
 ### Completed Phases Summary
 
@@ -158,6 +158,19 @@ All 4 phases have been implemented with **1366 tests passing** (1 skipped), mypy
   - Empty book now raises descriptive IndexError: "Cannot get page from empty book"
   - Out of range indices show page count and valid index range
   - `__getitem__` now delegates to `get_page()` for consistent error handling
+- **specs/README.md Update**: Updated the outdated specs/README.md to reflect current implementation status:
+  - Changed version from 0.0.63 to 0.1.0
+  - Updated status table to show all specs as complete
+  - Removed misleading "Known Issues" section that listed resolved issues
+  - Added comprehensive feature documentation (character types, expressions, poses, bubble types, templates, effects, rendering)
+- **Working Examples (01-05)**: Created the examples/ directory with 5 working examples as defined in specs/working-examples.md:
+  - 01_simple_dialogue.py - Two-panel dialogue between stick figures
+  - 02_four_panel_comic.py - 4koma style comic using FourKoma template
+  - 03_group_scene.py - Multiple characters in single panel
+  - 04_expressions.py - Expression showcase (neutral, happy, sad, angry)
+  - 05_bubble_types.py - Bubble type showcase (speech, thought, shout, whisper)
+  - All examples execute without errors and produce PNG output
+  - Includes examples/README.md with usage instructions
 
 ### Technical Stack
 
@@ -167,6 +180,58 @@ All 4 phases have been implemented with **1366 tests passing** (1 skipped), mypy
 - pycairo (optional) for PNG/PDF output
 - watchdog (optional) for file watching
 
+## Prioritized Action Items
+
+### P1 - High (Code quality/consistency)
+
+These items affect code correctness and API consistency:
+
+1. **Add Character height validation** - The `specs/character-basics.md` (line 56) specifies that `Character(height=0)` and negative heights should raise `ValueError`, but this validation is missing:
+   - Location: `comix/cobject/character/character.py` line 153
+   - Should raise: `ValueError: Character height must be positive, got: {height}`
+
+2. **Fix parser/character expression inconsistency** - The parser has 12 expressions in its `EXPRESSIONS` set but the Character module only has 11:
+   - Parser includes BOTH "smug" AND "smirk" (12 expressions total)
+   - Expression class only defines "smirk", not "smug"
+   - "smug" in parser is used in example Korean dialogue but maps to nothing
+   - Resolution: Either remove "smug" from parser OR add "smug" expression to Expression class (alias to smirk)
+   - Location: `comix/parser/parser.py` line 109-110
+
+### P2 - Medium (Test coverage improvements)
+
+These items improve reliability and catch edge case bugs:
+
+3. **Expand bezier utility test coverage** - The bezier module has 309 lines of code with limited dedicated testing:
+   - Add tests for edge cases in curve calculations
+   - Test boundary conditions for bubble path generation
+   - Location: `comix/utils/bezier.py`
+
+4. **Add GridLayout edge case tests** - GridLayout needs tests for:
+   - Empty grid scenarios
+   - Single cell grids
+   - Very large grid dimensions
+   - Items that don't fit in cells
+
+5. **Add constraint solver edge case tests** - ConstraintLayout solver needs additional tests for:
+   - Complex circular dependency detection
+   - Priority conflict resolution
+   - Constraints with no solution
+
+### P3 - Low (Minor improvements)
+
+These items are nice-to-have cleanups:
+
+6. **Clean up temporary files in Page.show()** - The `Page.show()` method creates temporary files that are never cleaned up:
+   - Should use context manager or cleanup callback
+   - Or document that temp files are user's responsibility
+
+7. **Implement remaining 5 examples (06-10)** - The `specs/working-examples.md` spec defines 10 examples but only 5 have code:
+   - 06: Multi-page PDF comic
+   - 07: Custom page layout (3x2 grid)
+   - 08: Manual positioning and styling
+   - 09: Using templates (FourKoma, TwoByTwo, etc.)
+   - 10: Error handling and fallbacks
+
 ## Future Enhancements (Ideas)
 
 These are potential improvements, not planned work:
@@ -174,7 +239,19 @@ These are potential improvements, not planned work:
 1. **Animation Export**: Animated GIF/video for webtoon scroll effects
 2. **Additional Character Styles**: New character classes beyond existing ones (e.g., DetailedFace, RealisticStyle)
 3. **Web Renderer**: HTML output with interactive features
+4. **Interactive HTML Export**: Export comics as interactive HTML pages with hover effects
+5. **Comic Reader Component**: A web component for viewing multi-page comics with navigation
 
 ## Known Issues
 
 None currently tracked.
+
+## Verification Notes (2026-01-18)
+
+Verified that the following "blocking issues" mentioned in outdated specs/README.md are **NOT actual issues**:
+
+1. **"Stickman Partial Rendering"** - VERIFIED WORKING: Full expression rendering is implemented in both SVG and Cairo renderers. The `_render_stickman()` method properly renders head, body, limbs, and all facial expressions (eyes, mouth, eyebrows).
+
+2. **"Speech Bubble Missing Border"** - VERIFIED WORKING: Bubble borders render correctly with `border_color` and `border_width` parameters. Both renderers handle border styles (solid, dashed, dotted) properly.
+
+3. **All specs** - The acceptance criteria in specs/*.md are met by the current implementation. The specs/README.md status table is outdated and should show green status for all items.

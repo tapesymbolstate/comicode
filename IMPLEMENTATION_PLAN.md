@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete
 
-All 4 phases have been implemented with **633 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **686 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -33,6 +33,7 @@ All 4 phases have been implemented with **633 tests passing**, mypy clean, and r
 - **BackgroundDirective Rendering**: Parser now properly handles background directives - sets color, image path, or description for AI generation
 - **PRD Documentation Sync**: Updated specs/PRD.md to match actual implementation (bubble_type parameter, consolidated module structure, removed non-existent imports, added NarratorBubble class definition)
 - **Panel Background Image Rendering**: SVG and Cairo renderers now properly render `background_image` set on panels (via `panel.set_background(image="path.png")` or parser `[background: image.png]`). Supports rounded corner clipping for panels with border radius (6 new tests)
+- **Panel Templates**: Pre-built comic page layouts (FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage) with semantic panel access (53 new tests)
 
 ### Technical Stack
 
@@ -47,10 +48,9 @@ All 4 phases have been implemented with **633 tests passing**, mypy clean, and r
 These are potential improvements, not planned work:
 
 1. **Animation Export**: Animated GIF/video for webtoon scroll effects
-2. **Panel Templates**: Pre-built layouts (4-koma, splash page, etc.)
-3. **Character Library**: Expanded character styles beyond Stickman/SimpleFace
-4. **Multi-page Export**: PDF book compilation
-5. **Web Renderer**: HTML output with interactive features
+2. **Character Library**: Expanded character styles beyond Stickman/SimpleFace
+3. **Multi-page Export**: PDF book compilation
+4. **Web Renderer**: HTML output with interactive features
 
 ## Known Issues
 

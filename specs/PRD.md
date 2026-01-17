@@ -807,7 +807,410 @@ class Strip(Page):
             self.add(Panel(name=f"Panel_{i+1}"))
 ```
 
-### 3.6 Style 시스템
+### 3.6 Panel Templates
+
+```python
+# comix/page/templates.py
+
+"""
+Panel Templates provide pre-designed page layouts for common comic formats.
+Each template handles panel sizing, positioning, and gutter spacing automatically.
+"""
+
+from .page import Page, Panel
+
+
+class FourKoma(Page):
+    """
+    Traditional 4-panel vertical comic (4コマ漫画).
+    Standard format for Japanese gag comics.
+    """
+
+    def __init__(
+        self,
+        width: float = 400,
+        height: float = 1200,
+        **kwargs
+    ):
+        super().__init__(width=width, height=height, **kwargs)
+        self.set_layout(rows=4, cols=1)
+
+        for i in range(4):
+            self.add(Panel(name=f"Panel_{i+1}"))
+
+# Example usage:
+# comic = FourKoma()
+# comic.panels[0].add_content(character.say("起: Setup"))
+# comic.panels[1].add_content(character.say("承: Development"))
+# comic.panels[2].add_content(character.say("転: Twist"))
+# comic.panels[3].add_content(character.say("結: Conclusion"))
+# comic.render("4koma.png")
+
+
+class SplashPage(Page):
+    """
+    Full-page splash with optional header panel.
+    Used for dramatic moments or title pages.
+    """
+
+    def __init__(
+        self,
+        width: float = 800,
+        height: float = 1200,
+        header_height: float | None = None,  # None = no header
+        **kwargs
+    ):
+        super().__init__(width=width, height=height, **kwargs)
+        self.header_height = header_height
+
+        if header_height:
+            # Small header + large splash
+            header = Panel(
+                name="Header",
+                width=self.width - 2 * self.margin,
+                height=header_height
+            )
+            splash = Panel(
+                name="Splash",
+                width=self.width - 2 * self.margin,
+                height=self.height - header_height - 3 * self.margin
+            )
+            self.add(header, splash)
+        else:
+            # Full splash only
+            splash = Panel(
+                name="Splash",
+                width=self.width - 2 * self.margin,
+                height=self.height - 2 * self.margin
+            )
+            self.add(splash)
+
+    @property
+    def splash(self) -> Panel:
+        """Main splash panel."""
+        return self._panels[-1]
+
+    @property
+    def header(self) -> Panel | None:
+        """Header panel (if exists)."""
+        return self._panels[0] if self.header_height else None
+
+# Example usage:
+# page = SplashPage(header_height=100)
+# page.header.add_content(Text("Chapter 5: The Final Battle"))
+# page.splash.add_content(hero, villain)
+# page.render("splash.png")
+
+
+class TwoByTwo(Page):
+    """
+    Classic 2x2 grid layout.
+    Common for Sunday comics and simple sequences.
+    """
+
+    def __init__(
+        self,
+        width: float = 800,
+        height: float = 600,
+        **kwargs
+    ):
+        super().__init__(width=width, height=height, **kwargs)
+        self.set_layout(rows=2, cols=2)
+
+        for i in range(4):
+            self.add(Panel(name=f"Panel_{i+1}"))
+
+    @property
+    def top_left(self) -> Panel:
+        return self._panels[0]
+
+    @property
+    def top_right(self) -> Panel:
+        return self._panels[1]
+
+    @property
+    def bottom_left(self) -> Panel:
+        return self._panels[2]
+
+    @property
+    def bottom_right(self) -> Panel:
+        return self._panels[3]
+
+# Example usage:
+# page = TwoByTwo()
+# page.top_left.add_content(char.say("Panel 1"))
+# page.top_right.add_content(char.say("Panel 2"))
+# page.bottom_left.add_content(char.say("Panel 3"))
+# page.bottom_right.add_content(char.say("Panel 4"))
+# page.render("2x2.png")
+
+
+class WebComic(Page):
+    """
+    Vertical scroll format for webtoons.
+    Variable number of panels stacked vertically with consistent width.
+    """
+
+    def __init__(
+        self,
+        width: float = 800,
+        panels: int = 6,
+        panel_heights: list[float] | None = None,  # Custom heights per panel
+        default_panel_height: float = 400,
+        **kwargs
+    ):
+        # Calculate total height
+        if panel_heights:
+            total_height = sum(panel_heights) + (len(panel_heights) + 1) * kwargs.get("gutter", 10)
+        else:
+            total_height = panels * default_panel_height + (panels + 1) * kwargs.get("gutter", 10)
+
+        kwargs.setdefault("gutter", 0)  # Webtoons often have no gutter
+        super().__init__(width=width, height=total_height, **kwargs)
+
+        # Create panels with specified or default heights
+        heights = panel_heights or [default_panel_height] * panels
+        for i, h in enumerate(heights):
+            panel = Panel(
+                name=f"Panel_{i+1}",
+                width=self.width - 2 * self.margin,
+                height=h
+            )
+            self.add(panel)
+
+# Example usage:
+# webtoon = WebComic(panels=5, panel_heights=[200, 400, 300, 500, 250])
+# for i, panel in enumerate(webtoon.panels):
+#     panel.add_content(scene_content[i])
+# webtoon.render("episode_01.png")
+
+
+class ThreeRowLayout(Page):
+    """
+    Flexible 3-row manga layout with configurable columns per row.
+    Common for dynamic manga page compositions.
+    """
+
+    def __init__(
+        self,
+        width: float = 800,
+        height: float = 1200,
+        row_configs: list[int] = [2, 1, 3],  # Panels per row
+        row_heights: list[float] | None = None,  # Relative heights
+        **kwargs
+    ):
+        super().__init__(width=width, height=height, **kwargs)
+
+        self.row_configs = row_configs
+
+        # Calculate row heights (default: equal distribution)
+        if row_heights is None:
+            row_heights = [1.0] * len(row_configs)
+
+        total_ratio = sum(row_heights)
+        available_height = self.height - 2 * self.margin - (len(row_configs) - 1) * self.gutter
+
+        current_y = self.margin
+        panel_width = self.width - 2 * self.margin
+
+        for row_idx, (num_panels, ratio) in enumerate(zip(row_configs, row_heights)):
+            row_height = available_height * ratio / total_ratio
+            single_panel_width = (panel_width - (num_panels - 1) * self.gutter) / num_panels
+
+            for col_idx in range(num_panels):
+                panel = Panel(
+                    name=f"Row{row_idx+1}_Panel{col_idx+1}",
+                    width=single_panel_width,
+                    height=row_height
+                )
+                panel.move_to((
+                    self.margin + col_idx * (single_panel_width + self.gutter) + single_panel_width / 2,
+                    current_y + row_height / 2
+                ))
+                self.add(panel)
+
+            current_y += row_height + self.gutter
+
+# Example usage:
+# page = ThreeRowLayout(row_configs=[2, 1, 3], row_heights=[1, 2, 1])
+# # Row 1: 2 small panels
+# # Row 2: 1 large dramatic panel (double height)
+# # Row 3: 3 small reaction panels
+# page.render("manga_page.png")
+
+
+class MangaPage(Page):
+    """
+    Grid-based manga page with preset configurations.
+    Supports common manga layouts with named presets.
+    """
+
+    PRESETS = {
+        "standard": [[1, 1], [1, 1, 1]],           # 2 + 3 panels
+        "cinematic": [[1], [1, 1], [1]],            # Wide panels
+        "action": [[1], [1, 1, 1, 1]],              # Splash + 4 small
+        "dialogue": [[1, 1], [1, 1], [1, 1]],       # 6 equal panels
+        "reveal": [[1, 1, 1], [1]],                  # 3 small + 1 reveal
+    }
+
+    def __init__(
+        self,
+        width: float = 800,
+        height: float = 1200,
+        preset: str = "standard",
+        custom_grid: list[list[float]] | None = None,  # Custom widths per row
+        **kwargs
+    ):
+        super().__init__(width=width, height=height, **kwargs)
+
+        grid = custom_grid or self.PRESETS.get(preset, self.PRESETS["standard"])
+        self._build_grid(grid)
+
+    def _build_grid(self, grid: list[list[float]]):
+        """Build panels from grid specification."""
+        num_rows = len(grid)
+        available_height = self.height - 2 * self.margin - (num_rows - 1) * self.gutter
+        row_height = available_height / num_rows
+
+        current_y = self.margin
+
+        for row_idx, row in enumerate(grid):
+            total_ratio = sum(row)
+            available_width = self.width - 2 * self.margin - (len(row) - 1) * self.gutter
+
+            current_x = self.margin
+
+            for col_idx, ratio in enumerate(row):
+                panel_width = available_width * ratio / total_ratio
+
+                panel = Panel(
+                    name=f"Panel_{len(self._panels)+1}",
+                    width=panel_width,
+                    height=row_height
+                )
+                panel.move_to((
+                    current_x + panel_width / 2,
+                    current_y + row_height / 2
+                ))
+                self.add(panel)
+
+                current_x += panel_width + self.gutter
+
+            current_y += row_height + self.gutter
+
+# Example usage:
+# page = MangaPage(preset="action")
+# page.panels[0].add_content(big_action_scene)  # Splash panel
+# for i in range(1, 5):
+#     page.panels[i].add_content(reactions[i-1])  # Reaction shots
+# page.render("action_page.png")
+
+# Custom grid example:
+# page = MangaPage(custom_grid=[[2, 1], [1, 1, 1], [3, 2]])  # Weighted widths
+# page.render("custom_layout.png")
+
+
+class ActionPage(Page):
+    """
+    Large main panel with smaller reaction panels.
+    Ideal for action sequences with multiple character reactions.
+    """
+
+    def __init__(
+        self,
+        width: float = 800,
+        height: float = 1200,
+        main_panel_ratio: float = 0.6,  # Main panel takes 60% of height
+        reaction_count: int = 4,
+        reaction_position: str = "bottom",  # "bottom", "top", "side"
+        **kwargs
+    ):
+        super().__init__(width=width, height=height, **kwargs)
+
+        available_width = self.width - 2 * self.margin
+        available_height = self.height - 2 * self.margin - self.gutter
+
+        main_height = available_height * main_panel_ratio
+        reaction_height = available_height * (1 - main_panel_ratio)
+        reaction_width = (available_width - (reaction_count - 1) * self.gutter) / reaction_count
+
+        if reaction_position == "bottom":
+            # Main panel on top
+            main_panel = Panel(
+                name="Main",
+                width=available_width,
+                height=main_height
+            )
+            main_panel.move_to((
+                self.width / 2,
+                self.margin + main_height / 2
+            ))
+            self.add(main_panel)
+
+            # Reaction panels at bottom
+            reaction_y = self.margin + main_height + self.gutter + reaction_height / 2
+            for i in range(reaction_count):
+                panel = Panel(
+                    name=f"Reaction_{i+1}",
+                    width=reaction_width,
+                    height=reaction_height
+                )
+                panel.move_to((
+                    self.margin + i * (reaction_width + self.gutter) + reaction_width / 2,
+                    reaction_y
+                ))
+                self.add(panel)
+
+        elif reaction_position == "top":
+            # Reaction panels at top
+            reaction_y = self.margin + reaction_height / 2
+            for i in range(reaction_count):
+                panel = Panel(
+                    name=f"Reaction_{i+1}",
+                    width=reaction_width,
+                    height=reaction_height
+                )
+                panel.move_to((
+                    self.margin + i * (reaction_width + self.gutter) + reaction_width / 2,
+                    reaction_y
+                ))
+                self.add(panel)
+
+            # Main panel at bottom
+            main_panel = Panel(
+                name="Main",
+                width=available_width,
+                height=main_height
+            )
+            main_panel.move_to((
+                self.width / 2,
+                self.margin + reaction_height + self.gutter + main_height / 2
+            ))
+            self.add(main_panel)
+
+    @property
+    def main(self) -> Panel:
+        """The main action panel."""
+        for panel in self._panels:
+            if panel.name == "Main":
+                return panel
+        return self._panels[0]
+
+    @property
+    def reactions(self) -> list[Panel]:
+        """List of reaction panels."""
+        return [p for p in self._panels if p.name.startswith("Reaction")]
+
+# Example usage:
+# page = ActionPage(main_panel_ratio=0.7, reaction_count=3)
+# page.main.add_content(hero_attack, sfx("WHAM!"))
+# page.reactions[0].add_content(villain.set_expression("shocked"))
+# page.reactions[1].add_content(bystander.set_expression("scared"))
+# page.reactions[2].add_content(sidekick.set_expression("excited"))
+# page.render("action_scene.png")
+```
+
+### 3.7 Style 시스템
 
 ```python
 # comix/style/style.py

@@ -40,6 +40,15 @@ from comix.layout.constraints import (
 from comix.layout.flow import FlowLayout
 from comix.layout.grid import GridLayout
 from comix.page.page import Page, SinglePanel, Strip
+from comix.page.templates import (
+    FourKoma,
+    SplashPage,
+    TwoByTwo,
+    WebComic,
+    ThreeRowLayout,
+    MangaPage,
+    ActionPage,
+)
 from comix.parser import parse_markup, MarkupParser, ParseError
 from comix.renderer.svg_renderer import SVGRenderer
 from comix.style.style import (
@@ -157,6 +166,14 @@ __all__ = [
     "Page",
     "SinglePanel",
     "Strip",
+    # Page Templates
+    "FourKoma",
+    "SplashPage",
+    "TwoByTwo",
+    "WebComic",
+    "ThreeRowLayout",
+    "MangaPage",
+    "ActionPage",
     # Parser
     "parse_markup",
     "MarkupParser",

@@ -12,6 +12,12 @@ from comix.utils.geometry import (
     normalize_angle,
     angle_between,
 )
+from comix.utils.script_loader import (
+    ScriptLoadError,
+    load_script_module,
+    find_page_in_module,
+    load_page_from_script,
+)
 
 __all__ = [
     "create_bubble_path",
@@ -25,4 +31,8 @@ __all__ = [
     "bounding_box",
     "normalize_angle",
     "angle_between",
+    "ScriptLoadError",
+    "load_script_module",
+    "find_page_in_module",
+    "load_page_from_script",
 ]

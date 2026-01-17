@@ -2,9 +2,9 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.18**
+**Current Git Tag: v0.1.19**
 
-All 5 phases have been implemented with **1517 tests passing**, ruff clean, and mypy passing. Current version: **v0.1.0**.
+All 5 phases have been implemented with **1536 tests passing**, ruff clean, and mypy passing. Current version: **v0.1.0**.
 
 ### Completed Phases Summary
 
@@ -181,6 +181,13 @@ All 5 phases have been implemented with **1517 tests passing**, ruff clean, and 
   - character-basics.md: Added shout() and whisper() convenience methods
   - speech-bubbles.md: Documented auto-positioning system (auto_attach_to, overlaps_with, auto_position_bubbles) and marked collision avoidance as complete
   - PRD.md: Added MINIMAL_STYLE preset definition
+- **Script Loader Utilities (v0.1.19)**: Refactored duplicated code patterns in CLI and preview server into shared utilities:
+  - Added `comix/utils/script_loader.py` with `load_script_module()`, `find_page_in_module()`, and `load_page_from_script()` functions
+  - Added `ScriptLoadError` exception class for consistent error handling
+  - CLI commands (`render`, `preview`, `compile`) now use shared utilities, reducing code duplication by ~70 lines
+  - Preview server `ScriptLoader` class refactored to use shared utilities
+  - All utilities exported from `comix.utils` for public use
+  - 19 new tests in `tests/test_script_loader.py` covering all utility functions
 
 ### Technical Stack
 

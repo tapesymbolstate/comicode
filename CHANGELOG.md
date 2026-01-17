@@ -2,6 +2,29 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.19] - 2026-01-18
+
+### Refactoring
+- Extracted script loading utilities to reduce code duplication:
+  - Added `comix/utils/script_loader.py` with shared functions for loading Python scripts and finding Page objects
+  - `load_script_module()`: Load a Python script as a module with proper cache invalidation
+  - `find_page_in_module()`: Find Page class or instance in a module
+  - `load_page_from_script()`: Convenience function combining both operations
+  - `ScriptLoadError`: Exception for script loading failures
+
+### Code Quality
+- Refactored CLI commands (`render`, `preview`, `compile`) to use shared utilities
+- Refactored preview server `ScriptLoader` class to use shared utilities
+- Removed ~70 lines of duplicated code across 4 files
+
+### Tests
+- Added 19 new tests in `tests/test_script_loader.py`:
+  - Tests for loading valid/invalid scripts
+  - Tests for module cache handling
+  - Tests for finding Page classes and instances
+  - Tests for error handling (missing files, syntax errors, import errors)
+  - Tests for utility exports
+
 ## [v0.1.18] - 2026-01-18
 
 ### Documentation

@@ -7,10 +7,8 @@ the browser when the comic script changes.
 from __future__ import annotations
 
 import http.server
-import importlib.util
 import json
 import socketserver
-import sys
 import threading
 import time
 import webbrowser
@@ -50,44 +48,33 @@ class ScriptLoader:
 
     def load_page(self) -> Page | None:
         """Load the Page from the script file."""
-        from comix.page.page import Page
+        from comix.utils.script_loader import (
+            ScriptLoadError,
+            load_script_module,
+            find_page_in_module,
+        )
 
-        # Remove any previously imported module from cache
         module_name = f"comic_script_{id(self)}"
-        if module_name in sys.modules:
-            del sys.modules[module_name]
-
-        spec = importlib.util.spec_from_file_location(module_name, self.script_path)
-        if spec is None or spec.loader is None:
-            raise PreviewError(f"Could not load script: {self.script_path}")
-
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[module_name] = module
 
         try:
-            spec.loader.exec_module(module)
+            module = load_script_module(self.script_path, module_name)
+        except ScriptLoadError as e:
+            raise PreviewError(str(e))
         except Exception as e:
             self._error_message = f"Error loading script: {e}"
             return None
 
-        # Look for Page subclass first
-        for name in dir(module):
-            obj = getattr(module, name)
-            if isinstance(obj, type) and issubclass(obj, Page) and obj is not Page:
-                try:
-                    return obj()
-                except Exception as e:
-                    self._error_message = f"Error instantiating {name}: {e}"
-                    return None
+        try:
+            page = find_page_in_module(module)
+        except Exception as e:
+            self._error_message = f"Error instantiating Page: {e}"
+            return None
 
-        # Then look for Page instance
-        for name in dir(module):
-            obj = getattr(module, name)
-            if isinstance(obj, Page):
-                return obj
+        if page is None:
+            self._error_message = "No Page class or instance found in script"
+            return None
 
-        self._error_message = "No Page class or instance found in script"
-        return None
+        return page
 
     def render_svg(self) -> tuple[str, str | None]:
         """Render the page to SVG string.

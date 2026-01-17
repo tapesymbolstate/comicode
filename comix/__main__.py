@@ -31,36 +31,12 @@ def main() -> None:
 )
 def render(script: str, output: str, format: str, quality: str) -> None:
     """Render a comic script to an output file."""
-    import importlib.util
-    from pathlib import Path
+    from comix.utils.script_loader import ScriptLoadError, load_page_from_script
 
-    script_path = Path(script)
-    spec = importlib.util.spec_from_file_location("comic_script", script_path)
-    if spec is None or spec.loader is None:
-        click.echo(f"Error: Could not load script {script}", err=True)
-        raise SystemExit(1)
-
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    from comix.page.page import Page
-
-    page = None
-    for name in dir(module):
-        obj = getattr(module, name)
-        if isinstance(obj, type) and issubclass(obj, Page) and obj is not Page:
-            page = obj()
-            break
-
-    if page is None:
-        for name in dir(module):
-            obj = getattr(module, name)
-            if isinstance(obj, Page):
-                page = obj
-                break
-
-    if page is None:
-        click.echo("Error: No Page class or instance found in script", err=True)
+    try:
+        page = load_page_from_script(script)
+    except ScriptLoadError as e:
+        click.echo(f"Error: {e}", err=True)
         raise SystemExit(1)
 
     output_path = page.render(output, format=format, quality=quality)
@@ -71,36 +47,12 @@ def render(script: str, output: str, format: str, quality: str) -> None:
 @click.argument("script", type=click.Path(exists=True))
 def preview(script: str) -> None:
     """Preview a comic script in the browser."""
-    import importlib.util
-    from pathlib import Path
+    from comix.utils.script_loader import ScriptLoadError, load_page_from_script
 
-    script_path = Path(script)
-    spec = importlib.util.spec_from_file_location("comic_script", script_path)
-    if spec is None or spec.loader is None:
-        click.echo(f"Error: Could not load script {script}", err=True)
-        raise SystemExit(1)
-
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    from comix.page.page import Page
-
-    page = None
-    for name in dir(module):
-        obj = getattr(module, name)
-        if isinstance(obj, type) and issubclass(obj, Page) and obj is not Page:
-            page = obj()
-            break
-
-    if page is None:
-        for name in dir(module):
-            obj = getattr(module, name)
-            if isinstance(obj, Page):
-                page = obj
-                break
-
-    if page is None:
-        click.echo("Error: No Page class or instance found in script", err=True)
+    try:
+        page = load_page_from_script(script)
+    except ScriptLoadError as e:
+        click.echo(f"Error: {e}", err=True)
         raise SystemExit(1)
 
     page.show()
@@ -164,11 +116,12 @@ def compile(
 
     Requires: uv sync --extra cairo
     """
-    import importlib.util
-    from pathlib import Path
-
     from comix.page.book import Book
-    from comix.page.page import Page
+    from comix.utils.script_loader import (
+        ScriptLoadError,
+        load_script_module,
+        find_page_in_module,
+    )
 
     # Check Cairo availability
     try:
@@ -184,43 +137,20 @@ def compile(
     loaded_pages = 0
 
     for script in scripts:
-        script_path = Path(script)
-        spec = importlib.util.spec_from_file_location("comic_script", script_path)
-        if spec is None or spec.loader is None:
+        try:
+            module = load_script_module(script)
+        except ScriptLoadError:
             click.echo(f"Warning: Could not load script {script}, skipping", err=True)
             continue
-
-        module = importlib.util.module_from_spec(spec)
-        try:
-            spec.loader.exec_module(module)
         except Exception as e:
             click.echo(f"Warning: Error executing {script}: {e}, skipping", err=True)
             continue
 
-        # Find Page classes or instances in the module
-        page_found = False
-
-        # First try to find Page subclasses
-        for name in dir(module):
-            obj = getattr(module, name)
-            if isinstance(obj, type) and issubclass(obj, Page) and obj is not Page:
-                page = obj()
-                book.add_page(page)
-                page_found = True
-                loaded_pages += 1
-                break
-
-        # If no class found, look for Page instances
-        if not page_found:
-            for name in dir(module):
-                obj = getattr(module, name)
-                if isinstance(obj, Page):
-                    book.add_page(obj)
-                    page_found = True
-                    loaded_pages += 1
-                    break
-
-        if not page_found:
+        page = find_page_in_module(module)
+        if page is not None:
+            book.add_page(page)
+            loaded_pages += 1
+        else:
             click.echo(f"Warning: No Page found in {script}, skipping", err=True)
 
     if loaded_pages == 0:

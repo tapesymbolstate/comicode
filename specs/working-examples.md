@@ -40,6 +40,8 @@ Without working examples, developers struggle to bridge the gap from API documen
 - [x] Example 11: Interactive HTML export with zoom, pan, themes
 - [x] Example 12: Parser/DSL markup for rapid comic creation
 - [x] Example 13: Visual effects (shake, zoom, motion, focus, impact)
+- [x] Example 14: Animation export (GIF) with Timeline and easing functions
+- [x] Example 15: Video export (MP4/WebM) with quality settings
 
 ### Won't Have (This Iteration)
 - [ ] Complex multi-page stories (defer to tutorials)
@@ -79,13 +81,17 @@ examples/
 ├── 11_html_export.py          # Interactive HTML export
 ├── 12_parser_dsl.py           # Parser/DSL markup
 ├── 13_visual_effects.py       # Visual effects
+├── 14_animation_export.py     # GIF animation export
+├── 15_video_export.py         # MP4/WebM video export
 └── output/                    # Generated files
     ├── 01_simple_dialogue.png
     ├── 02_four_panel_comic.png
     ├── ...
     ├── 11_html_*.html         # HTML export variants
     ├── 12_parser_*.png        # Parser DSL outputs
-    └── 13_effect_*.png        # Visual effects outputs
+    ├── 13_effect_*.png        # Visual effects outputs
+    ├── 14_anim_*.gif          # Animation GIF outputs
+    └── 15_video_*.mp4/webm    # Video outputs
 ```
 
 ### Related Specs
@@ -308,6 +314,10 @@ Generated PNG files will be saved to `examples/output/`.
 9. **09_using_templates.py** - Using built-in templates (FourKoma, TwoByTwo, etc.)
 10. **10_error_handling.py** - Graceful error handling and fallbacks
 11. **11_html_export.py** - Interactive HTML export with zoom, pan, dark/light themes
+12. **12_parser_dsl.py** - Parser/DSL markup for rapid comic creation
+13. **13_visual_effects.py** - Visual effects (shake, zoom, motion, focus, impact)
+14. **14_animation_export.py** - GIF animation export with Timeline and easing
+15. **15_video_export.py** - MP4/WebM video export with quality settings
 
 ## Requirements
 

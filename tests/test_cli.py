@@ -373,3 +373,192 @@ class TestErrorHandling:
         script.write_text("from nonexistent_module import something")
         result = runner.invoke(main, ["render", str(script)])
         assert result.exit_code != 0
+
+
+class TestCompileCommand:
+    """Tests for the compile command."""
+
+    def test_compile_requires_scripts(self, runner: CliRunner) -> None:
+        """Test that compile command requires script arguments."""
+        result = runner.invoke(main, ["compile"])
+        assert result.exit_code != 0
+        assert "Missing argument" in result.output
+
+    def test_compile_with_nonexistent_script(self, runner: CliRunner) -> None:
+        """Test that compile fails with nonexistent script."""
+        result = runner.invoke(main, ["compile", "nonexistent.py"])
+        assert result.exit_code != 0
+
+    def test_compile_help(self, runner: CliRunner) -> None:
+        """Test compile command help."""
+        result = runner.invoke(main, ["compile", "--help"])
+        assert result.exit_code == 0
+        assert "Compile multiple comic scripts" in result.output
+        assert "--output" in result.output
+        assert "--quality" in result.output
+        assert "--title" in result.output
+        assert "--author" in result.output
+
+    def test_compile_has_quality_choices(self, runner: CliRunner) -> None:
+        """Test that compile has quality choices."""
+        result = runner.invoke(main, ["compile", "--help"])
+        assert "low" in result.output
+        assert "medium" in result.output
+        assert "high" in result.output
+
+    def test_compile_no_page_found(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Test that compile handles script without Page gracefully."""
+        script = tmp_path / "empty.py"
+        script.write_text("x = 1")
+        result = runner.invoke(main, ["compile", str(script)])
+        assert result.exit_code != 0
+        assert "No pages were loaded" in result.output
+
+    @pytest.fixture
+    def check_cairo(self):
+        """Skip tests if Cairo is not available."""
+        try:
+            import cairo  # noqa: F401
+        except ImportError:
+            pytest.skip("Cairo not available")
+
+    def test_compile_single_script(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        sample_script: Path,
+        check_cairo,
+    ) -> None:
+        """Test compiling a single script."""
+        output_path = tmp_path / "output.pdf"
+        result = runner.invoke(
+            main, ["compile", str(sample_script), "-o", str(output_path)]
+        )
+        assert result.exit_code == 0
+        assert "Compiled 1 page" in result.output
+        assert output_path.exists()
+
+    def test_compile_multiple_scripts(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        check_cairo,
+    ) -> None:
+        """Test compiling multiple scripts."""
+        # Create multiple script files
+        script1 = tmp_path / "page1.py"
+        script1.write_text("""
+from comix import Page, Panel
+page = Page()
+page.add(Panel(name="Page1"))
+""")
+        script2 = tmp_path / "page2.py"
+        script2.write_text("""
+from comix import Page, Panel
+page = Page()
+page.add(Panel(name="Page2"))
+""")
+
+        output_path = tmp_path / "book.pdf"
+        result = runner.invoke(
+            main,
+            ["compile", str(script1), str(script2), "-o", str(output_path)],
+        )
+        assert result.exit_code == 0
+        assert "Compiled 2 page" in result.output
+        assert output_path.exists()
+
+    def test_compile_with_title_and_author(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        sample_script: Path,
+        check_cairo,
+    ) -> None:
+        """Test compile with title and author metadata."""
+        output_path = tmp_path / "book.pdf"
+        result = runner.invoke(
+            main,
+            [
+                "compile",
+                str(sample_script),
+                "-o",
+                str(output_path),
+                "-t",
+                "My Comic",
+                "-a",
+                "Test Author",
+            ],
+        )
+        assert result.exit_code == 0
+        assert output_path.exists()
+
+    def test_compile_skips_bad_scripts(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        sample_script: Path,
+        check_cairo,
+    ) -> None:
+        """Test that compile skips scripts without Page but continues."""
+        # Create a script without Page
+        empty_script = tmp_path / "empty.py"
+        empty_script.write_text("x = 1")
+
+        output_path = tmp_path / "book.pdf"
+        result = runner.invoke(
+            main,
+            [
+                "compile",
+                str(sample_script),
+                str(empty_script),
+                "-o",
+                str(output_path),
+            ],
+        )
+        # Should succeed because at least one valid page was found
+        assert result.exit_code == 0
+        assert "Warning:" in result.output
+        assert "Compiled 1 page" in result.output
+
+    def test_compile_class_based_script(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        sample_class_script: Path,
+        check_cairo,
+    ) -> None:
+        """Test compiling a script with Page subclass."""
+        output_path = tmp_path / "class_based.pdf"
+        result = runner.invoke(
+            main, ["compile", str(sample_class_script), "-o", str(output_path)]
+        )
+        assert result.exit_code == 0
+        assert output_path.exists()
+
+
+class TestCompileCommandParams:
+    """Tests for compile command parameters."""
+
+    def test_compile_command_registered(self, runner: CliRunner) -> None:
+        """Test that compile command is registered."""
+        commands = main.commands
+        assert "compile" in commands
+
+    def test_compile_command_params(self) -> None:
+        """Test compile command has expected parameters."""
+        from comix.__main__ import compile
+
+        param_names = [p.name for p in compile.params]
+        assert "scripts" in param_names
+        assert "output" in param_names
+        assert "quality" in param_names
+        assert "title" in param_names
+        assert "author" in param_names
+
+    def test_main_help_shows_compile(self, runner: CliRunner) -> None:
+        """Test that main help shows compile command."""
+        result = runner.invoke(main, ["--help"])
+        assert "compile" in result.output

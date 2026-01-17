@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, Sequence
 
 try:
     import cairo
@@ -83,6 +83,69 @@ class CairoRenderer:
 
         self._draw_page()
 
+        self._surface.finish()
+        return output_path
+
+    def render_book(
+        self,
+        pages: Sequence[Page],
+        output_path: str,
+        quality: Literal["low", "medium", "high"] = "medium",
+    ) -> str:
+        """Render multiple pages to a single multi-page PDF.
+
+        Args:
+            pages: Sequence of Page objects to render.
+            output_path: Path to save the PDF file.
+            quality: Rendering quality (affects any rasterized content).
+
+        Returns:
+            Path to the rendered PDF file.
+
+        Raises:
+            ValueError: If pages is empty.
+        """
+        if not pages:
+            raise ValueError("Cannot render an empty book. Provide at least one page.")
+
+        # Set DPI based on quality (for any rasterized content like images)
+        if quality == "low":
+            self._dpi = self.DPI_LOW
+        elif quality == "high":
+            self._dpi = self.DPI_HIGH
+        else:
+            self._dpi = self.DPI_MEDIUM
+
+        # Create output directory if needed
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+
+        # Use the first page's dimensions for the PDF surface
+        # Cairo PDFSurface allows different page sizes via set_size() per page
+        first_page = pages[0]
+        self._surface = cairo.PDFSurface(
+            output_path, first_page.width, first_page.height
+        )
+        self._ctx = cairo.Context(self._surface)
+
+        # Render each page
+        for i, page in enumerate(pages):
+            # Update the current page reference
+            self.page = page
+
+            # Set the page size for this page (allows different sizes per page)
+            assert self._surface is not None
+            self._surface.set_size(page.width, page.height)
+
+            # Draw the page content
+            self._draw_page()
+
+            # Show the page (creates a new page in the PDF)
+            # Don't show_page after the last page
+            if i < len(pages) - 1:
+                assert self._ctx is not None
+                self._ctx.show_page()
+
+        # Finalize the PDF
         self._surface.finish()
         return output_path
 

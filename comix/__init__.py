@@ -39,6 +39,7 @@ from comix.layout.constraints import (
 )
 from comix.layout.flow import FlowLayout
 from comix.layout.grid import GridLayout
+from comix.page.book import Book
 from comix.page.page import Page, SinglePanel, Strip
 from comix.page.templates import (
     FourKoma,
@@ -162,7 +163,8 @@ __all__ = [
     "ElementRef",
     "FlowLayout",
     "GridLayout",
-    # Page
+    # Page and Book
+    "Book",
     "Page",
     "SinglePanel",
     "Strip",

@@ -1,5 +1,6 @@
 """Page module - comic page composition."""
 
+from comix.page.book import Book
 from comix.page.page import Page, SinglePanel, Strip
 from comix.page.templates import (
     FourKoma,
@@ -12,6 +13,7 @@ from comix.page.templates import (
 )
 
 __all__ = [
+    "Book",
     "Page",
     "SinglePanel",
     "Strip",

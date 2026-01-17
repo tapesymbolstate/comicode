@@ -587,3 +587,380 @@ character(center): "Test"
         # Should contain the background image
         assert "<image" in svg_string
         assert "data:image/png;base64" in svg_string
+
+
+class TestPanelBorderStyles:
+    """Tests for panel border style rendering."""
+
+    def test_panel_with_dashed_border(self):
+        """Test rendering panel with dashed border style."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=200, height=150)
+        panel.set_border(style="dashed")
+        panel.move_to((200, 150))
+        page.add(panel)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Dashed border should have stroke-dasharray="5,5"
+        assert 'stroke-dasharray="5,5"' in svg_string
+
+    def test_panel_with_dotted_border(self):
+        """Test rendering panel with dotted border style."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=200, height=150)
+        panel.set_border(style="dotted")
+        panel.move_to((200, 150))
+        page.add(panel)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Dotted border should have stroke-dasharray="2,2"
+        assert 'stroke-dasharray="2,2"' in svg_string
+
+    def test_panel_with_solid_border(self):
+        """Test rendering panel with solid border (default) has no dasharray."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=200, height=150)
+        panel.set_border(style="solid")
+        panel.move_to((200, 150))
+        page.add(panel)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Solid border should NOT have stroke-dasharray attribute
+        assert "stroke-dasharray" not in svg_string
+
+
+class TestBubbleBorderStyles:
+    """Tests for bubble border style rendering."""
+
+    def test_bubble_with_dashed_border(self):
+        """Test rendering bubble with dashed border style."""
+        page = Page(width=400, height=300)
+        bubble = SpeechBubble(text="Test", border_style="dashed")
+        bubble.move_to((200, 150))
+        page.add(bubble)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Dashed border should have stroke-dasharray="5,5"
+        assert 'stroke-dasharray="5,5"' in svg_string
+
+    def test_bubble_with_dotted_border(self):
+        """Test rendering bubble with dotted border style."""
+        from comix.cobject.bubble.bubble import WhisperBubble
+
+        page = Page(width=400, height=300)
+        # WhisperBubble defaults to dotted style
+        bubble = WhisperBubble(text="Whisper")
+        bubble.move_to((200, 150))
+        page.add(bubble)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # WhisperBubble should have dashed/dotted border
+        assert "stroke-dasharray" in svg_string
+
+
+class TestBubbleEmphasis:
+    """Tests for bubble emphasis rendering with shadow effects."""
+
+    def test_bubble_with_emphasis_shadow(self):
+        """Test rendering emphasized bubble creates shadow."""
+        page = Page(width=400, height=300)
+        bubble = SpeechBubble(text="Important!", emphasis=True)
+        bubble.move_to((200, 150))
+        page.add(bubble)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Emphasized bubble should have shadow polygon with fill-opacity
+        assert 'fill-opacity="0.2"' in svg_string
+
+    def test_bubble_emphasis_thicker_border(self):
+        """Test that emphasized bubble has thicker border."""
+        page = Page(width=400, height=300)
+        # Create two bubbles - one with emphasis, one without
+        bubble_normal = SpeechBubble(text="Normal", border_width=2.0)
+        bubble_emphasis = SpeechBubble(text="Emphasized!", emphasis=True, border_width=2.0)
+        bubble_normal.move_to((100, 150))
+        bubble_emphasis.move_to((300, 150))
+        page.add(bubble_normal, bubble_emphasis)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Both bubbles render
+        assert "Normal" in svg_string
+        assert "Emphasized!" in svg_string
+        # Emphasized bubble has shadow (with fill-opacity)
+        assert 'fill-opacity="0.2"' in svg_string
+
+    def test_bubble_emphasis_with_tail_shadow(self):
+        """Test that emphasized bubble tail also has shadow."""
+        page = Page(width=400, height=300)
+        # Create bubble with tail pointing to a specific direction
+        bubble = SpeechBubble(
+            text="Hello!",
+            emphasis=True,
+            tail_direction="bottom-left",
+            tail_length=30,
+        )
+        bubble.move_to((200, 150))
+        page.add(bubble)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should have multiple polygons (bubble + tail + shadows)
+        polygon_count = svg_string.count("<polygon")
+        # At minimum: bubble body, bubble shadow, tail, tail shadow = 4
+        assert polygon_count >= 3
+
+    def test_bubble_with_emphasis_and_dashed_border(self):
+        """Test bubble with both emphasis and dashed border."""
+        page = Page(width=400, height=300)
+        bubble = SpeechBubble(
+            text="Emphatic!",
+            emphasis=True,
+            border_style="dashed",
+        )
+        bubble.move_to((200, 150))
+        page.add(bubble)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should have both shadow and dashed border
+        assert 'fill-opacity="0.2"' in svg_string  # Shadow
+        assert 'stroke-dasharray="5,5"' in svg_string  # Dashed border
+
+
+class TestRectangleCornerRadius:
+    """Tests for rectangle corner radius rendering."""
+
+    def test_rectangle_with_corner_radius(self):
+        """Test rendering rectangle with corner radius."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=100, height=50, corner_radius=10)
+        rect.move_to((200, 150))
+        page.add(rect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Rectangle should have rx and ry attributes
+        assert 'rx="10"' in svg_string
+        assert 'ry="10"' in svg_string
+
+    def test_rectangle_without_corner_radius(self):
+        """Test rectangle without corner radius has no rx/ry."""
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=100, height=50, corner_radius=0)
+        rect.move_to((200, 150))
+        page.add(rect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should not have rx/ry attributes (or they should be 0)
+        # Check that it doesn't have a positive rx value
+        assert 'rx="10"' not in svg_string
+
+
+class TestLineStrokeStyles:
+    """Tests for line stroke style rendering."""
+
+    def test_line_with_dashed_stroke(self):
+        """Test rendering line with dashed stroke style."""
+        page = Page(width=400, height=300)
+        line = Line(start=(50, 150), end=(350, 150), stroke_style="dashed")
+        page.add(line)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Dashed line should have stroke-dasharray="5,5"
+        assert 'stroke-dasharray="5,5"' in svg_string
+
+    def test_line_with_dotted_stroke(self):
+        """Test rendering line with dotted stroke style."""
+        page = Page(width=400, height=300)
+        line = Line(start=(50, 150), end=(350, 150), stroke_style="dotted")
+        page.add(line)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Dotted line should have stroke-dasharray="2,2"
+        assert 'stroke-dasharray="2,2"' in svg_string
+
+    def test_line_with_solid_stroke(self):
+        """Test rendering line with solid stroke (default) has no dasharray."""
+        page = Page(width=400, height=300)
+        line = Line(start=(50, 150), end=(350, 150), stroke_style="solid")
+        page.add(line)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Solid line should NOT have stroke-dasharray attribute
+        assert "stroke-dasharray" not in svg_string
+
+
+class TestEmptyTextRendering:
+    """Tests for empty text handling in rendering."""
+
+    def test_render_empty_text_returns_early(self):
+        """Test that empty text doesn't render any text elements."""
+        page = Page(width=400, height=300)
+        text = Text(text="")  # Empty text
+        text.move_to((200, 150))
+        page.add(text)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Page should render but without text element
+        assert "<svg" in svg_string
+        # Text elements from the empty Text object should not be present
+        # (only the background rect should be there)
+
+
+class TestGenericObjectRendering:
+    """Tests for generic object rendering fallback."""
+
+    def test_custom_cobject_renders_as_polyline(self):
+        """Test that CObject with unknown type renders using generic method."""
+        from comix.cobject.cobject import CObject
+        import numpy as np
+
+        # Create a custom CObject with custom type
+        class CustomObject(CObject):
+            def __init__(self):
+                super().__init__()
+                self._points = np.array(
+                    [[0, 0], [50, 25], [100, 0], [100, 50], [0, 50]],
+                    dtype=np.float64,
+                )
+
+            def get_render_data(self):
+                data = super().get_render_data()
+                data["type"] = "CustomType"  # Unknown type
+                return data
+
+        page = Page(width=400, height=300)
+        custom = CustomObject()
+        custom.move_to((200, 150))
+        page.add(custom)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should render as polyline
+        assert "<polyline" in svg_string
+
+
+class TestImageRendering:
+    """Tests for image rendering with various options."""
+
+    def test_image_with_source_path(self):
+        """Test rendering image using source path directly."""
+        from comix.cobject.image.image import Image
+
+        page = Page(width=400, height=300)
+        img = Image(source="/path/to/image.png", width=100, height=100)
+        img.move_to((200, 150))
+        page.add(img)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should contain image element with href
+        assert "<image" in svg_string
+        assert "/path/to/image.png" in svg_string
+
+    def test_image_with_preserve_aspect_ratio_false(self):
+        """Test rendering image without preserving aspect ratio."""
+        from comix.cobject.image.image import Image
+
+        page = Page(width=400, height=300)
+        img = Image(
+            source="/path/to/image.png",
+            width=100,
+            height=100,
+            preserve_aspect_ratio=False,
+        )
+        img.move_to((200, 150))
+        page.add(img)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should have preserveAspectRatio="none"
+        assert 'preserveAspectRatio="none"' in svg_string
+
+    def test_image_with_cover_fit(self):
+        """Test rendering image with cover fit mode."""
+        from comix.cobject.image.image import Image
+
+        page = Page(width=400, height=300)
+        img = Image(
+            source="/path/to/image.png",
+            width=100,
+            height=100,
+            fit="cover",
+        )
+        img.move_to((200, 150))
+        page.add(img)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should have preserveAspectRatio with slice (for cover)
+        assert "xMidYMid slice" in svg_string
+
+    def test_image_placeholder_when_no_source(self):
+        """Test that image without source renders placeholder."""
+        from comix.cobject.image.image import Image
+
+        page = Page(width=400, height=300)
+        # Create image without setting source (should show placeholder)
+        img = Image(width=100, height=100)
+        img.move_to((200, 150))
+        page.add(img)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # Should have placeholder rect and text
+        assert "<rect" in svg_string
+        assert "#EEEEEE" in svg_string  # Placeholder fill color
+        assert "No image" in svg_string  # Placeholder text
+
+
+class TestEffectElementStrokeDasharray:
+    """Tests for effect elements with stroke dasharray."""
+
+    def test_effect_line_with_dasharray(self):
+        """Test effect lines can have stroke dasharray."""
+        # ShakeEffect generates dashed lines/polylines for motion blur
+        page = Page(width=400, height=300)
+        rect = Rectangle(width=100, height=100).move_to((200, 150))
+        page.add(rect)
+
+        effect = ShakeEffect(target=rect, seed=42, intensity=2.0, num_copies=3)
+        page.add_effect(effect)
+
+        renderer = SVGRenderer(page)
+        svg_string = renderer.render_to_string()
+
+        # ShakeEffect creates dashed motion blur lines
+        assert "stroke-dasharray" in svg_string

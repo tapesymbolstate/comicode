@@ -346,7 +346,8 @@ class SVGRenderer:
                 ]
                 shadow_path = Polygon(
                     points=shadow_points,
-                    fill="#00000033",
+                    fill="#000000",
+                    fill_opacity=0.2,
                     stroke="none",
                 )
                 group.add(shadow_path)
@@ -380,7 +381,8 @@ class SVGRenderer:
                 ]
                 shadow_tail = Polygon(
                     points=shadow_tail_points,
-                    fill="#00000033",
+                    fill="#000000",
+                    fill_opacity=0.2,
                     stroke="none",
                 )
                 group.add(shadow_tail)

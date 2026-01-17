@@ -793,3 +793,246 @@ class TestCairoRendererCoverage:
             output_path = renderer.render(f.name, format="png")
             assert Path(output_path).exists()
             Path(output_path).unlink()
+
+
+@pytest.mark.skipif(not CAIRO_AVAILABLE, reason="Cairo not installed")
+class TestCairoRendererEdgeCases:
+    """Additional tests for edge cases in CairoRenderer."""
+
+    def test_render_custom_cobject_generic_fallback(self):
+        """Test rendering custom CObject with unknown type uses generic rendering."""
+        from comix.cobject.cobject import CObject
+        import numpy as np
+
+        class CustomObject(CObject):
+            def __init__(self):
+                super().__init__()
+                self._points = np.array(
+                    [[0, 0], [50, 25], [100, 0], [100, 50], [0, 50]],
+                    dtype=np.float64,
+                )
+
+            def get_render_data(self):
+                data = super().get_render_data()
+                data["type"] = "UnknownCustomType"  # Unknown type triggers generic rendering
+                return data
+
+        page = Page(width=400, height=300)
+        custom = CustomObject()
+        custom.move_to((200, 150))
+        page.add(custom)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_character_unknown_style(self):
+        """Test rendering character with unknown style falls back to generic."""
+        from comix.cobject.cobject import CObject
+        import numpy as np
+
+        class CustomCharacter(CObject):
+            def __init__(self):
+                super().__init__()
+                self._points = np.array(
+                    [[0, 0], [50, 100], [0, 100]],
+                    dtype=np.float64,
+                )
+
+            def get_render_data(self):
+                data = super().get_render_data()
+                data["type"] = "Character"
+                data["style"] = "custom_unknown_style"  # Unknown style
+                return data
+
+        page = Page(width=400, height=300)
+        char = CustomCharacter()
+        char.move_to((200, 150))
+        page.add(char)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_effect_polygon_no_stroke(self):
+        """Test rendering effect with polygon that has no stroke."""
+        from comix.effect.effect import FocusLines
+
+        page = Page(width=400, height=300)
+        # FocusLines with fill_background creates filled polygons
+        effect = FocusLines(
+            position=(200, 150),
+            fill_background=True,
+            background_color="#FFFF00",
+            seed=42,
+        )
+        page.add_effect(effect)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_effect_circle_elements(self):
+        """Test rendering effects that include circle elements."""
+        from comix.effect.effect import AppearEffect
+
+        page = Page(width=400, height=300)
+        # AppearEffect with sparkle style generates circles
+        effect = AppearEffect(position=(200, 150), style="sparkle", seed=42)
+        page.add_effect(effect)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_bubble_with_dashed_border(self):
+        """Test rendering bubble with dashed border style."""
+        from comix.cobject.bubble.bubble import WhisperBubble
+
+        page = Page(width=400, height=300)
+        # WhisperBubble uses dashed border by default
+        bubble = WhisperBubble(text="Whisper text")
+        bubble.move_to((200, 150))
+        page.add(bubble)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_panel_dotted_border(self):
+        """Test rendering panel with dotted border style."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200, border=Border(color="#000000", width=2, style="dotted"))
+        panel.move_to((200, 150))
+        page.add(panel)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_stickman_insufficient_points(self):
+        """Test rendering stickman gracefully handles insufficient points."""
+        from comix.cobject.cobject import CObject
+        import numpy as np
+
+        class MinimalStickman(CObject):
+            def __init__(self):
+                super().__init__()
+                # Only 1 point - not enough to draw
+                self._points = np.array([[0, 0]], dtype=np.float64)
+
+            def get_render_data(self):
+                data = super().get_render_data()
+                data["type"] = "Character"
+                data["style"] = "stickman"
+                return data
+
+        page = Page(width=400, height=300)
+        stickman = MinimalStickman()
+        stickman.move_to((200, 150))
+        page.add(stickman)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            # Should not raise error - just renders nothing for the stickman
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_panel_background_image(self, tmp_path):
+        """Test rendering panel with background image."""
+        import base64
+
+        # Create a small test PNG
+        png_data = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=="
+        )
+        image_path = tmp_path / "bg.png"
+        image_path.write_bytes(png_data)
+
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.set_background(image=str(image_path))
+        panel.move_to((200, 150))
+        page.add(panel)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_panel_background_image_with_rounded_corners(self, tmp_path):
+        """Test panel background image respects rounded corners."""
+        import base64
+
+        png_data = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=="
+        )
+        image_path = tmp_path / "bg.png"
+        image_path.write_bytes(png_data)
+
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200, border=Border(radius=20))
+        panel.set_background(image=str(image_path))
+        panel.move_to((200, 150))
+        page.add(panel)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_effect_with_zero_opacity(self):
+        """Test rendering effect with zero opacity (invisible)."""
+        from comix.effect.effect import FocusLines
+
+        page = Page(width=400, height=300)
+        effect = FocusLines(position=(200, 150), opacity=0.0, seed=42)
+        page.add_effect(effect)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_generic_object_empty_points(self):
+        """Test generic object rendering handles empty points gracefully."""
+        from comix.cobject.cobject import CObject
+        import numpy as np
+
+        class EmptyPointsObject(CObject):
+            def __init__(self):
+                super().__init__()
+                self._points = np.array([], dtype=np.float64).reshape(0, 2)
+
+            def get_render_data(self):
+                data = super().get_render_data()
+                data["type"] = "UnknownType"
+                return data
+
+        page = Page(width=400, height=300)
+        obj = EmptyPointsObject()
+        obj.move_to((200, 150))
+        page.add(obj)
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            renderer = CairoRenderer(page)
+            # Should not raise error
+            output_path = renderer.render(f.name, format="png")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()

@@ -2,6 +2,8 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
+**Current Git Tag: v0.1.4**
+
 All 5 phases have been implemented with **1465 tests passing** (1 skipped), ruff clean, and mypy passing (8 unused type:ignore warnings). Current version: **v0.1.0**.
 
 ### Completed Phases Summary
@@ -257,6 +259,15 @@ These are potential improvements, not planned work:
 None currently tracked.
 
 ## Verification Notes (2026-01-18)
+
+### Documentation Update (2026-01-18)
+
+Updated all specification files to reflect implementation completion:
+- All acceptance criteria checkboxes now marked as complete where features are implemented
+- All "Decision needed" open questions resolved with documented decisions
+- Archived obsolete code-visual-validation.md spec
+
+### Previous Verifications
 
 Verified that the following "blocking issues" mentioned in outdated specs/README.md are **NOT actual issues**:
 

@@ -332,3 +332,47 @@ class TestImportErrorFallbacks:
         assert hasattr(comix, "PreviewServer")
         assert hasattr(comix, "PreviewError")
         assert hasattr(comix, "preview_serve")
+
+
+class TestAIImageExports:
+    """Tests for AI image related exports."""
+
+    def test_ai_image_exception_hierarchy(self):
+        """Test AIImageError and its subclasses are exported."""
+        from comix import (
+            AIImageError,
+            AIProviderNotAvailableError,
+            AIGenerationError,
+        )
+        assert AIImageError is not None
+        assert AIProviderNotAvailableError is not None
+        assert AIGenerationError is not None
+
+        # Verify inheritance hierarchy
+        assert issubclass(AIImageError, Exception)
+        assert issubclass(AIProviderNotAvailableError, AIImageError)
+        assert issubclass(AIGenerationError, AIImageError)
+
+    def test_ai_image_exports_from_submodule(self):
+        """Test AI exports from image submodule."""
+        from comix.cobject.image import (
+            AIGenerationError,
+            AIImage,
+            AIImageError,
+            AIProvider,
+            AIProviderNotAvailableError,
+            Image,
+        )
+        assert AIGenerationError is not None
+        assert AIImage is not None
+        assert AIImageError is not None
+        assert AIProvider is not None
+        assert AIProviderNotAvailableError is not None
+        assert Image is not None
+
+    def test_ai_provider_enum(self):
+        """Test AIProvider enum is exported."""
+        from comix import AIProvider
+        assert AIProvider is not None
+        assert hasattr(AIProvider, "OPENAI")
+        assert hasattr(AIProvider, "REPLICATE")

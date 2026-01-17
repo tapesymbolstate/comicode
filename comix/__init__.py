@@ -39,7 +39,13 @@ from comix.cobject.character.character import (
 )
 from comix.cobject.shapes.shapes import Rectangle, Circle, Line
 from comix.cobject.image.image import Image
-from comix.cobject.image.ai_image import AIImage, AIProvider, AIImageError
+from comix.cobject.image.ai_image import (
+    AIGenerationError,
+    AIImage,
+    AIImageError,
+    AIProvider,
+    AIProviderNotAvailableError,
+)
 from comix.effect.effect import (
     Effect,
     AppearEffect,
@@ -179,10 +185,12 @@ __all__ = [
     "Circle",
     "Line",
     # Images
-    "Image",
+    "AIGenerationError",
     "AIImage",
-    "AIProvider",
     "AIImageError",
+    "AIProvider",
+    "AIProviderNotAvailableError",
+    "Image",
     # Effects
     "Effect",
     "AppearEffect",

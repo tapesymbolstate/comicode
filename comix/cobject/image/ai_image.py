@@ -310,10 +310,7 @@ class AIImage(Image):
             import urllib.request
             import ssl
 
-            # Create SSL context that doesn't verify certificates (for simplicity)
             ctx = ssl.create_default_context()
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
 
             def fetch() -> bytes:
                 with urllib.request.urlopen(url, context=ctx) as response:

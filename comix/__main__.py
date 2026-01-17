@@ -2,9 +2,11 @@
 
 import click
 
+from comix.constants import VERSION
+
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="comix")
+@click.version_option(version=VERSION, prog_name="comix")
 def main() -> None:
     """Comix - Code-based comic creation framework."""
     pass
@@ -240,7 +242,7 @@ def compile(
 def info() -> None:
     """Display information about Comix."""
     click.echo("Comix - Code-based comic creation framework")
-    click.echo("Version: 0.1.0")
+    click.echo(f"Version: {VERSION}")
     click.echo("")
     click.echo("Inspired by Manim's architecture for creating comics programmatically.")
     click.echo("")

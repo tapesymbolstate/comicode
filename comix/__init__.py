@@ -1,5 +1,17 @@
 """Comix - Code-based comic creation framework inspired by Manim."""
 
+from comix.constants import (
+    VERSION,
+    Colors,
+    Dimensions,
+    Typography,
+    Borders,
+    Effects,
+    Server,
+    Quality,
+    Anchors,
+    Directions,
+)
 from comix.cobject.cobject import CObject
 from comix.cobject.panel.panel import Panel, Border
 from comix.cobject.bubble.bubble import (
@@ -117,6 +129,17 @@ except ImportError:
     preview_serve = None  # type: ignore[assignment]
 
 __all__ = [
+    # Constants
+    "VERSION",
+    "Colors",
+    "Dimensions",
+    "Typography",
+    "Borders",
+    "Effects",
+    "Server",
+    "Quality",
+    "Anchors",
+    "Directions",
     # Core objects
     "CObject",
     "Panel",
@@ -230,4 +253,4 @@ __all__ = [
     "preview_serve",
 ]
 
-__version__ = "0.1.0"
+__version__ = VERSION

@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Multi-page PDF Export
 
-All 4 phases have been implemented with **762 tests passing**, mypy clean, and ruff clean.
+All 4 phases have been implemented with **797 tests passing**, mypy clean, and ruff clean.
 
 ### Completed Phases Summary
 
@@ -37,6 +37,7 @@ All 4 phases have been implemented with **762 tests passing**, mypy clean, and r
 - **Panel Templates**: Pre-built comic page layouts (FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage) with semantic panel access (53 new tests)
 - **Multi-page PDF Export**: Book class for compiling multiple pages into a single PDF document. Supports different page sizes per page, quality settings, and metadata. CLI `compile` command for batch rendering (45 new tests)
 - **CObject Convenience Methods**: Added center_in, to_corner, to_edge, hide/show, is_visible, copy, scale_to_fit_width, scale_to_fit_height, scale_to_fit for easier object positioning and manipulation (31 new tests)
+- **Constants Module**: Added centralized constants module (`comix/constants.py`) with standardized values for colors, dimensions, typography, borders, effects, server settings, quality levels, anchors, and directions. Exported from main package and used in CLI for VERSION. Includes 35 new tests for constants validation.
 
 ### Technical Stack
 

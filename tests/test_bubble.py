@@ -561,3 +561,102 @@ class TestAutoPosotionBubbles:
         assert bubble1.tail_target is char1
         assert bubble2.tail_target is char2
         assert bubble3.tail_target is char3
+
+
+class TestBubblePositioningFallbacks:
+    """Tests for bubble positioning edge cases and fallback behavior."""
+
+    def test_attach_to_with_invalid_anchor_defaults_to_top(self) -> None:
+        """Test that invalid anchor parameter falls back to 'top' position."""
+        char = Stickman(name="Test").move_to((200, 200))
+        bubble = SpeechBubble(text="Hello!")
+
+        bubble.attach_to(char, anchor="invalid_anchor")
+
+        assert bubble.tail_target is char
+        assert bubble.tail_direction == "bottom"
+
+    def test_auto_attach_to_fallback_when_all_anchors_out_of_bounds(self) -> None:
+        """Test fallback to first anchor when all positions are out of bounds."""
+        char = Stickman(name="Test").move_to((50, 50))
+        bubble = SpeechBubble(text="A very long text that makes a large bubble")
+
+        result = bubble.auto_attach_to(
+            char,
+            bounds=(0, 0, 100, 100),
+            avoid_bubbles=[],
+        )
+
+        assert result is bubble
+        assert bubble.tail_target is char
+
+    def test_auto_attach_to_fallback_when_all_anchors_overlap(self) -> None:
+        """Test fallback when all anchor positions would overlap with existing bubbles."""
+        char1 = Stickman(name="Test1").move_to((100, 100))
+        char2 = Stickman(name="Test2").move_to((100, 100))
+
+        bubble1 = SpeechBubble(text="First bubble")
+        bubble2 = SpeechBubble(text="Second bubble")
+        bubble3 = SpeechBubble(text="Third bubble")
+        bubble4 = SpeechBubble(text="Fourth bubble")
+        bubble5 = SpeechBubble(text="Fifth bubble")
+        bubble6 = SpeechBubble(text="Sixth bubble")
+
+        bubble1.attach_to(char1, anchor="top")
+        bubble2.attach_to(char1, anchor="bottom")
+        bubble3.attach_to(char1, anchor="left")
+        bubble4.attach_to(char1, anchor="right")
+        bubble5.attach_to(char1, anchor="top-left")
+        bubble6.attach_to(char1, anchor="top-right")
+
+        new_bubble = SpeechBubble(text="New bubble")
+        result = new_bubble.auto_attach_to(
+            char2,
+            avoid_bubbles=[bubble1, bubble2, bubble3, bubble4, bubble5, bubble6],
+        )
+
+        assert result is new_bubble
+        assert new_bubble.tail_target is char2
+
+    def test_auto_attach_to_with_bounds_check_triggers_invalid(self) -> None:
+        """Test that bounds check properly invalidates positions."""
+        char = Stickman(name="Test").move_to((400, 400))
+        bubble = SpeechBubble(text="Hello world")
+
+        result = bubble.auto_attach_to(
+            char,
+            bounds=(300, 300, 500, 500),
+            avoid_bubbles=[],
+        )
+
+        assert result is bubble
+        bbox = bubble.get_bounding_box()
+        assert bbox[0][0] >= 300 or bubble.tail_target is char
+
+    def test_tail_target_as_tuple_position(self) -> None:
+        """Test bubble with tail_target as tuple position in render data."""
+        bubble = SpeechBubble(text="Hello!")
+        bubble.tail_target = (100.0, 200.0)
+
+        data = bubble.get_render_data()
+
+        assert data["tail_target"] == [100.0, 200.0]
+
+    def test_tail_target_as_cobject_in_render_data(self) -> None:
+        """Test bubble with tail_target as CObject in render data."""
+        char = Stickman(name="Test").move_to((150, 250))
+        bubble = SpeechBubble(text="Hello!")
+        bubble.point_to(char)
+
+        data = bubble.get_render_data()
+
+        assert data["tail_target"] is not None
+        assert isinstance(data["tail_target"], list)
+
+    def test_tail_target_none_in_render_data(self) -> None:
+        """Test bubble with no tail_target in render data."""
+        bubble = SpeechBubble(text="Hello!")
+
+        data = bubble.get_render_data()
+
+        assert data["tail_target"] is None

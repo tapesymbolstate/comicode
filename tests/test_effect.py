@@ -858,3 +858,123 @@ class TestEffectImports:
         assert hasattr(effect_module, "MotionLines")
         assert hasattr(effect_module, "FocusLines")
         assert hasattr(effect_module, "ImpactEffect")
+
+
+class TestEffectEdgeCases:
+    """Tests for effect edge cases and boundary conditions."""
+
+    def test_effect_default_position_without_target(self):
+        """Test effect returns (0, 0) when no position or target is set."""
+        effect = ShakeEffect()
+        pos = effect.position
+        assert pos == (0.0, 0.0)
+
+    def test_set_position_returns_self(self):
+        """Test set_position returns self for chaining."""
+        effect = ShakeEffect()
+        result = effect.set_position((100, 200))
+        assert result is effect
+        assert effect.position == (100, 200)
+
+    def test_set_position_overrides_target_position(self):
+        """Test explicit position takes precedence over target."""
+        char = Stickman("Test").move_to((50, 50))
+        effect = ShakeEffect(target=char)
+        effect.set_position((200, 300))
+        assert effect.position == (200, 300)
+
+    def test_set_target_returns_self(self):
+        """Test set_target returns self for chaining."""
+        effect = ShakeEffect()
+        char = Stickman("Test")
+        result = effect.set_target(char)
+        assert result is effect
+        assert effect.target is char
+
+    def test_intensity_clamped_to_zero(self):
+        """Test intensity is clamped to 0 for negative values."""
+        effect = ShakeEffect()
+        effect.set_intensity(-0.5)
+        assert effect.intensity == 0.0
+
+    def test_intensity_clamped_to_one(self):
+        """Test intensity is clamped to 1 for values > 1."""
+        effect = ShakeEffect()
+        effect.set_intensity(1.5)
+        assert effect.intensity == 1.0
+
+    def test_opacity_clamped_to_zero(self):
+        """Test opacity is clamped to 0 for negative values."""
+        effect = ShakeEffect()
+        effect.set_opacity(-0.5)
+        assert effect.opacity == 0.0
+
+    def test_opacity_clamped_to_one(self):
+        """Test opacity is clamped to 1 for values > 1."""
+        effect = ShakeEffect()
+        effect.set_opacity(1.5)
+        assert effect.opacity == 1.0
+
+    def test_zero_intensity_still_generates_elements(self):
+        """Test effect with zero intensity still works (may produce minimal elements)."""
+        effect = ShakeEffect(position=(100, 100))
+        effect.set_intensity(0.0)
+        elements = effect.get_elements()
+        assert isinstance(elements, list)
+
+
+class TestAppearEffectStyles:
+    """Tests for AppearEffect style variations to cover all branches."""
+
+    def test_default_style_fallback_to_sparkle(self):
+        """Test unknown style falls back to sparkle style."""
+        effect = AppearEffect(position=(100, 100))
+        effect.style = "unknown_style"
+        elements = effect.get_elements()
+        assert len(elements) > 0
+
+    def test_fade_style_with_target(self):
+        """Test fade style generates elements when target is set."""
+        char = Stickman("Test").move_to((100, 100))
+        effect = AppearEffect(target=char, style="fade")
+        elements = effect.get_elements()
+        assert len(elements) > 0
+
+    def test_flash_style_with_target(self):
+        """Test flash style generates elements when target is set."""
+        char = Stickman("Test").move_to((100, 100))
+        effect = AppearEffect(target=char, style="flash")
+        elements = effect.get_elements()
+        assert len(elements) > 0
+
+    def test_reveal_style_with_target(self):
+        """Test reveal style generates elements when target is set."""
+        char = Stickman("Test").move_to((100, 100))
+        effect = AppearEffect(target=char, style="reveal")
+        elements = effect.get_elements()
+        assert len(elements) > 0
+
+    def test_fade_style_without_target(self):
+        """Test fade style without target uses default radius."""
+        effect = AppearEffect(position=(100, 100), style="fade", radius=30)
+        elements = effect.get_elements()
+        assert len(elements) > 0
+
+    def test_flash_style_without_target(self):
+        """Test flash style without target uses default radius."""
+        effect = AppearEffect(position=(100, 100), style="flash", radius=30)
+        elements = effect.get_elements()
+        assert len(elements) > 0
+
+    def test_reveal_style_without_target(self):
+        """Test reveal style without target uses default radius."""
+        effect = AppearEffect(position=(100, 100), style="reveal", radius=30)
+        elements = effect.get_elements()
+        assert len(elements) > 0
+
+    def test_sparkle_with_target(self):
+        """Test sparkle style with target adjusts radius based on target size."""
+        char = Stickman("Test").move_to((100, 100))
+        effect = AppearEffect(target=char, style="sparkle")
+        elements = effect.get_elements()
+        assert len(elements) > 0

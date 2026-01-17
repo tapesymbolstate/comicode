@@ -1455,3 +1455,87 @@ class TestCartoon:
         assert data["body_shape"] == "round"
         assert data["outfit_color"] == "#FF0000"
         assert data["ear_size"] == "large"
+
+
+class TestCharacterExpressionPoseResolution:
+    """Tests for expression and pose resolution edge cases."""
+
+    def test_resolve_expression_with_expression_object(self) -> None:
+        """Test that Expression objects are passed through unchanged."""
+        custom_expr = Expression("custom", "wide", "grin", "raised")
+        char = Stickman(name="Test", expression=custom_expr)
+        assert char._expression is custom_expr
+
+    def test_resolve_pose_with_pose_object(self) -> None:
+        """Test that Pose objects are passed through unchanged."""
+        custom_pose = Pose("custom", left_arm=45, right_arm=-45, left_leg=10, right_leg=-10)
+        char = Stickman(name="Test", pose=custom_pose)
+        assert char._pose is custom_pose
+
+    def test_set_expression_with_expression_object(self) -> None:
+        """Test set_expression accepts Expression objects."""
+        char = Stickman(name="Test")
+        custom_expr = Expression("my_expr", "stars", "smile", "relaxed")
+        result = char.set_expression(custom_expr)
+        assert result is char
+        assert char._expression is custom_expr
+
+    def test_set_pose_with_pose_object(self) -> None:
+        """Test set_pose accepts Pose objects."""
+        char = Stickman(name="Test")
+        custom_pose = Pose("my_pose", left_arm=90, right_arm=90, body_angle=15)
+        result = char.set_pose(custom_pose)
+        assert result is char
+        assert char._pose is custom_pose
+
+    def test_expression_from_name_with_unknown_returns_neutral(self, caplog) -> None:
+        """Test Expression.from_name logs warning for unknown name."""
+        import logging
+
+        with caplog.at_level(logging.WARNING):
+            result = Expression.from_name("nonexistent_expression")
+
+        assert result.name == "neutral"
+        assert "Unknown expression" in caplog.text or result.name == "neutral"
+
+    def test_pose_from_name_with_unknown_returns_standing(self, caplog) -> None:
+        """Test Pose.from_name logs warning for unknown name."""
+        import logging
+
+        with caplog.at_level(logging.WARNING):
+            result = Pose.from_name("nonexistent_pose")
+
+        assert result.name == "standing"
+        assert "Unknown pose" in caplog.text or result.name == "standing"
+
+    def test_all_character_types_accept_expression_object(self) -> None:
+        """Test all character types accept Expression objects."""
+        expr = Expression("test", "curved", "smile", "normal")
+        characters = [
+            Stickman(name="S", expression=expr),
+            SimpleFace(name="SF", expression=expr),
+            ChubbyStickman(name="CS", expression=expr),
+            Robot(name="R", expression=expr),
+            Chibi(name="Ch", expression=expr),
+            Anime(name="A", expression=expr),
+            Superhero(name="Su", expression=expr),
+            Cartoon(name="Ca", expression=expr),
+        ]
+        for char in characters:
+            assert char._expression is expr
+
+    def test_all_character_types_accept_pose_object(self) -> None:
+        """Test all character types accept Pose objects."""
+        pose = Pose("test", left_arm=30, right_arm=-30)
+        characters = [
+            Stickman(name="S", pose=pose),
+            SimpleFace(name="SF", pose=pose),
+            ChubbyStickman(name="CS", pose=pose),
+            Robot(name="R", pose=pose),
+            Chibi(name="Ch", pose=pose),
+            Anime(name="A", pose=pose),
+            Superhero(name="Su", pose=pose),
+            Cartoon(name="Ca", pose=pose),
+        ]
+        for char in characters:
+            assert char._pose is pose

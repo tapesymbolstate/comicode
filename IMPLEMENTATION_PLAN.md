@@ -2,9 +2,9 @@
 
 ## Status: All Phases Complete + Extended Character Library
 
-**Current Git Tag: v0.1.21**
+**Current Git Tag: v0.1.22**
 
-All 5 phases have been implemented with **1545 tests passing**, ruff clean, and mypy passing. Current version: **v0.1.0**.
+All 5 phases have been implemented with **1577 tests passing**, ruff clean, and mypy passing. Current version: **v0.1.0**.
 
 ### Completed Phases Summary
 
@@ -195,6 +195,11 @@ All 5 phases have been implemented with **1545 tests passing**, ruff clean, and 
   - Added test_all_expressions() to Stickman and SimpleFace unit tests
   - Added SVG renderer all_poses tests for Stickman, SimpleFace, ChubbyStickman, Robot, and Chibi (previously only Anime, Superhero, Cartoon had these)
   - Total: 9 new tests, test count increased from 1536 to 1545
+- **Extended Edge Case Test Coverage (v0.1.22)**: Added 32 new tests for comprehensive edge case handling:
+  - Effect module edge cases: intensity/opacity boundary clamping, set_position/set_target methods, AppearEffect style variations (fade/flash/reveal with and without target)
+  - Bubble positioning fallback tests: invalid anchor fallback to top, auto_attach_to fallback when all anchors out of bounds or overlap, tail_target as tuple position in render data
+  - Character expression/pose resolution tests: passing Expression/Pose objects directly to from_name(), handling unknown values with warning logging
+  - Total: 32 new tests, test count increased from 1545 to 1577
 
 ### Technical Stack
 

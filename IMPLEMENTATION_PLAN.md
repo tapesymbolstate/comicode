@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Animation Export + Video Export + Multi-Page Parser
 
-**Current Git Tag: v0.1.46**
+**Current Git Tag: v0.1.47**
 
 All 8 phases have been implemented with **1743 tests** (1739 pass + 4 skip), ruff clean, and mypy passing.
 
@@ -63,6 +63,6 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.46)
+## Note: Stable Release (v0.1.47)
 
-All systems stable with 1743 tests (1739 pass + 4 skip). Specs synchronized with implementation. Added formal specification documents for Animation Export (animation-export.md) and Video Export (video-export.md) features.
+All systems stable with 1743 tests (1739 pass + 4 skip). Documentation synchronized - corrected easing function count to 28 (was inconsistently reported as 27 or 29), version references updated to v0.1.47.

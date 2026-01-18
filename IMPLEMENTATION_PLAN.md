@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.111**
+**Current Git Tag: v0.1.112**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,13 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.111)
+## Note: Stable Release (v0.1.112)
 
 All systems stable with 2107 tests passing (+ 30 skipped = 2137 collected). Version numbers synchronized across all files.
+
+v0.1.112 changes:
+- Added missing v0.1.111 entry to CHANGELOG.md
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
 
 v0.1.111 changes:
 - Fixed documentation inconsistencies in specs/visual-validation-requirements.md (test count 2087 → 2107, version 0.1.106 → 0.1.110)

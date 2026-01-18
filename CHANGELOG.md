@@ -2,6 +2,25 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.112] - 2026-01-19
+
+### Documentation
+- Added missing v0.1.111 entry to CHANGELOG.md
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
+
+### Tests
+- Test count: 2107 passed, 30 skipped (2137 collected)
+
+## [v0.1.111] - 2026-01-18
+
+### Documentation
+- Fixed documentation inconsistencies in specs/visual-validation-requirements.md (test count 2087 → 2107, version 0.1.106 → 0.1.110)
+- Fixed AGENTS.md character count (8 → 9) and example count (15 → 26)
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
+
+### Tests
+- Test count: 2107 passed, 30 skipped (2137 collected)
+
 ## [v0.1.110] - 2026-01-18
 
 ### Added

@@ -6,7 +6,7 @@ This directory contains specifications for the Comix comic creation library, wri
 
 Comix is a Python library for creating comics programmatically, inspired by Manim's API design but focused on comic/manga creation instead of mathematical animations.
 
-**Current Status**: All 8 phases implemented. 2107 tests passing (+ 30 skipped = 2137 collected), mypy and ruff pass. **Version: v0.1.111**
+**Current Status**: All 8 phases implemented. 2107 tests passing (+ 30 skipped = 2137 collected), mypy and ruff pass. **Version: v0.1.112**
 
 ## ✅ Visual Bugs Fixed (v0.1.62)
 
@@ -216,8 +216,8 @@ See `IMPLEMENTATION_PLAN.md` for current implementation status.
 
 ---
 
-**Version**: 0.1.111 (as of 2026-01-18)
-**Last Updated**: 2026-01-18
+**Version**: 0.1.112 (as of 2026-01-19)
+**Last Updated**: 2026-01-19
 **Maintainer**: Claude Code Ralph Agent
 
 All systems stable with 2107 tests passing (+ 30 skipped = 2137 collected).

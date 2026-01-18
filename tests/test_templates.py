@@ -11,6 +11,8 @@ from comix.page.templates import (
     ThreeRowLayout,
     MangaPage,
     ActionPage,
+    NewspaperStrip,
+    Widescreen,
 )
 from comix.cobject.character.character import Stickman
 from comix.cobject.text.text import Text
@@ -533,4 +535,218 @@ class TestTemplateWithContent:
             assert "Reaction 1" in content
             assert "Reaction 2" in content
             assert "Reaction 3" in content
+            Path(path).unlink()
+
+
+class TestNewspaperStrip:
+    """Tests for NewspaperStrip template."""
+
+    def test_default_init(self):
+        """Test default initialization (3 panels)."""
+        strip = NewspaperStrip()
+        assert strip.width == 1200.0
+        assert strip.height == 300.0
+        assert len(strip._panels) == 3
+
+    def test_custom_panel_count(self):
+        """Test custom panel count."""
+        strip = NewspaperStrip(panels=4)
+        assert len(strip._panels) == 4
+
+    def test_panels_property(self):
+        """Test panels property returns all panels."""
+        strip = NewspaperStrip(panels=3)
+        panels = strip.panels
+        assert len(panels) == 3
+        for i, panel in enumerate(panels):
+            assert panel.name == f"panel_{i + 1}"
+
+    def test_first_property(self):
+        """Test first panel property."""
+        strip = NewspaperStrip()
+        assert strip.first is strip.panels[0]
+        assert strip.first.name == "panel_1"
+
+    def test_last_property(self):
+        """Test last panel property."""
+        strip = NewspaperStrip(panels=4)
+        assert strip.last is strip.panels[-1]
+        assert strip.last.name == "panel_4"
+
+    def test_horizontal_layout(self):
+        """Test panels are laid out horizontally."""
+        strip = NewspaperStrip(panels=3)
+        strip.auto_layout()
+
+        # All panels should have same height
+        heights = [p.height for p in strip.panels]
+        assert len(set(heights)) == 1
+
+        # Panels should be arranged left to right
+        for i in range(len(strip.panels) - 1):
+            assert strip.panels[i].position[0] < strip.panels[i + 1].position[0]
+
+    def test_custom_dimensions(self):
+        """Test custom dimensions override defaults."""
+        strip = NewspaperStrip(width=900, height=250)
+        assert strip.width == 900
+        assert strip.height == 250
+
+    def test_render(self):
+        """Test rendering to SVG."""
+        strip = NewspaperStrip()
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            path = strip.render(f.name)
+            assert Path(path).exists()
+            content = Path(path).read_text()
+            assert "<svg" in content
+            assert 'width="1200' in content
+            Path(path).unlink()
+
+
+class TestWidescreen:
+    """Tests for Widescreen template."""
+
+    def test_default_init(self):
+        """Test default initialization (3 panels, 16:9 aspect)."""
+        page = Widescreen()
+        assert page.width == 1200.0
+        assert len(page._panels) == 3
+        assert page.aspect_ratio == 16 / 9
+
+    def test_custom_panel_count(self):
+        """Test custom panel count."""
+        page = Widescreen(panels=2)
+        assert len(page._panels) == 2
+
+    def test_custom_aspect_ratio(self):
+        """Test custom aspect ratio."""
+        page = Widescreen(aspect_ratio=21 / 9)
+        assert page.aspect_ratio == 21 / 9
+
+    def test_calculated_height(self):
+        """Test height is calculated based on panels and aspect ratio."""
+        # With 16:9 aspect, 1200px width -> (1200 - 40 margin) / (16/9) = ~653 per panel
+        page = Widescreen(panels=2, width=1200, margin=20, gutter=10)
+        content_width = 1200 - 2 * 20  # 1160
+        panel_height = content_width / (16 / 9)  # ~652.5
+        expected_height = 2 * 20 + 2 * panel_height + 1 * 10
+        assert abs(page.height - expected_height) < 0.01
+
+    def test_panels_property(self):
+        """Test panels property returns all panels."""
+        page = Widescreen(panels=4)
+        panels = page.panels
+        assert len(panels) == 4
+        for i, panel in enumerate(panels):
+            assert panel.name == f"panel_{i + 1}"
+
+    def test_vertical_layout(self):
+        """Test panels are stacked vertically."""
+        page = Widescreen(panels=3)
+        page.auto_layout()
+
+        # All panels should have same width
+        widths = [p.width for p in page.panels]
+        assert len(set(widths)) == 1
+
+        # Panels should be arranged top to bottom
+        for i in range(len(page.panels) - 1):
+            assert page.panels[i].position[1] < page.panels[i + 1].position[1]
+
+    def test_ultrawide_aspect(self):
+        """Test ultra-wide 21:9 aspect ratio."""
+        page = Widescreen(panels=2, aspect_ratio=21 / 9)
+        page.auto_layout()
+
+        # Panels should be shorter (wider aspect ratio)
+        content_width = page.width - 2 * page.margin
+        expected_panel_height = content_width / (21 / 9)
+        assert abs(page.panels[0].height - expected_panel_height) < 0.01
+
+    def test_render(self):
+        """Test rendering to SVG."""
+        page = Widescreen()
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            path = page.render(f.name)
+            assert Path(path).exists()
+            content = Path(path).read_text()
+            assert "<svg" in content
+            Path(path).unlink()
+
+
+class TestNewTemplateImports:
+    """Test that new templates are properly exported."""
+
+    def test_import_from_comix(self):
+        """Test new templates can be imported from comix."""
+        from comix import NewspaperStrip, Widescreen
+
+        assert NewspaperStrip.__name__ == "NewspaperStrip"
+        assert Widescreen.__name__ == "Widescreen"
+
+    def test_import_from_page_templates(self):
+        """Test new templates can be imported from comix.page.templates."""
+        from comix.page.templates import NewspaperStrip, Widescreen
+
+        assert NewspaperStrip() is not None
+        assert Widescreen() is not None
+
+
+class TestNewTemplateRendering:
+    """Test that new templates render correctly."""
+
+    def test_newspaperstrip_renders(self):
+        """Test NewspaperStrip renders to SVG."""
+        strip = NewspaperStrip()
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            path = strip.render(f.name)
+            assert Path(path).exists()
+            content = Path(path).read_text()
+            assert "<svg" in content
+            Path(path).unlink()
+
+    def test_widescreen_renders(self):
+        """Test Widescreen renders to SVG."""
+        page = Widescreen()
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            path = page.render(f.name)
+            assert Path(path).exists()
+            Path(path).unlink()
+
+
+class TestNewTemplateWithContent:
+    """Test new templates with actual content."""
+
+    def test_newspaperstrip_with_characters(self):
+        """Test NewspaperStrip with character content."""
+        strip = NewspaperStrip(panels=3)
+        strip.auto_layout()
+
+        # Add character to first panel
+        char = Stickman()
+        char.move_to((strip.first.position[0], strip.first.position[1]))
+        strip.first.add_content(char)
+        bubble = char.say("Setup!")
+        strip.first.add_content(bubble)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            path = strip.render(f.name)
+            content = Path(path).read_text()
+            assert "Setup!" in content
+            Path(path).unlink()
+
+    def test_widescreen_with_text(self):
+        """Test Widescreen with text content."""
+        page = Widescreen(panels=2)
+        page.auto_layout()
+
+        text = Text("Cinematic shot", font_size=24)
+        text.move_to(page.panels[0].position)
+        page.panels[0].add_content(text)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            path = page.render(f.name)
+            content = Path(path).read_text()
+            assert "Cinematic shot" in content
             Path(path).unlink()

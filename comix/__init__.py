@@ -81,6 +81,8 @@ from comix.page.templates import (
     ThreeRowLayout,
     MangaPage,
     ActionPage,
+    NewspaperStrip,
+    Widescreen,
 )
 from comix.parser import parse_markup, parse_book_markup, MarkupParser, BookMarkupParser, ParseError, BookSpec
 from comix.renderer.svg_renderer import SVGRenderer
@@ -276,6 +278,8 @@ __all__ = [
     "ThreeRowLayout",
     "MangaPage",
     "ActionPage",
+    "NewspaperStrip",
+    "Widescreen",
     # Parser
     "parse_markup",
     "parse_book_markup",

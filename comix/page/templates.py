@@ -522,3 +522,136 @@ class ActionPage(Page):
     def auto_layout(self) -> Self:
         """Override to skip grid layout (panels are pre-positioned)."""
         return self
+
+
+class NewspaperStrip(Page):
+    """Classic newspaper comic strip format.
+
+    A horizontal strip layout with 3-4 equal panels in a single row.
+    This format is iconic in newspaper comics like Garfield, Peanuts,
+    and Calvin & Hobbes.
+
+    Default dimensions are 1200x300 (4:1 aspect ratio) which is
+    standard for newspaper syndication.
+
+    Example:
+        >>> strip = NewspaperStrip()  # 3 panels by default
+        >>> strip.panels[0].add_content(setup)
+        >>> strip.panels[1].add_content(buildup)
+        >>> strip.panels[2].add_content(punchline)
+        >>> strip.render("comic_strip.png")
+
+        >>> # 4-panel variant
+        >>> strip = NewspaperStrip(panels=4)
+        >>> for i, panel in enumerate(strip.panels):
+        ...     panel.add_content(scenes[i])
+    """
+
+    def __init__(
+        self,
+        panels: int = 3,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize a newspaper strip layout.
+
+        Args:
+            panels: Number of panels (typically 3 or 4).
+            **kwargs: Page parameters (width, height, margin, gutter, etc.)
+        """
+        kwargs.setdefault("width", 1200.0)
+        kwargs.setdefault("height", 300.0)
+        super().__init__(**kwargs)
+
+        self._num_panels = panels
+
+        # Set horizontal grid layout (1 row, n columns)
+        self.set_layout(rows=1, cols=panels)
+
+        # Create panels with sequential names
+        for i in range(panels):
+            self.add(Panel(name=f"panel_{i + 1}"))
+
+    @property
+    def panels(self) -> list[Panel]:
+        """Get all panels in order (left to right)."""
+        return list(self._panels)
+
+    @property
+    def first(self) -> Panel:
+        """Get the first panel (setup)."""
+        return self._panels[0]
+
+    @property
+    def last(self) -> Panel:
+        """Get the last panel (punchline)."""
+        return self._panels[-1]
+
+
+class Widescreen(Page):
+    """Cinematic widescreen format with horizontal panels.
+
+    A layout optimized for cinematic storytelling with wide, letterbox-style
+    panels. Perfect for landscape shots, panoramic scenes, and dramatic
+    pacing. Commonly used in modern webcomics and graphic novels.
+
+    The default 16:9 aspect ratio per panel matches modern screen formats.
+    The page stacks multiple widescreen panels vertically.
+
+    Example:
+        >>> page = Widescreen()  # 3 panels by default
+        >>> page.panels[0].add_content(establishing_shot)
+        >>> page.panels[1].add_content(dialogue_scene)
+        >>> page.panels[2].add_content(dramatic_close)
+        >>> page.render("cinematic.png")
+
+        >>> # 21:9 ultra-wide panels
+        >>> page = Widescreen(panels=2, aspect_ratio=21/9)
+    """
+
+    def __init__(
+        self,
+        panels: int = 3,
+        aspect_ratio: float = 16 / 9,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize a widescreen layout.
+
+        Args:
+            panels: Number of widescreen panels stacked vertically.
+            aspect_ratio: Width-to-height ratio of each panel (default 16:9).
+            **kwargs: Page parameters (width, margin, gutter, etc.)
+        """
+        kwargs.setdefault("width", 1200.0)
+
+        # Calculate panel and page dimensions
+        width = kwargs.get("width", 1200.0)
+        margin = kwargs.get("margin", 20.0)
+        gutter = kwargs.get("gutter", 10.0)
+
+        content_width = width - 2 * margin
+        panel_height = content_width / aspect_ratio
+        total_height = 2 * margin + panels * panel_height + (panels - 1) * gutter
+
+        kwargs.setdefault("height", total_height)
+
+        super().__init__(**kwargs)
+
+        self._num_panels = panels
+        self._aspect_ratio = aspect_ratio
+
+        # Set vertical grid layout
+        self.set_layout(rows=panels, cols=1)
+
+        # Create panels
+        for i in range(panels):
+            self.add(Panel(name=f"panel_{i + 1}"))
+
+    @property
+    def panels(self) -> list[Panel]:
+        """Get all panels in order (top to bottom)."""
+        return list(self._panels)
+
+    @property
+    def aspect_ratio(self) -> float:
+        """Get the aspect ratio of each panel."""
+        return self._aspect_ratio

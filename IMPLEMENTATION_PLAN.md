@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.71**
+**Current Git Tag: v0.1.72**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -33,9 +33,9 @@ Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
 - **Layout**: GridLayout, FlowLayout, ConstraintLayout with collision detection
 - **Renderers**: SVG (always available), Cairo PNG/PDF (optional)
 - **Effects**: 6 types (AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect)
-- **Templates**: 7 page templates (FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage)
+- **Templates**: 9 page templates (FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage, NewspaperStrip, Widescreen)
 - **Multi-page PDF**: Book class for compiling multiple pages
-- **Working Examples**: 23 example scripts demonstrating all core features
+- **Working Examples**: 24 example scripts demonstrating all core features
 
 ### Advanced Features (Optional)
 
@@ -97,9 +97,15 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.71)
+## Note: Stable Release (v0.1.72)
 
-All systems stable with 1797 tests passing. Version numbers synchronized across all files.
+All systems stable with 1819 tests passing. Version numbers synchronized across all files.
+
+v0.1.72 changes:
+- Added `NewspaperStrip` template for classic 3-4 horizontal panel newspaper comics
+- Added `Widescreen` template with cinematic 16:9 aspect ratio panels
+- Added example 24 demonstrating new templates
+- Added 22 new tests for new templates
 
 v0.1.71 changes:
 - Added `Panel.split_diagonal()` method for splitting panels into triangular pieces

@@ -678,22 +678,21 @@ The joint angle system should work alongside the existing pose system:
 
 ## Open Questions
 
-- [ ] Should elbow/knee bend angles use 0° = straight or 180° = straight? **Needs decision**
-  - Option A: 0° = straight (bend angle measures deviation from straight)
-  - Option B: 180° = straight (bend angle measures interior angle)
-  - **Recommendation**: 0° = straight (more intuitive: "0 bend = no bend")
+- [x] Should elbow/knee bend angles use 0° = straight or 180° = straight? **Decision: 0° = straight**
+  - Implemented: 0° = straight arm/leg, higher values = more bend
+  - Intuitive: "0 bend = no bend"
 
-- [ ] Should we support negative elbow/knee angles for hyperextension? **Needs decision**
-  - May be useful for stylized poses
-  - Could look unnatural/broken
+- [x] Should we support negative elbow/knee angles for hyperextension? **Decision: No**
+  - Implementation clamps elbow/knee angles to 0-180° range
+  - Prevents unnatural/broken-looking poses
 
-- [ ] How detailed should hand gestures be? **Needs decision**
-  - Current plan: Simple geometric representations
-  - Alternative: More detailed finger positions
+- [x] How detailed should hand gestures be? **Decision: Simple geometric representations**
+  - Implemented 7 gestures: none, fist, open, point, peace, thumbs_up, relaxed
+  - Simple geometric shapes appropriate for stick figure style
 
-- [ ] Should `.point_at()` adjust body position or just arm? **Needs decision**
-  - Current plan: Only arm angles
-  - Alternative: Could also rotate torso or face direction
+- [x] Should `.point_at()` adjust body position or just arm? **Decision: Only arm angles**
+  - point_at() calculates and sets shoulder/elbow angles only
+  - Keeps behavior predictable and composable
 
 - [ ] Do we need forearm rotation (wrist twist)? **Defer to future**
   - Adds complexity

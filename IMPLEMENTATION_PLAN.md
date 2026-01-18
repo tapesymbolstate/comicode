@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.104**
+**Current Git Tag: v0.1.105**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,17 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.104)
+## Note: Stable Release (v0.1.105)
 
 All systems stable with 2087 tests passing (+ 30 skipped = 2117 collected). Version numbers synchronized across all files.
+
+v0.1.105 changes:
+- Updated stickman-articulation.md spec: Marked 4 Open Questions as resolved with implementation decisions
+  - Elbow/knee angles: 0° = straight (implemented)
+  - Hyperextension: Not supported, angles clamped to 0-180° (implemented)
+  - Hand gestures: Simple geometric representations with 7 options (implemented)
+  - point_at(): Only adjusts arm angles, not body position (implemented)
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
 
 v0.1.104 changes:
 - Fixed 3 missing assertions in test_character.py: `test_facing_flips_points` tests for Stickman, ChubbyStickman, and Robot were calling `np.allclose()` without asserting the result

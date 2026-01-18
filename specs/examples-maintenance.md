@@ -1,6 +1,6 @@
 # Examples Maintenance - 예제 정리 및 관리 기준
 
-> **Status (v0.1.105)**: All 26 examples execute without errors and produce correct visual output. All visual bugs have been fixed (v0.1.85).
+> **Status (v0.1.106)**: All 26 examples execute without errors and produce correct visual output. All visual bugs have been fixed (v0.1.85).
 
 ## What
 examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 예제만 유지**하고, 버그가 있는 예제는 명확히 표시하거나 임시 제거한다.
@@ -8,7 +8,7 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 ## Why
 **망가진 예제가 있으면 사용자가 혼란스럽다.**
 
-현재 상황 (v0.1.105):
+현재 상황 (v0.1.106):
 - ✅ 01-26 예제 파일 모두 존재
 - ✅ 모든 예제가 에러 없이 실행됨 (no exceptions)
 - ✅ **시각적 출력 정상** (모든 버그 수정 완료)

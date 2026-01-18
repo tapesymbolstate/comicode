@@ -2,6 +2,42 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.107] - 2026-01-18
+
+### Documentation
+- Added missing CHANGELOG entries for v0.1.105 and v0.1.106
+- Updated version references in specs/examples-maintenance.md and specs/visual-validation-requirements.md from v0.1.105 to v0.1.106
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
+
+### Tests
+- Test count: 2087 passed, 30 skipped (2117 collected)
+
+## [v0.1.106] - 2026-01-18
+
+### Documentation
+- Fixed documentation inconsistencies across spec files:
+  - specs/getting-started.md: Updated character count from 8 to 9, added AnimalStyle to character list
+  - specs/visual-validation-requirements.md: Updated version references from v0.1.101 to v0.1.105
+  - specs/examples-maintenance.md: Updated version references from v0.1.101 to v0.1.105
+  - specs/working-examples.md: Added Example 26 (stickman_articulation.py) to embedded README examples list
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
+
+### Tests
+- Test count: 2087 passed, 30 skipped (2117 collected)
+
+## [v0.1.105] - 2026-01-18
+
+### Documentation
+- Updated stickman-articulation.md spec: Marked 4 Open Questions as resolved with implementation decisions
+  - Elbow/knee angles: 0° = straight (implemented)
+  - Hyperextension: Not supported, angles clamped to 0-180° (implemented)
+  - Hand gestures: Simple geometric representations with 7 options (implemented)
+  - point_at(): Only adjusts arm angles, not body position (implemented)
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
+
+### Tests
+- Test count: 2087 passed, 30 skipped (2117 collected)
+
 ## [v0.1.104] - 2026-01-18
 
 ### Bug Fixes

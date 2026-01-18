@@ -9,7 +9,12 @@ import numpy as np
 
 from comix.cobject.cobject import CObject
 from comix.style.font import calculate_text_width_with_cjk
-from comix.utils.bezier import create_bubble_path, create_tail_points
+from comix.utils.bezier import (
+    create_bubble_path,
+    create_minimal_tail_points,
+    create_smooth_tail_points,
+    create_tail_points,
+)
 
 if TYPE_CHECKING:
     from comix.cobject.panel.panel import Panel
@@ -240,7 +245,13 @@ class Bubble(CObject):
         self._generate_tail()
 
     def _generate_tail(self) -> None:
-        """Generate tail points based on tail_mode."""
+        """Generate tail points based on tail_mode and tail_style.
+
+        Tail styles:
+            - "classic": Sharp triangular tail (default)
+            - "smooth": Curved bezier tail for softer appearance
+            - "minimal": Small, subtle nub tail
+        """
         # No tail for "none" mode
         if self.tail_mode == "none":
             self._tail_points = np.zeros((0, 2), dtype=np.float64)
@@ -264,14 +275,32 @@ class Bubble(CObject):
                 self.tail_distance_threshold,
             )
 
-        # Generate tail points with calculated length
-        tail_points = create_tail_points(
-            width=self._width,
-            height=self._height,
-            direction=self.tail_direction,
-            length=effective_length,
-            tip_width=self.tail_width,
-        )
+        # Generate tail points based on tail_style
+        if self.tail_style == "smooth":
+            tail_points = create_smooth_tail_points(
+                width=self._width,
+                height=self._height,
+                direction=self.tail_direction,
+                length=effective_length,
+                tip_width=self.tail_width,
+            )
+        elif self.tail_style == "minimal":
+            tail_points = create_minimal_tail_points(
+                width=self._width,
+                height=self._height,
+                direction=self.tail_direction,
+                length=effective_length,
+                tip_width=self.tail_width,
+            )
+        else:
+            # Default "classic" style - sharp triangular tail
+            tail_points = create_tail_points(
+                width=self._width,
+                height=self._height,
+                direction=self.tail_direction,
+                length=effective_length,
+                tip_width=self.tail_width,
+            )
 
         if len(tail_points) > 0:
             self._tail_points = tail_points

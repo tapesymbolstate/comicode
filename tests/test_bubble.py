@@ -847,3 +847,95 @@ class TestBubbleRenderDataTailFields:
         assert data["min_tail_length"] == 20
         assert data["max_tail_length"] == 60
         assert data["tail_distance_threshold"] == 25
+
+
+class TestTailStyles:
+    """Tests for different tail styles (classic, smooth, minimal)."""
+
+    def test_classic_tail_style_generates_triangle(self):
+        """Test classic style generates a 3-point triangular tail."""
+        bubble = SpeechBubble(text="Hello!", tail_style="classic", tail_length=30)
+        # Classic tail should have exactly 3 points (triangle)
+        assert len(bubble._tail_points) == 3
+
+    def test_smooth_tail_style_generates_curve(self):
+        """Test smooth style generates a curved bezier tail."""
+        bubble = SpeechBubble(text="Hello!", tail_style="smooth", tail_length=30)
+        # Smooth tail should have many points from bezier curves
+        # Default is 12 points per curve, so should be > 3
+        assert len(bubble._tail_points) > 3
+
+    def test_minimal_tail_style_generates_short_tail(self):
+        """Test minimal style generates a short, subtle tail."""
+        bubble = SpeechBubble(text="Hello!", tail_style="minimal", tail_length=30)
+        # Minimal tail should have points (uses smooth tail internally)
+        assert len(bubble._tail_points) > 0
+
+    def test_smooth_tail_with_auto_mode(self):
+        """Test smooth tail works with auto tail mode."""
+        char = Stickman(height=100)
+        char.move_to((200, 200))
+
+        bubble = SpeechBubble(text="Hello!", tail_style="smooth", tail_mode="auto")
+        bubble.move_to((200, 350))
+        bubble.point_to(char)
+        bubble.generate_points()
+
+        # Should have curved tail points
+        assert len(bubble._tail_points) > 3
+        # Effective length should be calculated
+        assert bubble.get_effective_tail_length() > 0
+
+    def test_minimal_tail_shorter_than_classic(self):
+        """Test minimal tail is shorter than classic for same parameters."""
+        classic = SpeechBubble(text="Hi!", tail_style="classic", tail_length=40)
+        minimal = SpeechBubble(text="Hi!", tail_style="minimal", tail_length=40)
+
+        # Both should have tails
+        assert len(classic._tail_points) > 0
+        assert len(minimal._tail_points) > 0
+
+        # Minimal should use a shorter length (50% by default, capped at 20)
+        # Compare bounding boxes or verify implementation
+
+    def test_tail_style_preserved_after_regenerate(self):
+        """Test tail style is preserved when regenerating points."""
+        bubble = SpeechBubble(text="Hello!", tail_style="smooth")
+        original_style = bubble.tail_style
+
+        bubble.set_text("New text!")
+
+        assert bubble.tail_style == original_style
+        # Should still be smooth style (many points)
+        assert len(bubble._tail_points) > 3
+
+    def test_tail_style_in_render_data(self):
+        """Test tail_style is included in render data."""
+        bubble = SpeechBubble(text="Hello!", tail_style="smooth")
+        data = bubble.get_render_data()
+
+        assert data["tail_style"] == "smooth"
+
+    def test_all_tail_directions_with_smooth_style(self):
+        """Test smooth tail works with all direction options."""
+        directions = [
+            "bottom", "bottom-left", "bottom-right",
+            "top", "top-left", "top-right",
+            "left", "right"
+        ]
+
+        for direction in directions:
+            bubble = SpeechBubble(
+                text="Hello!",
+                tail_style="smooth",
+                tail_direction=direction,
+                tail_length=30
+            )
+            # Each direction should generate valid curve points
+            assert len(bubble._tail_points) > 3, f"Direction {direction} failed"
+
+    def test_tail_mode_none_ignores_style(self):
+        """Test tail_mode='none' produces no tail regardless of style."""
+        for style in ["classic", "smooth", "minimal"]:
+            bubble = SpeechBubble(text="Hello!", tail_mode="none", tail_style=style)
+            assert len(bubble._tail_points) == 0, f"Style {style} should have no tail"

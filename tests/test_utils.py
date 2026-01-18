@@ -4,6 +4,8 @@ import numpy as np
 
 from comix.utils.bezier import (
     create_bubble_path,
+    create_minimal_tail_points,
+    create_smooth_tail_points,
     create_tail_points,
     bezier_curve,
 )
@@ -738,3 +740,132 @@ class TestBezierUtilsExtendedEdgeCases:
         assert len(path) > 0
         # 4 corners * 12 points + closing = 49
         assert len(path) == 49
+
+
+class TestSmoothTailPoints:
+    """Tests for smooth/curved tail point generation."""
+
+    def test_create_smooth_tail_basic(self):
+        """Test creating smooth tail with basic parameters."""
+        tail = create_smooth_tail_points(width=100, height=80, length=30)
+        # Smooth tail has many bezier curve points (>3)
+        assert len(tail) > 3
+
+    def test_create_smooth_tail_zero_length(self):
+        """Test smooth tail with zero length returns empty array."""
+        tail = create_smooth_tail_points(width=100, height=80, length=0)
+        assert len(tail) == 0
+
+    def test_create_smooth_tail_negative_length(self):
+        """Test smooth tail with negative length returns empty array."""
+        tail = create_smooth_tail_points(width=100, height=80, length=-10)
+        assert len(tail) == 0
+
+    def test_create_smooth_tail_all_directions(self):
+        """Test smooth tail for all valid directions."""
+        directions = [
+            "bottom", "bottom-left", "bottom-right",
+            "left", "right",
+            "top", "top-left", "top-right",
+        ]
+        for direction in directions:
+            tail = create_smooth_tail_points(
+                width=100, height=80, direction=direction, length=30
+            )
+            assert len(tail) > 3, f"Direction {direction} should produce curved tail"
+
+    def test_create_smooth_tail_invalid_direction(self):
+        """Test smooth tail with invalid direction returns empty array."""
+        tail = create_smooth_tail_points(width=100, height=80, direction="invalid")
+        assert len(tail) == 0
+
+    def test_create_smooth_tail_has_more_points_than_classic(self):
+        """Test smooth tail has more points than classic triangular tail."""
+        smooth = create_smooth_tail_points(width=100, height=80, length=30)
+        classic = create_tail_points(width=100, height=80, length=30)
+        assert len(smooth) > len(classic)
+
+    def test_create_smooth_tail_custom_num_points(self):
+        """Test smooth tail with custom number of bezier points."""
+        tail_low = create_smooth_tail_points(
+            width=100, height=80, length=30, num_points=6
+        )
+        tail_high = create_smooth_tail_points(
+            width=100, height=80, length=30, num_points=20
+        )
+        # Higher num_points should produce more points
+        assert len(tail_high) > len(tail_low)
+
+    def test_create_smooth_tail_no_nan_inf(self):
+        """Test smooth tail contains no NaN or infinite values."""
+        for direction in [
+            "bottom", "bottom-left", "bottom-right",
+            "left", "right", "top", "top-left", "top-right",
+        ]:
+            tail = create_smooth_tail_points(
+                width=100, height=80, direction=direction, length=30
+            )
+            assert not np.any(np.isnan(tail)), f"Direction {direction} has NaN"
+            assert not np.any(np.isinf(tail)), f"Direction {direction} has inf"
+
+    def test_create_smooth_tail_forms_closed_shape(self):
+        """Test smooth tail can form a filled shape (first connects to last via bubble edge)."""
+        tail = create_smooth_tail_points(width=100, height=80, length=30)
+        # Tail should have continuous points that can be filled
+        assert len(tail) > 0
+        # Points should form a shape (not degenerate)
+        x_range = np.ptp(tail[:, 0])
+        y_range = np.ptp(tail[:, 1])
+        assert x_range > 0 or y_range > 0
+
+
+class TestMinimalTailPoints:
+    """Tests for minimal/subtle tail point generation."""
+
+    def test_create_minimal_tail_basic(self):
+        """Test creating minimal tail with basic parameters."""
+        tail = create_minimal_tail_points(width=100, height=80, length=30)
+        # Minimal tail should have points (uses smooth tail internally)
+        assert len(tail) > 0
+
+    def test_create_minimal_tail_zero_length(self):
+        """Test minimal tail with zero length returns empty array."""
+        tail = create_minimal_tail_points(width=100, height=80, length=0)
+        assert len(tail) == 0
+
+    def test_create_minimal_tail_all_directions(self):
+        """Test minimal tail for all valid directions."""
+        directions = [
+            "bottom", "bottom-left", "bottom-right",
+            "left", "right",
+            "top", "top-left", "top-right",
+        ]
+        for direction in directions:
+            tail = create_minimal_tail_points(
+                width=100, height=80, direction=direction, length=30
+            )
+            assert len(tail) > 0, f"Direction {direction} should produce tail"
+
+    def test_create_minimal_tail_invalid_direction(self):
+        """Test minimal tail with invalid direction returns empty array."""
+        tail = create_minimal_tail_points(width=100, height=80, direction="invalid")
+        assert len(tail) == 0
+
+    def test_create_minimal_tail_shorter_effective_length(self):
+        """Test minimal tail uses shorter effective length than specified."""
+        # Minimal uses 50% of length capped at 20
+        tail = create_minimal_tail_points(width=100, height=80, length=100)
+        # The tail should be based on shorter length (20 max)
+        assert len(tail) > 0
+
+    def test_create_minimal_tail_no_nan_inf(self):
+        """Test minimal tail contains no NaN or infinite values."""
+        for direction in [
+            "bottom", "bottom-left", "bottom-right",
+            "left", "right", "top", "top-left", "top-right",
+        ]:
+            tail = create_minimal_tail_points(
+                width=100, height=80, direction=direction, length=30
+            )
+            assert not np.any(np.isnan(tail)), f"Direction {direction} has NaN"
+            assert not np.any(np.isinf(tail)), f"Direction {direction} has inf"

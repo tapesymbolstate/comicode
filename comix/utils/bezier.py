@@ -307,3 +307,143 @@ def bezier_curve(
     )
 
     return np.array(points, dtype=np.float64)
+
+
+def create_smooth_tail_points(
+    width: float,
+    height: float,
+    direction: str = "bottom-left",
+    length: float = 30.0,
+    tip_width: float = 20.0,
+    num_points: int = 12,
+) -> NDArray[np.float64]:
+    """Create curved/smooth speech bubble tail points using bezier curves.
+
+    Creates a smooth, curved tail shape instead of a sharp triangular tail.
+    The tail curves gently from the bubble edge to the tip.
+
+    Args:
+        width: Bubble width.
+        height: Bubble height.
+        direction: Tail direction ("bottom", "bottom-left", "bottom-right", "left", "right", etc).
+        length: Tail length.
+        tip_width: Width at the base of the tail.
+        num_points: Number of points per bezier curve (affects smoothness).
+
+    Returns:
+        Array of (x, y) points forming the curved tail shape.
+    """
+    if length <= 0:
+        return np.zeros((0, 2), dtype=np.float64)
+
+    half_w = width / 2
+    half_h = height / 2
+    half_tip = tip_width / 2
+
+    # Calculate base and tip positions based on direction
+    direction_offsets = {
+        "bottom": (0, -half_h, 0, -half_h - length, half_tip, 0),
+        "bottom-left": (-half_w * 0.3, -half_h, -half_w * 0.3 - length * 0.5, -half_h - length, half_tip, 0),
+        "bottom-right": (half_w * 0.3, -half_h, half_w * 0.3 + length * 0.5, -half_h - length, half_tip, 0),
+        "left": (-half_w, 0, -half_w - length, 0, 0, half_tip),
+        "right": (half_w, 0, half_w + length, 0, 0, half_tip),
+        "top": (0, half_h, 0, half_h + length, half_tip, 0),
+        "top-left": (-half_w * 0.3, half_h, -half_w * 0.3 - length * 0.5, half_h + length, half_tip, 0),
+        "top-right": (half_w * 0.3, half_h, half_w * 0.3 + length * 0.5, half_h + length, half_tip, 0),
+    }
+
+    if direction not in direction_offsets:
+        return np.zeros((0, 2), dtype=np.float64)
+
+    base_x, base_y, tip_x, tip_y, dx, dy = direction_offsets[direction]
+
+    # Define the three key points
+    p_left = (base_x - dx, base_y - dy)
+    p_tip = (tip_x, tip_y)
+    p_right = (base_x + dx, base_y + dy)
+
+    # Calculate control points for smooth curves
+    # The curve should bulge outward slightly for a natural look
+    curve_factor = 0.3  # Controls how much the curve bulges
+
+    # Direction from base to tip
+    dir_x = tip_x - base_x
+    dir_y = tip_y - base_y
+
+    # Perpendicular direction (for curve bulge)
+    perp_x = -dir_y
+    perp_y = dir_x
+    perp_len = np.sqrt(perp_x**2 + perp_y**2)
+    if perp_len > 0:
+        perp_x /= perp_len
+        perp_y /= perp_len
+
+    # Left curve: from p_left to p_tip
+    # Control point 1: slightly along the direction, bulging outward
+    left_ctrl1 = (
+        p_left[0] + dir_x * 0.3 - perp_x * length * curve_factor,
+        p_left[1] + dir_y * 0.3 - perp_y * length * curve_factor,
+    )
+    # Control point 2: closer to tip, still bulging
+    left_ctrl2 = (
+        p_tip[0] - dir_x * 0.2 - perp_x * length * curve_factor * 0.5,
+        p_tip[1] - dir_y * 0.2 - perp_y * length * curve_factor * 0.5,
+    )
+
+    # Right curve: from p_tip to p_right
+    # Control point 1: near tip, bulging outward
+    right_ctrl1 = (
+        p_tip[0] - dir_x * 0.2 + perp_x * length * curve_factor * 0.5,
+        p_tip[1] - dir_y * 0.2 + perp_y * length * curve_factor * 0.5,
+    )
+    # Control point 2: slightly back from right base
+    right_ctrl2 = (
+        p_right[0] + dir_x * 0.3 + perp_x * length * curve_factor,
+        p_right[1] + dir_y * 0.3 + perp_y * length * curve_factor,
+    )
+
+    # Generate bezier curve points
+    left_curve = bezier_curve(p_left, left_ctrl1, left_ctrl2, p_tip, num_points)
+    right_curve = bezier_curve(p_tip, right_ctrl1, right_ctrl2, p_right, num_points)
+
+    # Combine curves (skip duplicate tip point)
+    points = np.vstack([left_curve, right_curve[1:]])
+
+    return points
+
+
+def create_minimal_tail_points(
+    width: float,
+    height: float,
+    direction: str = "bottom-left",
+    length: float = 30.0,
+    tip_width: float = 20.0,
+) -> NDArray[np.float64]:
+    """Create a minimal/small nub tail for speech bubbles.
+
+    Creates a subtle, small tail that's less prominent than the classic style.
+    The tail is shorter and more rounded.
+
+    Args:
+        width: Bubble width.
+        height: Bubble height.
+        direction: Tail direction.
+        length: Tail length (will be reduced for minimal style).
+        tip_width: Width at the base of the tail.
+
+    Returns:
+        Array of (x, y) points forming the minimal tail shape.
+    """
+    # Minimal tails are shorter and wider at base
+    minimal_length = min(length * 0.5, 20.0)
+    minimal_tip_width = tip_width * 0.6
+
+    # Use smooth tail with reduced length for subtle effect
+    return create_smooth_tail_points(
+        width=width,
+        height=height,
+        direction=direction,
+        length=minimal_length,
+        tip_width=minimal_tip_width,
+        num_points=8,
+    )

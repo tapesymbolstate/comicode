@@ -24,7 +24,7 @@ Professional comics use short, clean tail indicators that subtly show who's spea
 - [x] Tail points toward character's center (or custom target point)
 
 ### Should Have
-- [ ] Curved/bezier tail option for softer appearance
+- [x] Curved/bezier tail option for softer appearance (implemented via `tail_style="smooth"`)
 - [x] `smart_attach_to()` method positions bubble optimally AND sets appropriate tail
 - [ ] Tail width scales with distance (closer = wider, farther = narrower)
 - [x] Multiple tail style presets: "classic" (triangle), "smooth" (curved), "minimal" (small nub)

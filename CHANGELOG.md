@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.70] - 2026-01-18
+
+### Features
+- **Curved/smooth tail style**: Implemented bezier-curve based tail rendering for speech bubbles
+  - `tail_style="smooth"` creates curved, natural-looking tails using bezier curves
+  - `tail_style="minimal"` creates short, subtle nub tails
+  - `tail_style="classic"` (default) maintains the original triangular tail
+- Added `create_smooth_tail_points()` and `create_minimal_tail_points()` utility functions
+
+### Tests
+- Added 24 new tests for tail style functionality
+- Test count: 1785 passed, 30 skipped
+
+### Documentation
+- Updated bubble-tail-improvements.md to mark curved/bezier tail as implemented
+
 ## [v0.1.69] - 2026-01-18
 
 ### Documentation

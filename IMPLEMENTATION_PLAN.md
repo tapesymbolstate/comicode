@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.64**
+**Current Git Tag: v0.1.65**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,13 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.64)
+## Note: Stable Release (v0.1.65)
 
-All systems stable with 1743 tests passing. Version numbers synchronized across all files.
+All systems stable with 1713 tests passing. Version numbers synchronized across all files.
+
+v0.1.65 changes:
+- Fixed mypy type-check errors in optional dependency modules (video_renderer.py, preview/server.py)
+- Improved type safety for optional dependencies (watchdog, imageio)
 
 v0.1.64 changes:
 - Synchronized version numbers to v0.1.64 across pyproject.toml, comix/constants.py, specs/README.md

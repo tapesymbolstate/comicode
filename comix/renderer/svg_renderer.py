@@ -177,7 +177,15 @@ class SVGRenderer:
 
         group = self._dwg.g(opacity=data.get("opacity", 1.0))
 
-        if obj_type == "Panel":
+        if obj_type in (
+            "Panel",
+            "DiagonalPanel",
+            "TrapezoidPanel",
+            "IrregularPanel",
+            "StarburstPanel",
+            "CloudPanel",
+            "ExplosionPanel",
+        ):
             self._render_panel(data, group)
             # Render panel children - they use global coordinates
             for child in cobject.submobjects:
@@ -226,6 +234,13 @@ class SVGRenderer:
         width = data.get("width", 100)
         height = data.get("height", 100)
         border = data.get("border", {})
+        shape = data.get("shape", "rectangle")
+        clip_path = data.get("clip_path", [])
+
+        # Handle irregular (non-rectangular) panel shapes
+        if shape != "rectangle" and clip_path:
+            self._render_irregular_panel(data, group, pos, clip_path, border)
+            return
 
         x = pos[0] - width / 2
         y = pos[1] - height / 2
@@ -256,6 +271,42 @@ class SVGRenderer:
             self._render_panel_background_image(
                 background_image, x, y, width, height, border.get("radius", 0), group
             )
+
+    def _render_irregular_panel(
+        self,
+        data: dict[str, Any],
+        group: Group,
+        pos: list[float],
+        clip_path: list[list[float]],
+        border: dict[str, Any],
+    ) -> None:
+        """Render an irregular (non-rectangular) panel using polygon points.
+
+        Args:
+            data: Panel render data.
+            group: SVG group to add elements to.
+            pos: Panel center position [x, y].
+            clip_path: List of [x, y] points defining the polygon (local coords).
+            border: Border configuration dict.
+        """
+        # Transform local polygon points to world coordinates
+        world_points = [(pos[0] + pt[0], pos[1] + pt[1]) for pt in clip_path]
+
+        # Create polygon for the panel shape
+        polygon = Polygon(
+            points=world_points,
+            fill=data.get("background_color", "#FFFFFF"),
+            stroke=border.get("color", "#000000"),
+            stroke_width=border.get("width", 2),
+        )
+
+        # Apply border style
+        if border.get("style") == "dashed":
+            polygon["stroke-dasharray"] = "5,5"
+        elif border.get("style") == "dotted":
+            polygon["stroke-dasharray"] = "2,2"
+
+        group.add(polygon)
 
     def _render_panel_background_image(
         self,

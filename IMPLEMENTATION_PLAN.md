@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.87**
+**Current Git Tag: v0.1.88**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -35,7 +35,7 @@ Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
 - **Effects**: 6 types (AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect)
 - **Templates**: 9 page templates (FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage, NewspaperStrip, Widescreen)
 - **Multi-page PDF**: Book class for compiling multiple pages
-- **Working Examples**: 24 example scripts demonstrating all core features
+- **Working Examples**: 25 example scripts demonstrating all core features
 
 ### Advanced Features (Optional)
 
@@ -97,9 +97,16 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.87)
+## Note: Stable Release (v0.1.88)
 
 All systems stable with 2014 tests passing (+ 30 skipped = 2044 collected). Version numbers synchronized across all files.
+
+v0.1.88 changes:
+- Fixed irregular panel rendering bug: SVG and Cairo renderers now properly render non-rectangular panels
+- Added example 25 (panel_shapes.py) demonstrating all advanced panel types
+- DiagonalPanel, TrapezoidPanel, IrregularPanel, StarburstPanel, CloudPanel, and ExplosionPanel now render with correct background fills
+- Panel splitting methods (split_diagonal, split_curve) now render correctly
+- Example 25 includes 8 output files showcasing diagonal, trapezoid, starburst, cloud, explosion, split diagonal, split curve, and mixed shapes
 
 v0.1.87 changes:
 - Fixed documentation inconsistencies in specs/working-examples.md

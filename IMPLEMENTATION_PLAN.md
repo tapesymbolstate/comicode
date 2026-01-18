@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.90**
+**Current Git Tag: v0.1.91**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,14 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.90)
+## Note: Stable Release (v0.1.91)
 
 All systems stable with 2014 tests passing (+ 30 skipped = 2044 collected). Version numbers synchronized across all files.
+
+v0.1.91 changes:
+- Added missing example 25 (panel_shapes.py) to examples/README.md documentation
+- Updated section header "Development Workflow (23-24)" to "Development Workflow (23-25)"
+- Version numbers synchronized across all files
 
 v0.1.90 changes:
 - Fixed README.md example count from 24 to 25

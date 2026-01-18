@@ -74,7 +74,7 @@ Generated PNG files will be saved to `examples/output/`.
     - Custom row heights and proportions
     - Dramatic layout variations
 
-### Development Workflow (23-24)
+### Development Workflow (23-25)
 
 23. **23_preview_server.py** - Preview Server for live development
     - Hot-reload capability for rapid iteration
@@ -85,6 +85,11 @@ Generated PNG files will be saved to `examples/output/`.
 24. **24_new_templates.py** - NewspaperStrip and Widescreen templates
     - NewspaperStrip for classic 3-4 horizontal panel comics
     - Widescreen for cinematic 16:9 or 21:9 aspect ratio layouts
+
+25. **25_panel_shapes.py** - Advanced panel shapes for dynamic layouts
+    - DiagonalPanel, TrapezoidPanel, StarburstPanel, CloudPanel, ExplosionPanel
+    - Panel splitting methods (split_diagonal, split_curve)
+    - Mixed shapes comic demonstrating multiple panel types
 
 ## Requirements
 

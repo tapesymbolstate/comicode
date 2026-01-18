@@ -86,6 +86,10 @@ Potential improvements for core features:
 
 1. **Additional Character Styles**: New character classes (e.g., DetailedFace, RealisticStyle)
 2. **More Templates**: Additional page layout templates
+3. **Preset Panel Shapes**: Starburst, cloud, explosion panel presets (from panel-shapes.md)
+4. **Automatic Gutter Spacing**: Gutter calculations for non-rectangular panels (from panel-shapes.md)
+5. **Stickman Head Options**: Slight curve/roundness option for head (from stickman-reference-based.md)
+6. **Line Width Consistency**: Consistent line widths across all Stickman body parts (from stickman-reference-based.md)
 
 ## Known Issues
 

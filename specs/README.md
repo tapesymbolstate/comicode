@@ -215,8 +215,8 @@ See `IMPLEMENTATION_PLAN.md` for current implementation status.
 
 ---
 
-**Version**: 0.1.73 (as of 2026-01-18)
+**Version**: 0.1.74 (as of 2026-01-18)
 **Last Updated**: 2026-01-18
 **Maintainer**: Claude Code Ralph Agent
 
-All systems stable with 1839 tests passing (+ 30 skipped = 1869 collected).
+All systems stable with 1854 tests passing (+ 30 skipped = 1884 collected).

@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.88**
+**Current Git Tag: v0.1.89**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,15 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.88)
+## Note: Stable Release (v0.1.89)
 
 All systems stable with 2014 tests passing (+ 30 skipped = 2044 collected). Version numbers synchronized across all files.
+
+v0.1.89 changes:
+- Fixed documentation inconsistencies in specs/README.md (version 0.1.83 → 0.1.89)
+- Updated test counts in specs/visual-validation-requirements.md (1854 → 2014 tests)
+- Updated example count to 25 across documentation
+- Version numbers synchronized across pyproject.toml, comix/constants.py, and all spec files
 
 v0.1.88 changes:
 - Fixed irregular panel rendering bug: SVG and Cairo renderers now properly render non-rectangular panels

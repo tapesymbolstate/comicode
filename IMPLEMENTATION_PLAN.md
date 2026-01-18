@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.77**
+**Current Git Tag: v0.1.78**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -86,8 +86,7 @@ Potential improvements for core features:
 
 1. **Additional Character Styles**: New character classes (e.g., DetailedFace, RealisticStyle)
 2. **More Templates**: Additional page layout templates
-3. **Preset Panel Shapes**: Starburst, cloud, explosion panel presets (from panel-shapes.md)
-4. **Automatic Gutter Spacing**: Gutter calculations for non-rectangular panels (from panel-shapes.md)
+3. **Automatic Gutter Spacing**: Gutter calculations for non-rectangular panels (from panel-shapes.md)
 
 ## Known Issues
 
@@ -99,9 +98,17 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.77)
+## Note: Stable Release (v0.1.78)
 
-All systems stable with 1878 tests passing (+ 30 skipped = 1908 collected). Version numbers synchronized across all files.
+All systems stable with 1935 tests passing (+ 30 skipped = 1965 collected). Version numbers synchronized across all files.
+
+v0.1.78 changes:
+- Added preset panel shapes: StarburstPanel, CloudPanel, ExplosionPanel
+- StarburstPanel: Star-shaped panels with configurable num_points and inner_ratio for dramatic moments
+- CloudPanel: Cloud-shaped panels with num_bumps and bumpiness for dream sequences/flashbacks
+- ExplosionPanel: Explosion-shaped panels with num_rays, ray_depth, randomness, and seed for action scenes
+- Added 57 new tests for preset panel shapes
+- Updated panel-shapes.md spec to mark preset shapes as complete
 
 v0.1.77 changes:
 - Added `line_width` parameter to Stickman for customizable stroke width

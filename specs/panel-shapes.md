@@ -393,7 +393,7 @@ class IrregularPanel(Panel):
 - [x] How to handle panel borders on diagonal edges? **Decision**: Render border along exact polygon edges
 - [x] Should split_diagonal() return two Panel objects or modify original? **Decision**: Return two new IrregularPanel objects (original unchanged)
 - [x] Default diagonal angle? **Decision**: 45 degrees (most common in comics)
-- [ ] Should we provide preset "starburst", "cloud", "explosion" panel shapes? **Decision needed** (probably yes for convenience)
+- [x] Should we provide preset "starburst", "cloud", "explosion" panel shapes? **Decision: Yes** - Implemented as StarburstPanel, CloudPanel, ExplosionPanel classes
 
 ## Test Requirements
 

@@ -739,6 +739,120 @@ class TrapezoidPanel(Panel):
         return data
 
 
+def _generate_starburst_points(
+    width: float, height: float, num_points: int = 8, inner_ratio: float = 0.5
+) -> list[tuple[float, float]]:
+    """Generate starburst polygon points.
+
+    Args:
+        width: Total width of the starburst.
+        height: Total height of the starburst.
+        num_points: Number of star points (spikes). Default 8.
+        inner_ratio: Ratio of inner radius to outer radius (0-1). Default 0.5.
+
+    Returns:
+        List of (x, y) tuples forming the starburst shape.
+    """
+    points: list[tuple[float, float]] = []
+    outer_rx = width / 2
+    outer_ry = height / 2
+    inner_rx = outer_rx * inner_ratio
+    inner_ry = outer_ry * inner_ratio
+
+    for i in range(num_points * 2):
+        angle = np.pi / 2 + (2 * np.pi * i) / (num_points * 2)
+        if i % 2 == 0:
+            # Outer point (spike)
+            x = outer_rx * np.cos(angle)
+            y = outer_ry * np.sin(angle)
+        else:
+            # Inner point (valley)
+            x = inner_rx * np.cos(angle)
+            y = inner_ry * np.sin(angle)
+        points.append((float(x), float(y)))
+
+    return points
+
+
+def _generate_cloud_points(
+    width: float, height: float, num_bumps: int = 8, bumpiness: float = 0.3
+) -> list[tuple[float, float]]:
+    """Generate cloud-like polygon points using sine wave modulation.
+
+    Args:
+        width: Total width of the cloud shape.
+        height: Total height of the cloud shape.
+        num_bumps: Number of bumps around the perimeter. Default 8.
+        bumpiness: How pronounced the bumps are (0-1). Default 0.3.
+
+    Returns:
+        List of (x, y) tuples forming the cloud shape.
+    """
+    points: list[tuple[float, float]] = []
+    num_samples = num_bumps * 8  # 8 samples per bump for smoothness
+    base_rx = width / 2 * (1 - bumpiness / 2)
+    base_ry = height / 2 * (1 - bumpiness / 2)
+    bump_amplitude_x = width / 2 * bumpiness / 2
+    bump_amplitude_y = height / 2 * bumpiness / 2
+
+    for i in range(num_samples):
+        angle = 2 * np.pi * i / num_samples
+        # Modulate radius with sine wave for bumps
+        bump_factor = 1 + bumpiness * np.sin(num_bumps * angle)
+        x = (base_rx + bump_amplitude_x * bump_factor) * np.cos(angle)
+        y = (base_ry + bump_amplitude_y * bump_factor) * np.sin(angle)
+        points.append((float(x), float(y)))
+
+    return points
+
+
+def _generate_explosion_points(
+    width: float, height: float, num_rays: int = 12, ray_depth: float = 0.4,
+    randomness: float = 0.2, seed: int | None = None
+) -> list[tuple[float, float]]:
+    """Generate explosion/impact polygon points with jagged rays.
+
+    Args:
+        width: Total width of the explosion.
+        height: Total height of the explosion.
+        num_rays: Number of explosion rays. Default 12.
+        ray_depth: How deep the valleys between rays are (0-1). Default 0.4.
+        randomness: Variation in ray positions for organic look (0-1). Default 0.2.
+        seed: Random seed for reproducible shapes. Default None (random).
+
+    Returns:
+        List of (x, y) tuples forming the explosion shape.
+    """
+    if seed is not None:
+        np.random.seed(seed)
+
+    points: list[tuple[float, float]] = []
+    outer_rx = width / 2
+    outer_ry = height / 2
+    inner_rx = outer_rx * (1 - ray_depth)
+    inner_ry = outer_ry * (1 - ray_depth)
+
+    for i in range(num_rays * 2):
+        base_angle = 2 * np.pi * i / (num_rays * 2)
+        # Add randomness to angle
+        angle_offset = randomness * np.pi / num_rays * (np.random.random() - 0.5)
+        angle = base_angle + angle_offset
+
+        if i % 2 == 0:
+            # Outer point (ray tip)
+            radius_variation = 1 + randomness * (np.random.random() - 0.5) * 0.3
+            x = outer_rx * radius_variation * np.cos(angle)
+            y = outer_ry * radius_variation * np.sin(angle)
+        else:
+            # Inner point (valley)
+            radius_variation = 1 + randomness * (np.random.random() - 0.5) * 0.3
+            x = inner_rx * radius_variation * np.cos(angle)
+            y = inner_ry * radius_variation * np.sin(angle)
+        points.append((float(x), float(y)))
+
+    return points
+
+
 class IrregularPanel(Panel):
     """Panel with custom polygon shape.
 
@@ -858,6 +972,221 @@ class IrregularPanel(Panel):
             {
                 "shape": "irregular",
                 "polygon_points": self.polygon_points,
+            }
+        )
+        return data
+
+
+class StarburstPanel(IrregularPanel):
+    """Panel shaped like a starburst, commonly used for dramatic moments.
+
+    Creates a star-shaped panel with pointed spikes radiating outward,
+    perfect for emphasizing shock, surprise, or important revelations
+    in manga and comics.
+
+    Args:
+        width: Total width of the starburst panel. Default 300.
+        height: Total height of the starburst panel. Default 300.
+        num_points: Number of star points (spikes). Default 8.
+        inner_ratio: Ratio of inner radius to outer radius (0.1-0.9).
+            Lower values create sharper, more dramatic spikes.
+            Default 0.5.
+        **kwargs: Additional Panel parameters (border, background_color, etc.).
+
+    Example:
+        >>> panel = StarburstPanel(
+        ...     width=400,
+        ...     height=400,
+        ...     num_points=10,
+        ...     inner_ratio=0.4
+        ... )
+        >>> panel.move_to((400, 300))
+        >>> char = Stickman(height=100)
+        >>> char.move_to((400, 300))
+        >>> bubble = char.shout("SURPRISE!")
+        >>> panel.add_content(char, bubble)
+    """
+
+    def __init__(
+        self,
+        width: float = 300.0,
+        height: float = 300.0,
+        num_points: int = 8,
+        inner_ratio: float = 0.5,
+        **kwargs: Any,
+    ) -> None:
+        if num_points < 3:
+            raise ValueError(f"num_points must be at least 3, got: {num_points}")
+        if not 0.1 <= inner_ratio <= 0.9:
+            raise ValueError(
+                f"inner_ratio must be between 0.1 and 0.9, got: {inner_ratio}"
+            )
+
+        self.num_star_points = num_points
+        self.inner_ratio = inner_ratio
+
+        points = _generate_starburst_points(width, height, num_points, inner_ratio)
+        super().__init__(points=points, **kwargs)
+
+    def get_render_data(self) -> dict[str, Any]:
+        """Get data for rendering."""
+        data = super().get_render_data()
+        data.update(
+            {
+                "shape": "starburst",
+                "num_star_points": self.num_star_points,
+                "inner_ratio": self.inner_ratio,
+            }
+        )
+        return data
+
+
+class CloudPanel(IrregularPanel):
+    """Panel shaped like a cloud, used for dream sequences or soft moments.
+
+    Creates a cloud-shaped panel with smooth, bumpy edges resembling
+    a fluffy cloud. Perfect for flashbacks, dreams, thoughts, or
+    gentle, whimsical scenes.
+
+    Args:
+        width: Total width of the cloud panel. Default 300.
+        height: Total height of the cloud panel. Default 300.
+        num_bumps: Number of bumps around the perimeter. Default 8.
+        bumpiness: How pronounced the bumps are (0.1-0.5).
+            Higher values create more defined cloud bumps.
+            Default 0.3.
+        **kwargs: Additional Panel parameters (border, background_color, etc.).
+
+    Example:
+        >>> panel = CloudPanel(
+        ...     width=400,
+        ...     height=300,
+        ...     num_bumps=10,
+        ...     bumpiness=0.35
+        ... )
+        >>> panel.move_to((400, 300))
+        >>> # Add flashback content
+        >>> char = Stickman(height=80, expression="sleepy")
+        >>> char.move_to((400, 300))
+        >>> panel.add_content(char)
+    """
+
+    def __init__(
+        self,
+        width: float = 300.0,
+        height: float = 300.0,
+        num_bumps: int = 8,
+        bumpiness: float = 0.3,
+        **kwargs: Any,
+    ) -> None:
+        if num_bumps < 3:
+            raise ValueError(f"num_bumps must be at least 3, got: {num_bumps}")
+        if not 0.1 <= bumpiness <= 0.5:
+            raise ValueError(
+                f"bumpiness must be between 0.1 and 0.5, got: {bumpiness}"
+            )
+
+        self.num_bumps = num_bumps
+        self.bumpiness = bumpiness
+
+        points = _generate_cloud_points(width, height, num_bumps, bumpiness)
+        super().__init__(points=points, **kwargs)
+
+    def get_render_data(self) -> dict[str, Any]:
+        """Get data for rendering."""
+        data = super().get_render_data()
+        data.update(
+            {
+                "shape": "cloud",
+                "num_bumps": self.num_bumps,
+                "bumpiness": self.bumpiness,
+            }
+        )
+        return data
+
+
+class ExplosionPanel(IrregularPanel):
+    """Panel shaped like an explosion, for action and impact moments.
+
+    Creates an explosion-shaped panel with jagged, irregular rays
+    emanating from the center. Perfect for action sequences, impacts,
+    dramatic reveals, or moments of intense emotion.
+
+    The randomness parameter adds organic variation to make each
+    explosion look unique and dynamic rather than perfectly symmetrical.
+
+    Args:
+        width: Total width of the explosion panel. Default 300.
+        height: Total height of the explosion panel. Default 300.
+        num_rays: Number of explosion rays/spikes. Default 12.
+        ray_depth: How deep the valleys between rays are (0.2-0.6).
+            Higher values create more dramatic, spiky explosions.
+            Default 0.4.
+        randomness: Variation in ray positions for organic look (0-0.5).
+            Higher values create more chaotic, natural-looking explosions.
+            Default 0.2.
+        seed: Random seed for reproducible explosion shapes.
+            Use the same seed to get identical explosion patterns.
+            Default None (random each time).
+        **kwargs: Additional Panel parameters (border, background_color, etc.).
+
+    Example:
+        >>> panel = ExplosionPanel(
+        ...     width=500,
+        ...     height=500,
+        ...     num_rays=16,
+        ...     ray_depth=0.45,
+        ...     randomness=0.25,
+        ...     seed=42  # Reproducible shape
+        ... )
+        >>> panel.move_to((400, 400))
+        >>> char = Stickman(height=100, expression="angry")
+        >>> char.move_to((400, 400))
+        >>> bubble = char.shout("BOOM!")
+        >>> panel.add_content(char, bubble)
+    """
+
+    def __init__(
+        self,
+        width: float = 300.0,
+        height: float = 300.0,
+        num_rays: int = 12,
+        ray_depth: float = 0.4,
+        randomness: float = 0.2,
+        seed: int | None = None,
+        **kwargs: Any,
+    ) -> None:
+        if num_rays < 4:
+            raise ValueError(f"num_rays must be at least 4, got: {num_rays}")
+        if not 0.2 <= ray_depth <= 0.6:
+            raise ValueError(
+                f"ray_depth must be between 0.2 and 0.6, got: {ray_depth}"
+            )
+        if not 0.0 <= randomness <= 0.5:
+            raise ValueError(
+                f"randomness must be between 0.0 and 0.5, got: {randomness}"
+            )
+
+        self.num_rays = num_rays
+        self.ray_depth = ray_depth
+        self.randomness = randomness
+        self.seed = seed
+
+        points = _generate_explosion_points(
+            width, height, num_rays, ray_depth, randomness, seed
+        )
+        super().__init__(points=points, **kwargs)
+
+    def get_render_data(self) -> dict[str, Any]:
+        """Get data for rendering."""
+        data = super().get_render_data()
+        data.update(
+            {
+                "shape": "explosion",
+                "num_rays": self.num_rays,
+                "ray_depth": self.ray_depth,
+                "randomness": self.randomness,
+                "seed": self.seed,
             }
         )
         return data

@@ -17,9 +17,12 @@ from comix.constants import (
 from comix.cobject.cobject import CObject
 from comix.cobject.panel.panel import (
     Border,
+    CloudPanel,
     DiagonalPanel,
+    ExplosionPanel,
     IrregularPanel,
     Panel,
+    StarburstPanel,
     TrapezoidPanel,
 )
 from comix.cobject.bubble.bubble import (
@@ -215,6 +218,9 @@ __all__ = [
     "DiagonalPanel",
     "TrapezoidPanel",
     "IrregularPanel",
+    "StarburstPanel",
+    "CloudPanel",
+    "ExplosionPanel",
     # Bubbles
     "Bubble",
     "SpeechBubble",

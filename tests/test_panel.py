@@ -6,9 +6,12 @@ import pytest
 
 from comix.cobject.panel.panel import (
     Border,
+    CloudPanel,
     DiagonalPanel,
+    ExplosionPanel,
     IrregularPanel,
     Panel,
+    StarburstPanel,
     TrapezoidPanel,
 )
 from comix.cobject.cobject import CObject
@@ -722,3 +725,390 @@ class TestSplitCurve:
 
         assert isinstance(panel1, IrregularPanel)
         assert isinstance(panel2, IrregularPanel)
+
+
+class TestStarburstPanel:
+    """Tests for StarburstPanel class."""
+
+    def test_default_init(self):
+        """Test default initialization."""
+        panel = StarburstPanel()
+        assert panel.width == 300.0
+        assert panel.height == 300.0
+        assert panel.num_star_points == 8
+        assert panel.inner_ratio == 0.5
+        assert isinstance(panel, IrregularPanel)
+
+    def test_custom_dimensions(self):
+        """Test custom width and height."""
+        panel = StarburstPanel(width=400, height=500)
+        assert panel.width == 400.0
+        assert panel.height == 500.0
+
+    def test_custom_num_points(self):
+        """Test custom number of star points."""
+        panel = StarburstPanel(num_points=12)
+        assert panel.num_star_points == 12
+        # Each star point creates 2 vertices (outer + inner)
+        assert len(panel.polygon_points) == 24
+
+    def test_custom_inner_ratio(self):
+        """Test custom inner ratio."""
+        panel = StarburstPanel(inner_ratio=0.3)
+        assert panel.inner_ratio == 0.3
+
+    def test_minimum_points(self):
+        """Test minimum number of points (3)."""
+        panel = StarburstPanel(num_points=3)
+        assert panel.num_star_points == 3
+        assert len(panel.polygon_points) == 6
+
+    def test_too_few_points_raises_error(self):
+        """Test that fewer than 3 points raises ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            StarburstPanel(num_points=2)
+        assert "at least 3" in str(exc_info.value)
+
+    def test_inner_ratio_too_low_raises_error(self):
+        """Test that inner_ratio < 0.1 raises ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            StarburstPanel(inner_ratio=0.05)
+        assert "between 0.1 and 0.9" in str(exc_info.value)
+
+    def test_inner_ratio_too_high_raises_error(self):
+        """Test that inner_ratio > 0.9 raises ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            StarburstPanel(inner_ratio=0.95)
+        assert "between 0.1 and 0.9" in str(exc_info.value)
+
+    def test_inner_ratio_boundary_low(self):
+        """Test inner_ratio at lower boundary."""
+        panel = StarburstPanel(inner_ratio=0.1)
+        assert panel.inner_ratio == 0.1
+
+    def test_inner_ratio_boundary_high(self):
+        """Test inner_ratio at upper boundary."""
+        panel = StarburstPanel(inner_ratio=0.9)
+        assert panel.inner_ratio == 0.9
+
+    def test_starburst_has_points(self):
+        """Test that starburst panel has polygon points."""
+        panel = StarburstPanel(width=200, height=200, num_points=6)
+        assert len(panel.polygon_points) == 12  # 6 points * 2 (outer + inner)
+
+    def test_inherits_from_irregular_panel(self):
+        """Test that StarburstPanel inherits from IrregularPanel."""
+        panel = StarburstPanel()
+        assert isinstance(panel, IrregularPanel)
+        assert isinstance(panel, Panel)
+
+    def test_render_data_shape(self):
+        """Test render data has correct shape."""
+        panel = StarburstPanel(num_points=10, inner_ratio=0.4)
+        data = panel.get_render_data()
+        assert data["shape"] == "starburst"
+        assert data["num_star_points"] == 10
+        assert data["inner_ratio"] == 0.4
+
+    def test_border_inherited(self):
+        """Test that border settings are inherited."""
+        border = Border(color="#FF0000", width=3.0)
+        panel = StarburstPanel(border=border)
+        assert panel.border.color == "#FF0000"
+        assert panel.border.width == 3.0
+
+    def test_background_color(self):
+        """Test background color setting."""
+        panel = StarburstPanel(background_color="#FFFF00")
+        assert panel.background_color == "#FFFF00"
+
+
+class TestCloudPanel:
+    """Tests for CloudPanel class."""
+
+    def test_default_init(self):
+        """Test default initialization."""
+        panel = CloudPanel()
+        # Width/height approximate due to cloud bumps extending beyond base dimensions
+        assert 290.0 <= panel.width <= 320.0
+        assert 290.0 <= panel.height <= 320.0
+        assert panel.num_bumps == 8
+        assert panel.bumpiness == 0.3
+        assert isinstance(panel, IrregularPanel)
+
+    def test_custom_dimensions(self):
+        """Test custom width and height scales proportionally."""
+        panel = CloudPanel(width=500, height=300)
+        # Width/height approximate due to cloud bumps
+        assert 480.0 <= panel.width <= 530.0
+        assert 280.0 <= panel.height <= 320.0
+
+    def test_custom_num_bumps(self):
+        """Test custom number of bumps."""
+        panel = CloudPanel(num_bumps=12)
+        assert panel.num_bumps == 12
+
+    def test_custom_bumpiness(self):
+        """Test custom bumpiness."""
+        panel = CloudPanel(bumpiness=0.4)
+        assert panel.bumpiness == 0.4
+
+    def test_minimum_bumps(self):
+        """Test minimum number of bumps (3)."""
+        panel = CloudPanel(num_bumps=3)
+        assert panel.num_bumps == 3
+
+    def test_too_few_bumps_raises_error(self):
+        """Test that fewer than 3 bumps raises ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            CloudPanel(num_bumps=2)
+        assert "at least 3" in str(exc_info.value)
+
+    def test_bumpiness_too_low_raises_error(self):
+        """Test that bumpiness < 0.1 raises ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            CloudPanel(bumpiness=0.05)
+        assert "between 0.1 and 0.5" in str(exc_info.value)
+
+    def test_bumpiness_too_high_raises_error(self):
+        """Test that bumpiness > 0.5 raises ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            CloudPanel(bumpiness=0.6)
+        assert "between 0.1 and 0.5" in str(exc_info.value)
+
+    def test_bumpiness_boundary_low(self):
+        """Test bumpiness at lower boundary."""
+        panel = CloudPanel(bumpiness=0.1)
+        assert panel.bumpiness == 0.1
+
+    def test_bumpiness_boundary_high(self):
+        """Test bumpiness at upper boundary."""
+        panel = CloudPanel(bumpiness=0.5)
+        assert panel.bumpiness == 0.5
+
+    def test_cloud_has_many_points(self):
+        """Test that cloud panel has smooth edges with many points."""
+        panel = CloudPanel(num_bumps=8)
+        # 8 samples per bump = 64 points
+        assert len(panel.polygon_points) == 64
+
+    def test_inherits_from_irregular_panel(self):
+        """Test that CloudPanel inherits from IrregularPanel."""
+        panel = CloudPanel()
+        assert isinstance(panel, IrregularPanel)
+        assert isinstance(panel, Panel)
+
+    def test_render_data_shape(self):
+        """Test render data has correct shape."""
+        panel = CloudPanel(num_bumps=10, bumpiness=0.4)
+        data = panel.get_render_data()
+        assert data["shape"] == "cloud"
+        assert data["num_bumps"] == 10
+        assert data["bumpiness"] == 0.4
+
+    def test_border_inherited(self):
+        """Test that border settings are inherited."""
+        border = Border(color="#0000FF", width=2.5)
+        panel = CloudPanel(border=border)
+        assert panel.border.color == "#0000FF"
+        assert panel.border.width == 2.5
+
+
+class TestExplosionPanel:
+    """Tests for ExplosionPanel class."""
+
+    def test_default_init(self):
+        """Test default initialization."""
+        panel = ExplosionPanel(seed=42)  # Use seed for reproducibility
+        # Width/height approximate due to explosion randomness extending beyond base
+        assert 280.0 <= panel.width <= 330.0
+        assert 280.0 <= panel.height <= 330.0
+        assert panel.num_rays == 12
+        assert panel.ray_depth == 0.4
+        assert panel.randomness == 0.2
+        assert panel.seed == 42
+        assert isinstance(panel, IrregularPanel)
+
+    def test_custom_dimensions(self):
+        """Test custom width and height scales proportionally."""
+        panel = ExplosionPanel(width=600, height=600, seed=42)
+        # Width/height approximate due to explosion randomness
+        assert 560.0 <= panel.width <= 660.0
+        assert 560.0 <= panel.height <= 660.0
+
+    def test_custom_num_rays(self):
+        """Test custom number of rays."""
+        panel = ExplosionPanel(num_rays=16, seed=42)
+        assert panel.num_rays == 16
+        # Each ray creates 2 vertices (outer + inner)
+        assert len(panel.polygon_points) == 32
+
+    def test_custom_ray_depth(self):
+        """Test custom ray depth."""
+        panel = ExplosionPanel(ray_depth=0.5, seed=42)
+        assert panel.ray_depth == 0.5
+
+    def test_custom_randomness(self):
+        """Test custom randomness."""
+        panel = ExplosionPanel(randomness=0.3, seed=42)
+        assert panel.randomness == 0.3
+
+    def test_minimum_rays(self):
+        """Test minimum number of rays (4)."""
+        panel = ExplosionPanel(num_rays=4, seed=42)
+        assert panel.num_rays == 4
+        assert len(panel.polygon_points) == 8
+
+    def test_too_few_rays_raises_error(self):
+        """Test that fewer than 4 rays raises ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            ExplosionPanel(num_rays=3)
+        assert "at least 4" in str(exc_info.value)
+
+    def test_ray_depth_too_low_raises_error(self):
+        """Test that ray_depth < 0.2 raises ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            ExplosionPanel(ray_depth=0.1)
+        assert "between 0.2 and 0.6" in str(exc_info.value)
+
+    def test_ray_depth_too_high_raises_error(self):
+        """Test that ray_depth > 0.6 raises ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            ExplosionPanel(ray_depth=0.7)
+        assert "between 0.2 and 0.6" in str(exc_info.value)
+
+    def test_ray_depth_boundary_low(self):
+        """Test ray_depth at lower boundary."""
+        panel = ExplosionPanel(ray_depth=0.2, seed=42)
+        assert panel.ray_depth == 0.2
+
+    def test_ray_depth_boundary_high(self):
+        """Test ray_depth at upper boundary."""
+        panel = ExplosionPanel(ray_depth=0.6, seed=42)
+        assert panel.ray_depth == 0.6
+
+    def test_randomness_too_low_raises_error(self):
+        """Test that randomness < 0.0 raises ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            ExplosionPanel(randomness=-0.1)
+        assert "between 0.0 and 0.5" in str(exc_info.value)
+
+    def test_randomness_too_high_raises_error(self):
+        """Test that randomness > 0.5 raises ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            ExplosionPanel(randomness=0.6)
+        assert "between 0.0 and 0.5" in str(exc_info.value)
+
+    def test_randomness_boundary_low(self):
+        """Test randomness at lower boundary (0.0 = no randomness)."""
+        panel = ExplosionPanel(randomness=0.0, seed=42)
+        assert panel.randomness == 0.0
+
+    def test_randomness_boundary_high(self):
+        """Test randomness at upper boundary."""
+        panel = ExplosionPanel(randomness=0.5, seed=42)
+        assert panel.randomness == 0.5
+
+    def test_seed_reproducibility(self):
+        """Test that same seed produces same shape."""
+        panel1 = ExplosionPanel(seed=12345)
+        panel2 = ExplosionPanel(seed=12345)
+        assert panel1.polygon_points == panel2.polygon_points
+
+    def test_different_seeds_different_shapes(self):
+        """Test that different seeds produce different shapes."""
+        panel1 = ExplosionPanel(seed=100)
+        panel2 = ExplosionPanel(seed=200)
+        # Due to randomness, they should be different
+        assert panel1.polygon_points != panel2.polygon_points
+
+    def test_no_seed_random(self):
+        """Test that no seed produces random shapes (usually different)."""
+        # Note: There's a tiny chance these could be identical, but extremely unlikely
+        panel1 = ExplosionPanel(seed=None, randomness=0.3)
+        panel2 = ExplosionPanel(seed=None, randomness=0.3)
+        # We just verify both are created successfully
+        assert isinstance(panel1, ExplosionPanel)
+        assert isinstance(panel2, ExplosionPanel)
+
+    def test_inherits_from_irregular_panel(self):
+        """Test that ExplosionPanel inherits from IrregularPanel."""
+        panel = ExplosionPanel(seed=42)
+        assert isinstance(panel, IrregularPanel)
+        assert isinstance(panel, Panel)
+
+    def test_render_data_shape(self):
+        """Test render data has correct shape."""
+        panel = ExplosionPanel(num_rays=16, ray_depth=0.5, randomness=0.3, seed=42)
+        data = panel.get_render_data()
+        assert data["shape"] == "explosion"
+        assert data["num_rays"] == 16
+        assert data["ray_depth"] == 0.5
+        assert data["randomness"] == 0.3
+        assert data["seed"] == 42
+
+    def test_border_inherited(self):
+        """Test that border settings are inherited."""
+        border = Border(color="#FF00FF", width=4.0)
+        panel = ExplosionPanel(border=border, seed=42)
+        assert panel.border.color == "#FF00FF"
+        assert panel.border.width == 4.0
+
+    def test_zero_randomness_symmetric(self):
+        """Test that zero randomness creates symmetric explosion."""
+        panel = ExplosionPanel(num_rays=8, randomness=0.0, seed=42)
+        # With 0 randomness, the pattern should be regular
+        assert len(panel.polygon_points) == 16  # 8 rays * 2
+
+
+class TestPresetPanelPointGeneration:
+    """Tests for the internal point generation functions."""
+
+    def test_starburst_points_count(self):
+        """Test starburst generates correct number of points."""
+        from comix.cobject.panel.panel import _generate_starburst_points
+        points = _generate_starburst_points(100, 100, num_points=5, inner_ratio=0.5)
+        assert len(points) == 10  # 5 outer + 5 inner
+
+    def test_starburst_points_centered(self):
+        """Test starburst points are roughly centered."""
+        from comix.cobject.panel.panel import _generate_starburst_points
+        points = _generate_starburst_points(100, 100, num_points=8, inner_ratio=0.5)
+        xs = [p[0] for p in points]
+        ys = [p[1] for p in points]
+        # Center should be near origin
+        assert abs(sum(xs) / len(xs)) < 1.0
+        assert abs(sum(ys) / len(ys)) < 1.0
+
+    def test_cloud_points_count(self):
+        """Test cloud generates correct number of points."""
+        from comix.cobject.panel.panel import _generate_cloud_points
+        points = _generate_cloud_points(100, 100, num_bumps=6, bumpiness=0.3)
+        # 6 bumps * 8 samples per bump = 48 points
+        assert len(points) == 48
+
+    def test_cloud_points_smooth(self):
+        """Test cloud points form a smooth shape."""
+        from comix.cobject.panel.panel import _generate_cloud_points
+        points = _generate_cloud_points(100, 100, num_bumps=8, bumpiness=0.3)
+        # Just verify we have many points for smoothness
+        assert len(points) >= 64
+
+    def test_explosion_points_count(self):
+        """Test explosion generates correct number of points."""
+        from comix.cobject.panel.panel import _generate_explosion_points
+        points = _generate_explosion_points(
+            100, 100, num_rays=10, ray_depth=0.4, randomness=0.2, seed=42
+        )
+        assert len(points) == 20  # 10 outer + 10 inner
+
+    def test_explosion_points_with_seed(self):
+        """Test explosion with seed is reproducible."""
+        from comix.cobject.panel.panel import _generate_explosion_points
+        points1 = _generate_explosion_points(
+            100, 100, num_rays=8, ray_depth=0.4, randomness=0.3, seed=999
+        )
+        points2 = _generate_explosion_points(
+            100, 100, num_rays=8, ray_depth=0.4, randomness=0.3, seed=999
+        )
+        assert points1 == points2

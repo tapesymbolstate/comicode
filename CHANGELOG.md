@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.97] - 2026-01-18
+
+### Maintenance
+- **Regenerated all example outputs**: Updated 76 example output files after Stickman Y-axis fix
+  - All examples now display characters with correct orientation
+  - PNG, PDF, HTML, and GIF outputs regenerated to match current code
+- Version numbers synchronized across all files
+
 ## [v0.1.96] - 2026-01-18
 
 ### Bug Fixes

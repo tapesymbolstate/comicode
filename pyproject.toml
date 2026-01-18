@@ -1,6 +1,6 @@
 [project]
 name = "comicode"
-version = "0.1.96"
+version = "0.1.97"
 description = "Code-based comic creation framework inspired by Manim"
 readme = "README.md"
 requires-python = ">=3.13"

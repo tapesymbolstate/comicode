@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.96**
+**Current Git Tag: v0.1.97**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,14 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.96)
+## Note: Stable Release (v0.1.97)
 
 All systems stable with 2015 tests passing (+ 30 skipped = 2045 collected). Version numbers synchronized across all files.
+
+v0.1.97 changes:
+- Regenerated all example outputs (76 files) after Stickman Y-axis fix
+- Characters now render with correct orientation (head above body) in all examples
+- Version numbers synchronized across all files
 
 v0.1.96 changes:
 - Fixed Stickman upside-down rendering: Corrected Y-axis coordinate calculations

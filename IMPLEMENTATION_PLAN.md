@@ -104,6 +104,7 @@ All systems stable with 1743 tests passing. Version numbers synchronized across 
 v0.1.63 changes:
 - Updated specs/README.md to reflect that all bugs are fixed
 - Fixed example 07 bubble clipping by adjusting text and positions
+- Synchronized version numbers in pyproject.toml and comix/constants.py to v0.1.63
 
 v0.1.62 changes:
 - Fixed bubble overlapping bug: Panel.add_content() now automatically repositions bubbles to avoid collisions

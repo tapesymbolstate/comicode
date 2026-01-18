@@ -300,8 +300,129 @@ class Character(CObject):
         return data
 
 
+class ArmController:
+    """Helper class for arm control via preset poses.
+
+    Accessed via char.left_arm or char.right_arm for convenient preset application.
+
+    Example:
+        >>> char = Stickman(height=150)
+        >>> char.left_arm.set_preset("waving")
+        >>> char.right_arm.set_preset("pointing")
+    """
+
+    ARM_PRESETS: dict[str, dict[str, float | str]] = {
+        "down": {"shoulder": 0, "elbow": 0},
+        "forward": {"shoulder": 90, "elbow": 0},
+        "up": {"shoulder": 180, "elbow": 0},
+        "waving": {"shoulder": 180, "elbow": 30},
+        "pointing": {"shoulder": 90, "elbow": 0, "hand": "point"},
+        "relaxed": {"shoulder": 0, "elbow": 15},
+        "thinking": {"shoulder": 120, "elbow": 90, "hand": "fist"},
+        "raised": {"shoulder": 135, "elbow": 45},
+        "back": {"shoulder": 270, "elbow": 0},
+    }
+
+    def __init__(self, character: "Stickman", side: str) -> None:
+        self._character = character
+        self._side = side
+
+    def set_preset(self, preset: str) -> "Stickman":
+        """Apply preset arm pose.
+
+        Args:
+            preset: One of "down", "forward", "up", "waving", "pointing",
+                    "relaxed", "thinking", "raised", "back"
+
+        Returns:
+            The parent Stickman for method chaining.
+        """
+        if preset not in self.ARM_PRESETS:
+            raise ValueError(
+                f"Unknown arm preset: {preset}. "
+                f"Valid presets: {', '.join(sorted(self.ARM_PRESETS.keys()))}"
+            )
+
+        config = self.ARM_PRESETS[preset]
+
+        if self._side == "left":
+            self._character.set_arm_angles(
+                left_shoulder=config["shoulder"],
+                left_elbow=config.get("elbow", 0)
+            )
+            if "hand" in config:
+                self._character.set_hands(left=config["hand"])
+        else:
+            self._character.set_arm_angles(
+                right_shoulder=config["shoulder"],
+                right_elbow=config.get("elbow", 0)
+            )
+            if "hand" in config:
+                self._character.set_hands(right=config["hand"])
+
+        return self._character
+
+
+class LegController:
+    """Helper class for leg control via preset poses.
+
+    Accessed via char.left_leg_ctrl or char.right_leg_ctrl for convenient preset application.
+
+    Example:
+        >>> char = Stickman(height=150)
+        >>> char.left_leg_ctrl.set_preset("walking")
+        >>> char.right_leg_ctrl.set_preset("standing")
+    """
+
+    LEG_PRESETS: dict[str, dict[str, float]] = {
+        "standing": {"hip": 0, "knee": 0},
+        "walking": {"hip": 30, "knee": 15},
+        "walking_back": {"hip": -20, "knee": 10},
+        "sitting": {"hip": 90, "knee": 90},
+        "kneeling": {"hip": 135, "knee": 135},
+        "bent": {"hip": 0, "knee": 45},
+        "high_kick": {"hip": 90, "knee": 0},
+        "running": {"hip": 45, "knee": 45},
+    }
+
+    def __init__(self, character: "Stickman", side: str) -> None:
+        self._character = character
+        self._side = side
+
+    def set_preset(self, preset: str) -> "Stickman":
+        """Apply preset leg pose.
+
+        Args:
+            preset: One of "standing", "walking", "walking_back", "sitting",
+                    "kneeling", "bent", "high_kick", "running"
+
+        Returns:
+            The parent Stickman for method chaining.
+        """
+        if preset not in self.LEG_PRESETS:
+            raise ValueError(
+                f"Unknown leg preset: {preset}. "
+                f"Valid presets: {', '.join(sorted(self.LEG_PRESETS.keys()))}"
+            )
+
+        config = self.LEG_PRESETS[preset]
+
+        if self._side == "left":
+            self._character.set_leg_angles(
+                left_hip=config["hip"],
+                left_knee=config.get("knee", 0)
+            )
+        else:
+            self._character.set_leg_angles(
+                right_hip=config["hip"],
+                right_knee=config.get("knee", 0)
+            )
+
+        return self._character
+
+
 class Stickman(Character):
-    """Simple stick figure character with reference-based proportions.
+    """Simple stick figure character with reference-based proportions and joint articulation.
 
     Proportions are based on professional stick figure standards (xkcd, etc.)
     with configurable presets for different styles:
@@ -311,6 +432,16 @@ class Stickman(Character):
     - "tall": Tall/elongated proportions (~8 head heights)
     - "realistic": Realistic/heroic proportions (8 heads, ideal figure drawing)
     - "child": Larger head ratio (~4 head heights)
+
+    Joint Articulation:
+        Stickman supports detailed joint-level control for creating custom poses:
+
+        - Shoulder angles: 0° = down, 90° = forward, 180° = up, 270° = back
+        - Elbow angles: 0° = straight, 90° = right angle, 180° = fully bent
+        - Hip angles: 0° = standing, 45° = walking forward, 90° = sitting
+        - Knee angles: 0° = straight, 90° = sitting bend, 180° = fully bent
+
+        Hand gestures: "none", "fist", "open", "point", "peace", "thumbs_up", "relaxed"
 
     Args:
         name: Character name.
@@ -336,7 +467,18 @@ class Stickman(Character):
         >>>
         >>> # Slightly flattened head for cute look
         >>> char = Stickman(height=150, head_squash=0.15)
+        >>>
+        >>> # Joint-level articulation
+        >>> char = Stickman(height=150)
+        >>> char.set_arm_angles(left_shoulder=90, left_elbow=45)
+        >>> char.set_hands(left="point", right="fist")
+        >>>
+        >>> # Point at a target
+        >>> char.point_at((500, 200), arm="right")
     """
+
+    # Valid hand gesture options
+    HAND_GESTURES: list[str] = ["none", "fist", "open", "point", "peace", "thumbs_up", "relaxed"]
 
     # Reference-based proportion presets
     PROPORTION_PRESETS: dict[str, dict[str, float]] = {
@@ -420,11 +562,408 @@ class Stickman(Character):
         self.auto_line_width = auto_line_width
         self._explicit_line_width = line_width  # Store explicit value (may be None)
 
+        # Joint angle articulation system
+        # Shoulder angles: 0° = down, 90° = forward, 180° = up, 270° = back
+        self._left_shoulder_angle: float = 0.0
+        self._left_elbow_angle: float = 0.0
+        self._right_shoulder_angle: float = 0.0
+        self._right_elbow_angle: float = 0.0
+
+        # Hip angles: 0° = standing, positive = forward, negative = back
+        # Knee angles: 0° = straight, positive = bent
+        self._left_hip_angle: float = 0.0
+        self._left_knee_angle: float = 0.0
+        self._right_hip_angle: float = 0.0
+        self._right_knee_angle: float = 0.0
+
+        # Hand gesture options: "none", "fist", "open", "point", "peace", "thumbs_up", "relaxed"
+        self._left_hand: str = "none"
+        self._right_hand: str = "none"
+
+        # Track whether articulation system is being used
+        self._use_articulation: bool = False
+
+        # Arm and leg controllers for preset convenience
+        self.left_arm = ArmController(self, "left")
+        self.right_arm = ArmController(self, "right")
+        self.left_leg_ctrl = LegController(self, "left")
+        self.right_leg_ctrl = LegController(self, "right")
+
         kwargs.setdefault("style", "stickman")
         super().__init__(name=name, **kwargs)
 
+    # Articulation methods for joint-level control
+
+    @staticmethod
+    def _normalize_angle(angle: float) -> float:
+        """Normalize angle to 0-360 range."""
+        while angle < 0:
+            angle += 360
+        while angle >= 360:
+            angle -= 360
+        return angle
+
+    @staticmethod
+    def _clamp_elbow(angle: float) -> float:
+        """Clamp elbow bend to physically possible range (0-180)."""
+        return max(0, min(180, angle))
+
+    @staticmethod
+    def _clamp_knee(angle: float) -> float:
+        """Clamp knee bend to physically possible range (0-180)."""
+        return max(0, min(180, angle))
+
+    def set_arm_angles(
+        self,
+        left_shoulder: float | None = None,
+        left_elbow: float | None = None,
+        right_shoulder: float | None = None,
+        right_elbow: float | None = None,
+    ) -> Self:
+        """Set arm joint angles in degrees.
+
+        Shoulder angles are measured from the resting position:
+        - 0° = arm hanging straight down (resting position)
+        - 90° = arm extending forward/horizontally
+        - 180° = arm raised straight up
+        - 270° = arm extending backward
+
+        Elbow angles represent bend amount:
+        - 0° = straight arm (no bend)
+        - 90° = right angle bend
+        - 180° = fully bent (hand touches shoulder)
+
+        Args:
+            left_shoulder: Left arm shoulder angle in degrees (0-360).
+            left_elbow: Left arm elbow bend angle in degrees (0-180).
+            right_shoulder: Right arm shoulder angle in degrees (0-360).
+            right_elbow: Right arm elbow bend angle in degrees (0-180).
+
+        Returns:
+            Self for method chaining.
+
+        Example:
+            >>> char = Stickman(height=150)
+            >>> char.set_arm_angles(left_shoulder=90, left_elbow=45)
+            >>> char.set_arm_angles(right_shoulder=180, right_elbow=30)
+        """
+        if left_shoulder is not None:
+            self._left_shoulder_angle = self._normalize_angle(left_shoulder)
+            self._use_articulation = True
+        if left_elbow is not None:
+            self._left_elbow_angle = self._clamp_elbow(left_elbow)
+            self._use_articulation = True
+        if right_shoulder is not None:
+            self._right_shoulder_angle = self._normalize_angle(right_shoulder)
+            self._use_articulation = True
+        if right_elbow is not None:
+            self._right_elbow_angle = self._clamp_elbow(right_elbow)
+            self._use_articulation = True
+
+        self.generate_points()
+        return self
+
+    def set_leg_angles(
+        self,
+        left_hip: float | None = None,
+        left_knee: float | None = None,
+        right_hip: float | None = None,
+        right_knee: float | None = None,
+    ) -> Self:
+        """Set leg joint angles in degrees.
+
+        Hip angles are measured from the standing position:
+        - 0° = leg hanging straight down (standing position)
+        - 45° = leg extended forward (walking)
+        - 90° = leg extended horizontally (sitting or high kick)
+        - -45° = leg extended backward (walking backward)
+
+        Knee angles represent bend amount:
+        - 0° = straight leg (standing, no bend)
+        - 90° = sitting position bend
+        - 180° = fully bent (heel touches buttocks)
+
+        Args:
+            left_hip: Left leg hip angle in degrees.
+            left_knee: Left leg knee bend angle in degrees (0-180).
+            right_hip: Right leg hip angle in degrees.
+            right_knee: Right leg knee bend angle in degrees (0-180).
+
+        Returns:
+            Self for method chaining.
+
+        Example:
+            >>> char = Stickman(height=150)
+            >>> char.set_leg_angles(left_hip=30, left_knee=15)  # Walking
+            >>> char.set_leg_angles(right_hip=90, right_knee=90)  # Sitting
+        """
+        if left_hip is not None:
+            self._left_hip_angle = left_hip
+            self._use_articulation = True
+        if left_knee is not None:
+            self._left_knee_angle = self._clamp_knee(left_knee)
+            self._use_articulation = True
+        if right_hip is not None:
+            self._right_hip_angle = right_hip
+            self._use_articulation = True
+        if right_knee is not None:
+            self._right_knee_angle = self._clamp_knee(right_knee)
+            self._use_articulation = True
+
+        self.generate_points()
+        return self
+
+    def set_hands(
+        self,
+        left: str | None = None,
+        right: str | None = None,
+    ) -> Self:
+        """Set hand gesture options.
+
+        Hand gestures add visual detail to the hand endpoint:
+        - "none": Hand is just the endpoint of arm line (default stick figure)
+        - "fist": Small circle at hand position (closed hand)
+        - "open": 5 short radiating lines from hand position (fingers spread)
+        - "point": Single extended line (index finger pointing)
+        - "peace": Two short lines (peace sign / victory)
+        - "thumbs_up": Vertical line with small perpendicular line
+        - "relaxed": 3-4 short parallel lines (relaxed fingers)
+
+        Args:
+            left: Left hand gesture option.
+            right: Right hand gesture option.
+
+        Returns:
+            Self for method chaining.
+
+        Raises:
+            ValueError: If an invalid hand gesture option is provided.
+
+        Example:
+            >>> char = Stickman(height=150)
+            >>> char.set_hands(left="open", right="point")
+        """
+        if left is not None:
+            if left not in self.HAND_GESTURES:
+                raise ValueError(
+                    f"Invalid hand option: {left}. "
+                    f"Must be one of {self.HAND_GESTURES}"
+                )
+            self._left_hand = left
+            self._use_articulation = True
+        if right is not None:
+            if right not in self.HAND_GESTURES:
+                raise ValueError(
+                    f"Invalid hand option: {right}. "
+                    f"Must be one of {self.HAND_GESTURES}"
+                )
+            self._right_hand = right
+            self._use_articulation = True
+
+        self.generate_points()
+        return self
+
+    def point_at(
+        self,
+        target: CObject | tuple[float, float],
+        arm: str = "right",
+        hand: str = "point",
+        elbow_bend: float = 0.0,
+    ) -> Self:
+        """Automatically calculate arm angles to point at a target.
+
+        This helper method calculates the shoulder angle needed for the
+        specified arm to point at the target position.
+
+        Args:
+            target: Object to point at, or (x, y) coordinates.
+            arm: Which arm to use - "left" or "right".
+            hand: Hand gesture to use (default: "point").
+            elbow_bend: Amount of elbow bend in degrees (0 = straight arm).
+
+        Returns:
+            Self for method chaining.
+
+        Example:
+            >>> char = Stickman(height=150)
+            >>> char.move_to((100, 200))
+            >>> char.point_at((500, 150), arm="right", hand="point")
+        """
+        # Get target position
+        if isinstance(target, tuple):
+            target_x, target_y = target
+        else:
+            center = target.get_center()
+            target_x, target_y = center[0], center[1]
+
+        # Get shoulder position (approximate based on character position)
+        char_center = self.get_center()
+        shoulder_offset = self.character_height * 0.1  # 10% below head
+        shoulder_y = char_center[1] - self.character_height * 0.5 + self.character_height * self.head_ratio * 2 + self.character_height * self.torso_ratio * 0.1
+
+        # For left arm, shoulder is slightly to the left; for right, slightly right
+        if arm == "left":
+            shoulder_x = char_center[0] - 2  # Small offset
+        else:
+            shoulder_x = char_center[0] + 2
+
+        # Calculate angle from shoulder to target
+        dx = target_x - shoulder_x
+        dy = target_y - shoulder_y
+
+        # In graphics coordinates, Y increases downward
+        # arctan2(dy, dx) gives angle from positive X axis
+        angle_rad = np.arctan2(dy, dx)
+        angle_deg = np.degrees(angle_rad)
+
+        # Convert to our convention (0° = down, 90° = forward)
+        # Our shoulder angle: 0° = down, 90° = forward (right), 180° = up
+        # Standard math: 0° = right, 90° = down (in graphics coords)
+        # So we need to map: target_angle -> our_convention
+        # If dx > 0, dy > 0 (target is down-right): arctan2 gives positive angle
+        # We want ~45° to point down-right
+
+        # For right arm: arm extends in direction of angle
+        # For left arm: need to mirror
+        if arm == "left":
+            # Mirror the angle for left arm
+            shoulder_angle = 180 - angle_deg
+        else:
+            shoulder_angle = angle_deg
+
+        # Normalize the angle
+        shoulder_angle = self._normalize_angle(shoulder_angle)
+
+        # Set arm angles and hand gesture
+        if arm == "left":
+            self.set_arm_angles(left_shoulder=shoulder_angle, left_elbow=elbow_bend)
+            self.set_hands(left=hand)
+        else:
+            self.set_arm_angles(right_shoulder=shoulder_angle, right_elbow=elbow_bend)
+            self.set_hands(right=hand)
+
+        return self
+
+    def _get_shoulder_position(self, arm: str) -> tuple[float, float]:
+        """Get the shoulder position for the specified arm.
+
+        Used internally for point_at calculations.
+
+        Args:
+            arm: "left" or "right"
+
+        Returns:
+            (x, y) coordinates of the shoulder.
+        """
+        center = self.get_center()
+        h = self.character_height
+        head_radius = h * self.head_ratio
+        torso_length = h * self.torso_ratio
+
+        # Shoulder is at neck + 10% into torso
+        head_top = center[1] - h / 2
+        neck_y = head_top + 2 * head_radius
+        shoulder_y = neck_y + torso_length * 0.1
+
+        return (center[0], shoulder_y)
+
+    def _generate_hand_gesture(
+        self,
+        hand_x: float,
+        hand_y: float,
+        arm_angle: float,
+        gesture: str,
+    ) -> list[list[float]]:
+        """Generate geometry points for hand gesture.
+
+        Args:
+            hand_x: X coordinate of hand position.
+            hand_y: Y coordinate of hand position.
+            arm_angle: Direction the arm is pointing in radians.
+            gesture: One of HAND_GESTURES.
+
+        Returns:
+            List of [x, y] point pairs for drawing gesture lines.
+        """
+        points: list[list[float]] = []
+        finger_length = self.character_height * 0.05
+
+        if gesture == "fist":
+            # Small circle at hand position (8 points)
+            radius = finger_length * 0.5
+            for angle in np.linspace(0, 2 * np.pi, 8, endpoint=False):
+                points.append([
+                    hand_x + radius * np.cos(angle),
+                    hand_y + radius * np.sin(angle)
+                ])
+
+        elif gesture == "open":
+            # 5 radiating lines (spread fingers)
+            for finger_offset in [-40, -20, 0, 20, 40]:
+                angle = arm_angle + np.radians(finger_offset)
+                points.append([hand_x, hand_y])
+                points.append([
+                    hand_x + finger_length * np.cos(angle),
+                    hand_y + finger_length * np.sin(angle)
+                ])
+
+        elif gesture == "point":
+            # Single extended line (index finger)
+            points.append([hand_x, hand_y])
+            points.append([
+                hand_x + finger_length * 1.5 * np.cos(arm_angle),
+                hand_y + finger_length * 1.5 * np.sin(arm_angle)
+            ])
+
+        elif gesture == "peace":
+            # Two lines (V sign)
+            for finger_offset in [-15, 15]:
+                angle = arm_angle + np.radians(finger_offset)
+                points.append([hand_x, hand_y])
+                points.append([
+                    hand_x + finger_length * np.cos(angle),
+                    hand_y + finger_length * np.sin(angle)
+                ])
+
+        elif gesture == "thumbs_up":
+            # Vertical line with perpendicular thumb
+            # Thumb goes up (perpendicular to arm direction)
+            perp_angle = arm_angle - np.pi / 2  # 90° counterclockwise
+            points.append([hand_x, hand_y])
+            points.append([
+                hand_x + finger_length * np.cos(perp_angle),
+                hand_y + finger_length * np.sin(perp_angle)
+            ])
+            # Small fist base
+            for angle in np.linspace(0, 2 * np.pi, 6, endpoint=False):
+                radius = finger_length * 0.3
+                points.append([
+                    hand_x + radius * np.cos(angle),
+                    hand_y + radius * np.sin(angle)
+                ])
+
+        elif gesture == "relaxed":
+            # 3-4 parallel short lines (relaxed fingers)
+            perp_angle = arm_angle + np.pi / 2
+            for i in range(4):
+                offset = (i - 1.5) * finger_length * 0.25
+                base_x = hand_x + offset * np.cos(perp_angle)
+                base_y = hand_y + offset * np.sin(perp_angle)
+                points.append([base_x, base_y])
+                points.append([
+                    base_x + finger_length * 0.6 * np.cos(arm_angle),
+                    base_y + finger_length * 0.6 * np.sin(arm_angle)
+                ])
+
+        return points
+
     def generate_points(self) -> None:
-        """Generate stickman figure points with reference-based proportions."""
+        """Generate stickman figure points with reference-based proportions.
+
+        If articulation mode is active (set_arm_angles/set_leg_angles called),
+        uses the joint angle system for precise limb positioning. Otherwise,
+        falls back to the pose-based system for backward compatibility.
+        """
         h = self.character_height
 
         # Calculate component sizes from ratios
@@ -433,27 +972,27 @@ class Stickman(Character):
         arm_length = h * self.arm_ratio
         leg_length = h * self.leg_ratio
 
-        points = []
+        # Upper and lower segment lengths
+        upper_arm_length = arm_length * 0.5
+        forearm_length = arm_length * 0.5
+        upper_leg_length = leg_length * 0.5
+        lower_leg_length = leg_length * 0.5
+
+        points: list[list[float]] = []
 
         # Calculate vertical positions (top to bottom)
-        # Note: In standard graphics coordinates, Y increases downward (top-left origin)
-        # So we ADD to move down, SUBTRACT to move up
-        head_top = -h / 2  # Start at top (negative = upward from center)
-        head_center_y = head_top + head_radius  # Head center below top
-        neck_y = head_top + 2 * head_radius  # Head bottom = neck start
-        hip_y = neck_y + torso_length  # Hip level (further down)
+        # In graphics coordinates, Y increases downward
+        head_top = -h / 2
+        head_center_y = head_top + head_radius
+        neck_y = head_top + 2 * head_radius
+        hip_y = neck_y + torso_length
 
         # Head ellipse (16 points) - uses head_squash to modify shape
-        # Positive head_squash: flatten (wider than tall)
-        # Negative head_squash: elongate (taller than wide)
-        # The squash factor applies a scaling multiplier to the axis
-        squash_factor = 1.0 + abs(self.head_squash) * 0.3  # Max 30% distortion
+        squash_factor = 1.0 + abs(self.head_squash) * 0.3
         if self.head_squash >= 0:
-            # Flatten: increase width, decrease height
             head_radius_x = head_radius * squash_factor
             head_radius_y = head_radius / squash_factor
         else:
-            # Elongate: decrease width, increase height
             head_radius_x = head_radius / squash_factor
             head_radius_y = head_radius * squash_factor
 
@@ -467,60 +1006,193 @@ class Stickman(Character):
         points.append([0, neck_y])
         points.append([0, hip_y])
 
-        # Arm attachment point (just below neck, about 10% into torso)
-        arm_y = neck_y + torso_length * 0.1  # ADD to move down
+        # Arm attachment point
+        arm_y = neck_y + torso_length * 0.1
 
-        # Arms with elbow (each arm has: shoulder, elbow, hand)
-        left_arm_angle = np.radians(self._pose.left_arm)
-        right_arm_angle = np.radians(self._pose.right_arm)
+        # Store hand positions for gesture rendering
+        left_hand_pos: tuple[float, float] = (0, 0)
+        right_hand_pos: tuple[float, float] = (0, 0)
+        left_arm_angle_rad: float = 0
+        right_arm_angle_rad: float = 0
 
-        # Left arm: shoulder -> elbow -> hand
-        elbow_left_x = -arm_length * 0.5 * np.cos(left_arm_angle)
-        elbow_left_y = arm_y + arm_length * 0.5 * np.sin(left_arm_angle)  # ADD for down
-        hand_left_x = -arm_length * np.cos(left_arm_angle)
-        hand_left_y = arm_y + arm_length * np.sin(left_arm_angle)  # ADD for down
+        if self._use_articulation:
+            # Use articulation system with independent joint angles
 
-        points.append([0, arm_y])  # Shoulder (center)
-        points.append([elbow_left_x, elbow_left_y])  # Elbow
-        points.append([elbow_left_x, elbow_left_y])  # Elbow (repeat for line segment)
-        points.append([hand_left_x, hand_left_y])  # Hand
+            # Left arm with shoulder and elbow angles
+            left_shoulder_rad = np.radians(self._left_shoulder_angle)
+            left_elbow_rad = np.radians(self._left_elbow_angle)
 
-        # Right arm: shoulder -> elbow -> hand
-        elbow_right_x = arm_length * 0.5 * np.cos(right_arm_angle)
-        elbow_right_y = arm_y + arm_length * 0.5 * np.sin(right_arm_angle)  # ADD for down
-        hand_right_x = arm_length * np.cos(right_arm_angle)
-        hand_right_y = arm_y + arm_length * np.sin(right_arm_angle)  # ADD for down
+            # Upper arm direction (from shoulder)
+            # 0° = down, so we add 90° to convert to standard coords
+            upper_left_angle = left_shoulder_rad - np.pi / 2
 
-        points.append([0, arm_y])  # Shoulder (center)
-        points.append([elbow_right_x, elbow_right_y])  # Elbow
-        points.append([elbow_right_x, elbow_right_y])  # Elbow (repeat)
-        points.append([hand_right_x, hand_right_y])  # Hand
+            # Elbow position
+            elbow_left_x = -upper_arm_length * np.cos(upper_left_angle)
+            elbow_left_y = arm_y - upper_arm_length * np.sin(upper_left_angle)
 
-        # Legs with knees (hips -> knees -> feet)
-        left_leg_angle = np.radians(90 + self._pose.left_leg)
-        right_leg_angle = np.radians(90 + self._pose.right_leg)
+            # Forearm bends from the upper arm direction
+            # Elbow bend is relative to upper arm (0° = straight continuation)
+            # For left arm, positive elbow bend curves toward body
+            forearm_left_angle = upper_left_angle - left_elbow_rad * np.pi / 180
 
-        # Left leg: hip -> knee -> foot
-        knee_left_x = -leg_length * 0.5 * np.cos(left_leg_angle)
-        knee_left_y = hip_y + leg_length * 0.5 * np.sin(left_leg_angle)  # ADD for down
-        foot_left_x = -leg_length * np.cos(left_leg_angle)
-        foot_left_y = hip_y + leg_length * np.sin(left_leg_angle)  # ADD for down
+            # Hand position
+            hand_left_x = elbow_left_x - forearm_length * np.cos(forearm_left_angle)
+            hand_left_y = elbow_left_y - forearm_length * np.sin(forearm_left_angle)
 
-        points.append([0, hip_y])  # Hip
-        points.append([knee_left_x, knee_left_y])  # Knee
-        points.append([knee_left_x, knee_left_y])  # Knee (repeat)
-        points.append([foot_left_x, foot_left_y])  # Foot
+            points.append([0, arm_y])
+            points.append([elbow_left_x, elbow_left_y])
+            points.append([elbow_left_x, elbow_left_y])
+            points.append([hand_left_x, hand_left_y])
 
-        # Right leg: hip -> knee -> foot
-        knee_right_x = leg_length * 0.5 * np.cos(right_leg_angle)
-        knee_right_y = hip_y + leg_length * 0.5 * np.sin(right_leg_angle)  # ADD for down
-        foot_right_x = leg_length * np.cos(right_leg_angle)
-        foot_right_y = hip_y + leg_length * np.sin(right_leg_angle)  # ADD for down
+            left_hand_pos = (hand_left_x, hand_left_y)
+            left_arm_angle_rad = forearm_left_angle
 
-        points.append([0, hip_y])  # Hip
-        points.append([knee_right_x, knee_right_y])  # Knee
-        points.append([knee_right_x, knee_right_y])  # Knee (repeat)
-        points.append([foot_right_x, foot_right_y])  # Foot
+            # Right arm with shoulder and elbow angles
+            right_shoulder_rad = np.radians(self._right_shoulder_angle)
+            right_elbow_rad = np.radians(self._right_elbow_angle)
+
+            # Upper arm direction
+            upper_right_angle = right_shoulder_rad - np.pi / 2
+
+            # Elbow position
+            elbow_right_x = upper_arm_length * np.cos(upper_right_angle)
+            elbow_right_y = arm_y - upper_arm_length * np.sin(upper_right_angle)
+
+            # Forearm with elbow bend (for right arm, positive curves away from body)
+            forearm_right_angle = upper_right_angle + right_elbow_rad * np.pi / 180
+
+            # Hand position
+            hand_right_x = elbow_right_x + forearm_length * np.cos(forearm_right_angle)
+            hand_right_y = elbow_right_y - forearm_length * np.sin(forearm_right_angle)
+
+            points.append([0, arm_y])
+            points.append([elbow_right_x, elbow_right_y])
+            points.append([elbow_right_x, elbow_right_y])
+            points.append([hand_right_x, hand_right_y])
+
+            right_hand_pos = (hand_right_x, hand_right_y)
+            right_arm_angle_rad = forearm_right_angle
+
+            # Left leg with hip and knee angles
+            left_hip_rad = np.radians(self._left_hip_angle)
+            left_knee_rad = np.radians(self._left_knee_angle)
+
+            # Upper leg direction (0° = down, so straight down means angle = pi/2 in standard)
+            # Hip angle: 0 = down, positive = forward
+            upper_left_leg_angle = np.pi / 2 + left_hip_rad
+
+            # Knee position
+            knee_left_x = -upper_leg_length * np.cos(upper_left_leg_angle)
+            knee_left_y = hip_y + upper_leg_length * np.sin(upper_left_leg_angle)
+
+            # Lower leg bends from upper leg direction
+            lower_left_leg_angle = upper_left_leg_angle + left_knee_rad * np.pi / 180
+
+            # Foot position
+            foot_left_x = knee_left_x - lower_leg_length * np.cos(lower_left_leg_angle)
+            foot_left_y = knee_left_y + lower_leg_length * np.sin(lower_left_leg_angle)
+
+            points.append([0, hip_y])
+            points.append([knee_left_x, knee_left_y])
+            points.append([knee_left_x, knee_left_y])
+            points.append([foot_left_x, foot_left_y])
+
+            # Right leg with hip and knee angles
+            right_hip_rad = np.radians(self._right_hip_angle)
+            right_knee_rad = np.radians(self._right_knee_angle)
+
+            # Upper leg direction
+            upper_right_leg_angle = np.pi / 2 - right_hip_rad
+
+            # Knee position
+            knee_right_x = upper_leg_length * np.cos(upper_right_leg_angle)
+            knee_right_y = hip_y + upper_leg_length * np.sin(upper_right_leg_angle)
+
+            # Lower leg bends
+            lower_right_leg_angle = upper_right_leg_angle - right_knee_rad * np.pi / 180
+
+            # Foot position
+            foot_right_x = knee_right_x + lower_leg_length * np.cos(lower_right_leg_angle)
+            foot_right_y = knee_right_y + lower_leg_length * np.sin(lower_right_leg_angle)
+
+            points.append([0, hip_y])
+            points.append([knee_right_x, knee_right_y])
+            points.append([knee_right_x, knee_right_y])
+            points.append([foot_right_x, foot_right_y])
+
+        else:
+            # Use pose-based system (backward compatibility)
+            left_arm_angle = np.radians(self._pose.left_arm)
+            right_arm_angle = np.radians(self._pose.right_arm)
+
+            # Left arm
+            elbow_left_x = -arm_length * 0.5 * np.cos(left_arm_angle)
+            elbow_left_y = arm_y + arm_length * 0.5 * np.sin(left_arm_angle)
+            hand_left_x = -arm_length * np.cos(left_arm_angle)
+            hand_left_y = arm_y + arm_length * np.sin(left_arm_angle)
+
+            points.append([0, arm_y])
+            points.append([elbow_left_x, elbow_left_y])
+            points.append([elbow_left_x, elbow_left_y])
+            points.append([hand_left_x, hand_left_y])
+
+            left_hand_pos = (hand_left_x, hand_left_y)
+            left_arm_angle_rad = left_arm_angle
+
+            # Right arm
+            elbow_right_x = arm_length * 0.5 * np.cos(right_arm_angle)
+            elbow_right_y = arm_y + arm_length * 0.5 * np.sin(right_arm_angle)
+            hand_right_x = arm_length * np.cos(right_arm_angle)
+            hand_right_y = arm_y + arm_length * np.sin(right_arm_angle)
+
+            points.append([0, arm_y])
+            points.append([elbow_right_x, elbow_right_y])
+            points.append([elbow_right_x, elbow_right_y])
+            points.append([hand_right_x, hand_right_y])
+
+            right_hand_pos = (hand_right_x, hand_right_y)
+            right_arm_angle_rad = right_arm_angle
+
+            # Legs
+            left_leg_angle = np.radians(90 + self._pose.left_leg)
+            right_leg_angle = np.radians(90 + self._pose.right_leg)
+
+            # Left leg
+            knee_left_x = -leg_length * 0.5 * np.cos(left_leg_angle)
+            knee_left_y = hip_y + leg_length * 0.5 * np.sin(left_leg_angle)
+            foot_left_x = -leg_length * np.cos(left_leg_angle)
+            foot_left_y = hip_y + leg_length * np.sin(left_leg_angle)
+
+            points.append([0, hip_y])
+            points.append([knee_left_x, knee_left_y])
+            points.append([knee_left_x, knee_left_y])
+            points.append([foot_left_x, foot_left_y])
+
+            # Right leg
+            knee_right_x = leg_length * 0.5 * np.cos(right_leg_angle)
+            knee_right_y = hip_y + leg_length * 0.5 * np.sin(right_leg_angle)
+            foot_right_x = leg_length * np.cos(right_leg_angle)
+            foot_right_y = hip_y + leg_length * np.sin(right_leg_angle)
+
+            points.append([0, hip_y])
+            points.append([knee_right_x, knee_right_y])
+            points.append([knee_right_x, knee_right_y])
+            points.append([foot_right_x, foot_right_y])
+
+        # Add hand gesture geometry if needed
+        if self._left_hand != "none":
+            gesture_points = self._generate_hand_gesture(
+                left_hand_pos[0], left_hand_pos[1],
+                left_arm_angle_rad, self._left_hand
+            )
+            points.extend(gesture_points)
+
+        if self._right_hand != "none":
+            gesture_points = self._generate_hand_gesture(
+                right_hand_pos[0], right_hand_pos[1],
+                right_arm_angle_rad, self._right_hand
+            )
+            points.extend(gesture_points)
 
         self._points = np.array(points, dtype=np.float64)
 
@@ -569,6 +1241,18 @@ class Stickman(Character):
             "head_squash": self.head_squash,
             "line_width": self.line_width,
             "auto_line_width": self.auto_line_width,
+            # Articulation data
+            "use_articulation": self._use_articulation,
+            "left_shoulder_angle": self._left_shoulder_angle,
+            "left_elbow_angle": self._left_elbow_angle,
+            "right_shoulder_angle": self._right_shoulder_angle,
+            "right_elbow_angle": self._right_elbow_angle,
+            "left_hip_angle": self._left_hip_angle,
+            "left_knee_angle": self._left_knee_angle,
+            "right_hip_angle": self._right_hip_angle,
+            "right_knee_angle": self._right_knee_angle,
+            "left_hand": self._left_hand,
+            "right_hand": self._right_hand,
         })
         return data
 

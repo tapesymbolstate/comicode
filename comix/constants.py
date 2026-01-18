@@ -10,7 +10,7 @@ from typing import Final
 # VERSION
 # =============================================================================
 
-VERSION: Final[str] = "0.1.97"
+VERSION: Final[str] = "0.1.98"
 
 # =============================================================================
 # COLORS - Standard colors used throughout the framework

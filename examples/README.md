@@ -74,7 +74,7 @@ Generated PNG files will be saved to `examples/output/`.
     - Custom row heights and proportions
     - Dramatic layout variations
 
-### Development Workflow (23-25)
+### Development Workflow (23-26)
 
 23. **23_preview_server.py** - Preview Server for live development
     - Hot-reload capability for rapid iteration
@@ -90,6 +90,14 @@ Generated PNG files will be saved to `examples/output/`.
     - DiagonalPanel, TrapezoidPanel, StarburstPanel, CloudPanel, ExplosionPanel
     - Panel splitting methods (split_diagonal, split_curve)
     - Mixed shapes comic demonstrating multiple panel types
+
+26. **26_stickman_articulation.py** - Joint-level control for Stickman characters
+    - set_arm_angles() for shoulder and elbow control (0-360° / 0-180°)
+    - set_leg_angles() for hip and knee control
+    - set_hands() with 7 gesture options (none, fist, open, point, peace, thumbs_up, relaxed)
+    - point_at() helper for automatic arm positioning toward a target
+    - ArmController/LegController presets for common poses
+    - Method chaining for fluent configuration
 
 ## Requirements
 

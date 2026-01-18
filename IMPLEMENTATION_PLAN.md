@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.97**
+**Current Git Tag: v0.1.98**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -29,13 +29,13 @@ Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
 
 - **CObject hierarchy**: Full transformation API (move_to, shift, scale, rotate)
 - **Bubble system**: 5 types (Speech, Thought, Shout, Whisper, Narrator) with auto-positioning
-- **Character system**: 9 styles (Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon, AnimalStyle) with 11 expressions and 12 poses
+- **Character system**: 9 styles (Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon, AnimalStyle) with 11 expressions, 12 poses, and Stickman articulation (joint-level control)
 - **Layout**: GridLayout, FlowLayout, ConstraintLayout with collision detection
 - **Renderers**: SVG (always available), Cairo PNG/PDF (optional)
 - **Effects**: 6 types (AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect)
 - **Templates**: 9 page templates (FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage, NewspaperStrip, Widescreen)
 - **Multi-page PDF**: Book class for compiling multiple pages
-- **Working Examples**: 25 example scripts demonstrating all core features
+- **Working Examples**: 26 example scripts demonstrating all core features
 
 ### Advanced Features (Optional)
 
@@ -97,9 +97,20 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.97)
+## Note: Stable Release (v0.1.98)
 
-All systems stable with 2015 tests passing (+ 30 skipped = 2045 collected). Version numbers synchronized across all files.
+All systems stable with 2087 tests passing (+ 30 skipped = 2117 collected). Version numbers synchronized across all files.
+
+v0.1.98 changes:
+- Added Stickman Articulation system for joint-level control of limbs
+- New methods: set_arm_angles(), set_leg_angles(), set_hands(), point_at()
+- Shoulder angles (0-360°): 0° = down, 90° = forward, 180° = up, 270° = back
+- Elbow/Knee angles (0-180°): 0° = straight, 90° = right angle, 180° = fully bent
+- 7 hand gesture options: none, fist, open, point, peace, thumbs_up, relaxed
+- ArmController and LegController helper classes with preset poses
+- Added example 26 (26_stickman_articulation.py) demonstrating all articulation features
+- Added 72 new tests for articulation functionality
+- Updated stickman-articulation.md spec to mark implementation complete
 
 v0.1.97 changes:
 - Regenerated all example outputs (76 files) after Stickman Y-axis fix

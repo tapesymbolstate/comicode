@@ -2208,3 +2208,590 @@ class TestAnimalStyle:
         assert len(tall._points) > 0
         assert len(round_ears._points) > 0
         assert len(none_ears._points) > 0
+
+
+# Import controllers for articulation tests
+from comix.cobject.character.character import ArmController, LegController
+
+
+class TestStickmanArticulation:
+    """Tests for Stickman joint articulation system."""
+
+    def test_default_joint_angles_are_zero(self):
+        """Test that default joint angles are all zero."""
+        char = Stickman(height=150)
+        assert char._left_shoulder_angle == 0.0
+        assert char._left_elbow_angle == 0.0
+        assert char._right_shoulder_angle == 0.0
+        assert char._right_elbow_angle == 0.0
+        assert char._left_hip_angle == 0.0
+        assert char._left_knee_angle == 0.0
+        assert char._right_hip_angle == 0.0
+        assert char._right_knee_angle == 0.0
+
+    def test_default_hands_are_none(self):
+        """Test that default hand gestures are 'none'."""
+        char = Stickman(height=150)
+        assert char._left_hand == "none"
+        assert char._right_hand == "none"
+
+    def test_use_articulation_initially_false(self):
+        """Test articulation mode is not active by default."""
+        char = Stickman(height=150)
+        assert char._use_articulation is False
+
+    def test_set_arm_angles_activates_articulation(self):
+        """Test that set_arm_angles activates articulation mode."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_shoulder=90)
+        assert char._use_articulation is True
+
+    def test_set_arm_angles_left_shoulder(self):
+        """Test setting left shoulder angle."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_shoulder=90)
+        assert char._left_shoulder_angle == 90.0
+
+    def test_set_arm_angles_left_elbow(self):
+        """Test setting left elbow angle."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_elbow=45)
+        assert char._left_elbow_angle == 45.0
+
+    def test_set_arm_angles_right_shoulder(self):
+        """Test setting right shoulder angle."""
+        char = Stickman(height=150)
+        char.set_arm_angles(right_shoulder=180)
+        assert char._right_shoulder_angle == 180.0
+
+    def test_set_arm_angles_right_elbow(self):
+        """Test setting right elbow angle."""
+        char = Stickman(height=150)
+        char.set_arm_angles(right_elbow=90)
+        assert char._right_elbow_angle == 90.0
+
+    def test_set_arm_angles_all_at_once(self):
+        """Test setting all arm angles simultaneously."""
+        char = Stickman(height=150)
+        char.set_arm_angles(
+            left_shoulder=45,
+            left_elbow=30,
+            right_shoulder=135,
+            right_elbow=60
+        )
+        assert char._left_shoulder_angle == 45.0
+        assert char._left_elbow_angle == 30.0
+        assert char._right_shoulder_angle == 135.0
+        assert char._right_elbow_angle == 60.0
+
+    def test_set_arm_angles_returns_self(self):
+        """Test set_arm_angles returns self for chaining."""
+        char = Stickman(height=150)
+        result = char.set_arm_angles(left_shoulder=90)
+        assert result is char
+
+    def test_set_leg_angles_activates_articulation(self):
+        """Test that set_leg_angles activates articulation mode."""
+        char = Stickman(height=150)
+        char.set_leg_angles(left_hip=30)
+        assert char._use_articulation is True
+
+    def test_set_leg_angles_left_hip(self):
+        """Test setting left hip angle."""
+        char = Stickman(height=150)
+        char.set_leg_angles(left_hip=30)
+        assert char._left_hip_angle == 30.0
+
+    def test_set_leg_angles_left_knee(self):
+        """Test setting left knee angle."""
+        char = Stickman(height=150)
+        char.set_leg_angles(left_knee=45)
+        assert char._left_knee_angle == 45.0
+
+    def test_set_leg_angles_right_hip(self):
+        """Test setting right hip angle."""
+        char = Stickman(height=150)
+        char.set_leg_angles(right_hip=90)
+        assert char._right_hip_angle == 90.0
+
+    def test_set_leg_angles_right_knee(self):
+        """Test setting right knee angle."""
+        char = Stickman(height=150)
+        char.set_leg_angles(right_knee=90)
+        assert char._right_knee_angle == 90.0
+
+    def test_set_leg_angles_all_at_once(self):
+        """Test setting all leg angles simultaneously."""
+        char = Stickman(height=150)
+        char.set_leg_angles(
+            left_hip=30,
+            left_knee=15,
+            right_hip=-20,
+            right_knee=10
+        )
+        assert char._left_hip_angle == 30.0
+        assert char._left_knee_angle == 15.0
+        assert char._right_hip_angle == -20.0
+        assert char._right_knee_angle == 10.0
+
+    def test_set_leg_angles_returns_self(self):
+        """Test set_leg_angles returns self for chaining."""
+        char = Stickman(height=150)
+        result = char.set_leg_angles(left_hip=30)
+        assert result is char
+
+
+class TestStickmanAngleNormalization:
+    """Tests for angle normalization and clamping."""
+
+    def test_shoulder_angle_normalization_positive(self):
+        """Test shoulder angles normalize from >360."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_shoulder=370)
+        assert char._left_shoulder_angle == 10.0
+
+    def test_shoulder_angle_normalization_large_positive(self):
+        """Test shoulder angles normalize from very large values."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_shoulder=720)
+        assert char._left_shoulder_angle == 0.0
+
+    def test_shoulder_angle_normalization_negative(self):
+        """Test shoulder angles normalize from negative values."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_shoulder=-90)
+        assert char._left_shoulder_angle == 270.0
+
+    def test_shoulder_angle_normalization_large_negative(self):
+        """Test shoulder angles normalize from large negative values."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_shoulder=-450)
+        assert char._left_shoulder_angle == 270.0
+
+    def test_elbow_angle_clamped_to_max(self):
+        """Test elbow angles clamp to max 180."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_elbow=200)
+        assert char._left_elbow_angle == 180.0
+
+    def test_elbow_angle_clamped_to_min(self):
+        """Test elbow angles clamp to min 0."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_elbow=-30)
+        assert char._left_elbow_angle == 0.0
+
+    def test_knee_angle_clamped_to_max(self):
+        """Test knee angles clamp to max 180."""
+        char = Stickman(height=150)
+        char.set_leg_angles(left_knee=200)
+        assert char._left_knee_angle == 180.0
+
+    def test_knee_angle_clamped_to_min(self):
+        """Test knee angles clamp to min 0."""
+        char = Stickman(height=150)
+        char.set_leg_angles(left_knee=-30)
+        assert char._left_knee_angle == 0.0
+
+
+class TestStickmanHandGestures:
+    """Tests for hand gesture system."""
+
+    def test_set_hands_left(self):
+        """Test setting left hand gesture."""
+        char = Stickman(height=150)
+        char.set_hands(left="fist")
+        assert char._left_hand == "fist"
+
+    def test_set_hands_right(self):
+        """Test setting right hand gesture."""
+        char = Stickman(height=150)
+        char.set_hands(right="open")
+        assert char._right_hand == "open"
+
+    def test_set_hands_both(self):
+        """Test setting both hand gestures."""
+        char = Stickman(height=150)
+        char.set_hands(left="point", right="fist")
+        assert char._left_hand == "point"
+        assert char._right_hand == "fist"
+
+    def test_set_hands_returns_self(self):
+        """Test set_hands returns self for chaining."""
+        char = Stickman(height=150)
+        result = char.set_hands(left="open")
+        assert result is char
+
+    def test_set_hands_activates_articulation(self):
+        """Test that set_hands activates articulation mode."""
+        char = Stickman(height=150)
+        char.set_hands(left="fist")
+        assert char._use_articulation is True
+
+    def test_all_valid_hand_gestures(self):
+        """Test all valid hand gesture options."""
+        valid_gestures = ["none", "fist", "open", "point", "peace", "thumbs_up", "relaxed"]
+        for gesture in valid_gestures:
+            char = Stickman(height=150)
+            char.set_hands(left=gesture)
+            assert char._left_hand == gesture
+
+    def test_invalid_hand_gesture_raises_error(self):
+        """Test invalid hand gesture raises ValueError."""
+        char = Stickman(height=150)
+        with pytest.raises(ValueError) as excinfo:
+            char.set_hands(left="invalid_gesture")
+        assert "Invalid hand option" in str(excinfo.value)
+        assert "invalid_gesture" in str(excinfo.value)
+
+    def test_hand_gestures_generate_extra_points(self):
+        """Test that hand gestures add points to the character."""
+        char_no_hands = Stickman(height=150)
+        char_with_hands = Stickman(height=150)
+        char_with_hands.set_hands(left="open", right="fist")
+
+        # Character with hand gestures should have more points
+        assert len(char_with_hands._points) > len(char_no_hands._points)
+
+
+class TestStickmanPointAt:
+    """Tests for point_at helper method."""
+
+    def test_point_at_coordinates(self):
+        """Test point_at with (x, y) coordinates."""
+        char = Stickman(height=150)
+        char.move_to((100, 200))
+        char.point_at((500, 200), arm="right")
+        # Should set right arm to point roughly horizontally
+        assert char._use_articulation is True
+        assert char._right_hand == "point"
+
+    def test_point_at_object(self):
+        """Test point_at with CObject target."""
+        from comix.cobject.shapes.shapes import Circle
+        char = Stickman(height=150)
+        char.move_to((100, 200))
+        target = Circle(radius=20)
+        target.move_to((500, 200))
+        char.point_at(target, arm="right")
+        assert char._use_articulation is True
+        assert char._right_hand == "point"
+
+    def test_point_at_left_arm(self):
+        """Test point_at using left arm."""
+        char = Stickman(height=150)
+        char.move_to((100, 200))
+        char.point_at((500, 200), arm="left")
+        assert char._left_hand == "point"
+
+    def test_point_at_custom_hand_gesture(self):
+        """Test point_at with custom hand gesture."""
+        char = Stickman(height=150)
+        char.move_to((100, 200))
+        char.point_at((500, 200), arm="right", hand="fist")
+        assert char._right_hand == "fist"
+
+    def test_point_at_with_elbow_bend(self):
+        """Test point_at with elbow bend parameter."""
+        char = Stickman(height=150)
+        char.move_to((100, 200))
+        char.point_at((500, 200), arm="right", elbow_bend=30)
+        assert char._right_elbow_angle == 30.0
+
+    def test_point_at_returns_self(self):
+        """Test point_at returns self for chaining."""
+        char = Stickman(height=150)
+        char.move_to((100, 200))
+        result = char.point_at((500, 200))
+        assert result is char
+
+
+class TestArmController:
+    """Tests for ArmController helper class."""
+
+    def test_arm_controller_created(self):
+        """Test that arm controllers are created on Stickman."""
+        char = Stickman(height=150)
+        assert hasattr(char, 'left_arm')
+        assert hasattr(char, 'right_arm')
+        assert isinstance(char.left_arm, ArmController)
+        assert isinstance(char.right_arm, ArmController)
+
+    def test_arm_controller_set_preset_down(self):
+        """Test arm controller 'down' preset."""
+        char = Stickman(height=150)
+        char.left_arm.set_preset("down")
+        assert char._left_shoulder_angle == 0.0
+        assert char._left_elbow_angle == 0.0
+
+    def test_arm_controller_set_preset_forward(self):
+        """Test arm controller 'forward' preset."""
+        char = Stickman(height=150)
+        char.left_arm.set_preset("forward")
+        assert char._left_shoulder_angle == 90.0
+        assert char._left_elbow_angle == 0.0
+
+    def test_arm_controller_set_preset_up(self):
+        """Test arm controller 'up' preset."""
+        char = Stickman(height=150)
+        char.left_arm.set_preset("up")
+        assert char._left_shoulder_angle == 180.0
+
+    def test_arm_controller_set_preset_waving(self):
+        """Test arm controller 'waving' preset."""
+        char = Stickman(height=150)
+        char.left_arm.set_preset("waving")
+        assert char._left_shoulder_angle == 180.0
+        assert char._left_elbow_angle == 30.0
+
+    def test_arm_controller_set_preset_pointing(self):
+        """Test arm controller 'pointing' preset with hand gesture."""
+        char = Stickman(height=150)
+        char.right_arm.set_preset("pointing")
+        assert char._right_shoulder_angle == 90.0
+        assert char._right_elbow_angle == 0.0
+        assert char._right_hand == "point"
+
+    def test_arm_controller_set_preset_thinking(self):
+        """Test arm controller 'thinking' preset with hand gesture."""
+        char = Stickman(height=150)
+        char.left_arm.set_preset("thinking")
+        assert char._left_shoulder_angle == 120.0
+        assert char._left_elbow_angle == 90.0
+        assert char._left_hand == "fist"
+
+    def test_arm_controller_invalid_preset_raises_error(self):
+        """Test arm controller with invalid preset raises ValueError."""
+        char = Stickman(height=150)
+        with pytest.raises(ValueError) as excinfo:
+            char.left_arm.set_preset("invalid_preset")
+        assert "Unknown arm preset" in str(excinfo.value)
+
+    def test_arm_controller_returns_stickman(self):
+        """Test arm controller set_preset returns the parent Stickman."""
+        char = Stickman(height=150)
+        result = char.left_arm.set_preset("waving")
+        assert result is char
+
+
+class TestLegController:
+    """Tests for LegController helper class."""
+
+    def test_leg_controller_created(self):
+        """Test that leg controllers are created on Stickman."""
+        char = Stickman(height=150)
+        assert hasattr(char, 'left_leg_ctrl')
+        assert hasattr(char, 'right_leg_ctrl')
+        assert isinstance(char.left_leg_ctrl, LegController)
+        assert isinstance(char.right_leg_ctrl, LegController)
+
+    def test_leg_controller_set_preset_standing(self):
+        """Test leg controller 'standing' preset."""
+        char = Stickman(height=150)
+        char.left_leg_ctrl.set_preset("standing")
+        assert char._left_hip_angle == 0.0
+        assert char._left_knee_angle == 0.0
+
+    def test_leg_controller_set_preset_walking(self):
+        """Test leg controller 'walking' preset."""
+        char = Stickman(height=150)
+        char.left_leg_ctrl.set_preset("walking")
+        assert char._left_hip_angle == 30.0
+        assert char._left_knee_angle == 15.0
+
+    def test_leg_controller_set_preset_sitting(self):
+        """Test leg controller 'sitting' preset."""
+        char = Stickman(height=150)
+        char.left_leg_ctrl.set_preset("sitting")
+        assert char._left_hip_angle == 90.0
+        assert char._left_knee_angle == 90.0
+
+    def test_leg_controller_set_preset_kneeling(self):
+        """Test leg controller 'kneeling' preset."""
+        char = Stickman(height=150)
+        char.left_leg_ctrl.set_preset("kneeling")
+        assert char._left_hip_angle == 135.0
+        assert char._left_knee_angle == 135.0
+
+    def test_leg_controller_invalid_preset_raises_error(self):
+        """Test leg controller with invalid preset raises ValueError."""
+        char = Stickman(height=150)
+        with pytest.raises(ValueError) as excinfo:
+            char.left_leg_ctrl.set_preset("invalid_preset")
+        assert "Unknown leg preset" in str(excinfo.value)
+
+    def test_leg_controller_returns_stickman(self):
+        """Test leg controller set_preset returns the parent Stickman."""
+        char = Stickman(height=150)
+        result = char.left_leg_ctrl.set_preset("walking")
+        assert result is char
+
+
+class TestStickmanArticulationRenderData:
+    """Tests for articulation data in render output."""
+
+    def test_render_data_includes_articulation_flag(self):
+        """Test render data includes use_articulation flag."""
+        char = Stickman(height=150)
+        data = char.get_render_data()
+        assert "use_articulation" in data
+        assert data["use_articulation"] is False
+
+    def test_render_data_includes_joint_angles(self):
+        """Test render data includes all joint angles."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_shoulder=45, left_elbow=30)
+        char.set_leg_angles(left_hip=20, left_knee=15)
+        data = char.get_render_data()
+
+        assert data["left_shoulder_angle"] == 45.0
+        assert data["left_elbow_angle"] == 30.0
+        assert data["left_hip_angle"] == 20.0
+        assert data["left_knee_angle"] == 15.0
+
+    def test_render_data_includes_hand_gestures(self):
+        """Test render data includes hand gestures."""
+        char = Stickman(height=150)
+        char.set_hands(left="open", right="fist")
+        data = char.get_render_data()
+
+        assert data["left_hand"] == "open"
+        assert data["right_hand"] == "fist"
+
+
+class TestStickmanArticulationGeometry:
+    """Tests for articulation system geometry generation."""
+
+    def test_articulation_generates_points(self):
+        """Test that articulation mode generates valid points."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_shoulder=90, left_elbow=45)
+        assert len(char._points) > 0
+
+    def test_shoulder_angle_0_positions_arm_down(self):
+        """Test shoulder angle 0° positions arm straight down."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_shoulder=0, left_elbow=0)
+        # Points should exist
+        assert len(char._points) > 0
+
+    def test_shoulder_angle_90_positions_arm_horizontal(self):
+        """Test shoulder angle 90° positions arm horizontally."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_shoulder=90, left_elbow=0)
+        # Points should exist
+        assert len(char._points) > 0
+
+    def test_elbow_bend_90_creates_right_angle(self):
+        """Test elbow bend 90° creates a right angle at elbow."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_shoulder=90, left_elbow=90)
+        # Points should exist
+        assert len(char._points) > 0
+
+    def test_facing_left_mirrors_articulated_points(self):
+        """Test that facing left mirrors articulated points."""
+        char_right = Stickman(height=150)
+        char_right.set_arm_angles(left_shoulder=90)
+
+        char_left = Stickman(height=150)
+        char_left.face("left")
+        char_left.set_arm_angles(left_shoulder=90)
+
+        # Left facing should have mirrored X coordinates
+        assert char_left.facing == "left"
+        # The x values should be mirrored (negative)
+        assert np.sum(char_left._points[:, 0]) != np.sum(char_right._points[:, 0])
+
+
+class TestStickmanMethodChaining:
+    """Tests for method chaining with articulation system."""
+
+    def test_chain_set_arm_angles_and_set_hands(self):
+        """Test chaining set_arm_angles with set_hands."""
+        char = Stickman(height=150)
+        result = char.set_arm_angles(left_shoulder=90).set_hands(left="point")
+        assert result is char
+        assert char._left_shoulder_angle == 90.0
+        assert char._left_hand == "point"
+
+    def test_chain_set_leg_angles_and_set_arm_angles(self):
+        """Test chaining set_leg_angles with set_arm_angles."""
+        char = Stickman(height=150)
+        result = char.set_leg_angles(left_hip=30).set_arm_angles(right_shoulder=180)
+        assert result is char
+        assert char._left_hip_angle == 30.0
+        assert char._right_shoulder_angle == 180.0
+
+    def test_chain_all_articulation_methods(self):
+        """Test chaining all articulation methods together."""
+        char = Stickman(height=150)
+        result = (
+            char
+            .set_arm_angles(left_shoulder=45, right_shoulder=135)
+            .set_leg_angles(left_hip=30, right_hip=-20)
+            .set_hands(left="open", right="fist")
+        )
+        assert result is char
+        assert char._left_shoulder_angle == 45.0
+        assert char._right_shoulder_angle == 135.0
+        assert char._left_hip_angle == 30.0
+        assert char._right_hip_angle == -20.0
+        assert char._left_hand == "open"
+        assert char._right_hand == "fist"
+
+    def test_chain_with_controller_presets(self):
+        """Test chaining controller preset methods."""
+        char = Stickman(height=150)
+        char.left_arm.set_preset("waving")
+        char.right_arm.set_preset("pointing")
+        char.left_leg_ctrl.set_preset("walking")
+        char.right_leg_ctrl.set_preset("standing")
+
+        assert char._left_shoulder_angle == 180.0
+        assert char._right_shoulder_angle == 90.0
+        assert char._left_hip_angle == 30.0
+        assert char._right_hip_angle == 0.0
+
+
+class TestStickmanBackwardCompatibility:
+    """Tests ensuring articulation system doesn't break existing functionality."""
+
+    def test_pose_system_still_works(self):
+        """Test that pose-based system still works when articulation not used."""
+        char = Stickman(height=150)
+        char.set_pose("waving")
+        # Pose should be set
+        assert char._pose.name == "waving"
+        # Articulation should not be active
+        assert char._use_articulation is False
+
+    def test_articulation_overrides_pose(self):
+        """Test that articulation overrides pose when both are used."""
+        char = Stickman(height=150)
+        char.set_pose("waving")
+        char.set_arm_angles(left_shoulder=45)
+        # Articulation should now be active
+        assert char._use_articulation is True
+        # Shoulder should have custom angle, not pose angle
+        assert char._left_shoulder_angle == 45.0
+
+    def test_expression_still_works_with_articulation(self):
+        """Test expressions work with articulation."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_shoulder=90)
+        char.set_expression("happy")
+        assert char._expression.name == "happy"
+
+    def test_facing_works_with_articulation(self):
+        """Test facing direction works with articulation."""
+        char = Stickman(height=150)
+        char.set_arm_angles(left_shoulder=90)
+        char.face("left")
+        assert char.facing == "left"
+
+    def test_proportion_styles_work_with_articulation(self):
+        """Test proportion styles work with articulation."""
+        char = Stickman(height=150, proportion_style="xkcd")
+        char.set_arm_angles(left_shoulder=90)
+        assert char.proportion_style == "xkcd"
+        assert char._use_articulation is True

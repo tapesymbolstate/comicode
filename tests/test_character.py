@@ -322,7 +322,7 @@ class TestStickman:
         right_x = right._points[:, 0]
         left_x = left._points[:, 0]
 
-        np.allclose(right_x, -left_x)
+        assert np.allclose(right_x, -left_x)
 
     def test_all_poses(self):
         """Test stickman with all 12 poses."""
@@ -775,7 +775,7 @@ class TestChubbyStickman:
         right_x = right._points[:, 0]
         left_x = left._points[:, 0]
 
-        np.allclose(right_x, -left_x)
+        assert np.allclose(right_x, -left_x)
 
     def test_custom_height(self):
         """Test custom height."""
@@ -906,7 +906,7 @@ class TestRobot:
         right_x = right._points[:, 0]
         left_x = left._points[:, 0]
 
-        np.allclose(right_x, -left_x)
+        assert np.allclose(right_x, -left_x)
 
     def test_custom_height(self):
         """Test custom height."""

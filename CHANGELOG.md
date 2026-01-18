@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.104] - 2026-01-18
+
+### Bug Fixes
+- **Fixed 3 missing assertions in test_character.py**: Tests for `test_facing_flips_points` in Stickman, ChubbyStickman, and Robot classes were calling `np.allclose()` without asserting the result, meaning the tests would pass even if the assertion would fail
+  - Line 325: Added `assert` to Stickman.test_facing_flips_points
+  - Line 778: Added `assert` to ChubbyStickman.test_facing_flips_points
+  - Line 909: Added `assert` to Robot.test_facing_flips_points
+
+### Tests
+- Test count: 2087 passed, 30 skipped (2117 collected)
+
 ## [v0.1.99] - 2026-01-18
 
 ### Bug Fixes

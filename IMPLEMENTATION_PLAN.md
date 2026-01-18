@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.103**
+**Current Git Tag: v0.1.104**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,13 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.103)
+## Note: Stable Release (v0.1.104)
 
 All systems stable with 2087 tests passing (+ 30 skipped = 2117 collected). Version numbers synchronized across all files.
+
+v0.1.104 changes:
+- Fixed 3 missing assertions in test_character.py: `test_facing_flips_points` tests for Stickman, ChubbyStickman, and Robot were calling `np.allclose()` without asserting the result
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
 
 v0.1.103 changes:
 - Fixed documentation inconsistencies in specs/CRITICAL-BUGS-AND-FIXES.md: updated test counts (2015 → 2087), example counts (25 → 26)

@@ -2,6 +2,83 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.49] - 2026-01-18
+
+### Bug Fixes
+- Synced VERSION constant in constants.py to match pyproject.toml (0.1.49)
+
+### Documentation
+- Updated all spec files to v0.1.49
+- Updated IMPLEMENTATION_PLAN.md to v0.1.49
+
+## [v0.1.48] - 2026-01-18
+
+### Documentation
+- Synced version references to v0.1.48 across all documentation
+- Updated IMPLEMENTATION_PLAN.md to v0.1.48
+
+## [v0.1.47] - 2026-01-18
+
+### Documentation
+- Updated IMPLEMENTATION_PLAN.md to v0.1.47
+
+## [v0.1.46] - 2026-01-18
+
+### Documentation
+- Corrected easing function count to 28 in documentation
+- Fixed version references across documentation
+- Updated IMPLEMENTATION_PLAN.md to v0.1.46
+
+## [v0.1.45] - 2026-01-18
+
+### Features
+- **Multi-page Book Parser**: Added `parse_book_markup()` function for parsing multi-page comics from markup DSL
+  - Supports `===` separator for page breaks
+  - Supports `---` separator for panel breaks
+  - Returns Book object with multiple Page instances
+
+### Documentation
+- Added animation-export.md and video-export.md specifications
+- Synced documentation with v0.1.45 test counts
+
+## [v0.1.44] - 2026-01-18
+
+### Documentation
+- Synced specs with v0.1.44 test count and version
+- Updated IMPLEMENTATION_PLAN.md to v0.1.44
+
+## [v0.1.43] - 2026-01-18
+
+### Features
+- **Audio Track Support**: Added audio track support for VideoRenderer
+  - Allows mixing audio tracks with video export
+
+### Tests
+- Added tests for audio track functionality
+- Updated IMPLEMENTATION_PLAN.md to v0.1.43
+
+## [v0.1.42] - 2026-01-18
+
+### Documentation
+- Updated test count to 1726 (1722 pass + 4 skip)
+- Synced specs with actual example count (15 examples)
+- Updated AGENTS.md with animation system and correct example count
+- Updated IMPLEMENTATION_PLAN.md to v0.1.42
+
+## [v0.1.41] - 2026-01-18
+
+### Documentation
+- Synced specs with IMPLEMENTATION_PLAN.md for v0.1.41
+- Updated IMPLEMENTATION_PLAN.md to v0.1.41
+
+## [v0.1.40] - 2026-01-18
+
+### Bug Fixes
+- Fixed mypy type errors for watchdog optional dependency
+
+### Documentation
+- Updated IMPLEMENTATION_PLAN.md to v0.1.40
+
 ## [v0.1.39] - 2026-01-18
 
 ### Features

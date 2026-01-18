@@ -7,6 +7,7 @@ import pytest
 from click.testing import CliRunner
 
 from comix.__main__ import main
+from comix.constants import VERSION
 
 
 @pytest.fixture
@@ -61,7 +62,7 @@ class TestInfoCommand:
     def test_info_displays_version(self, runner: CliRunner) -> None:
         """Test that info displays version."""
         result = runner.invoke(main, ["info"])
-        assert "Version: 0.1.0" in result.output
+        assert f"Version: {VERSION}" in result.output
 
     def test_info_displays_core_components(self, runner: CliRunner) -> None:
         """Test that info displays core components."""
@@ -92,7 +93,7 @@ class TestVersionOption:
         """Test that --version displays version."""
         result = runner.invoke(main, ["--version"])
         assert result.exit_code == 0
-        assert "0.1.0" in result.output
+        assert VERSION in result.output
 
     def test_version_short_option(self, runner: CliRunner) -> None:
         """Test that -V works (if supported)."""

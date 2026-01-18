@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.53] - 2026-01-18
+
+### Bug Fixes
+- Fixed mypy errors in preview server watchdog handling
+  - Refactored optional watchdog import pattern to properly handle TYPE_CHECKING and runtime fallbacks
+  - Removed unused type ignore comments
+  - Used appropriate type annotations for dynamic observer type
+
+### Testing
+- Test count now at 1743 tests passing
+
 ## [v0.1.52] - 2026-01-18
 
 ### Documentation

@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.63+simplified**
+**Current Git Tag: v0.1.64**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,14 +97,16 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.63)
+## Note: Stable Release (v0.1.64)
 
 All systems stable with 1743 tests passing. Version numbers synchronized across all files.
+
+v0.1.64 changes:
+- Synchronized version numbers to v0.1.64 across pyproject.toml, comix/constants.py, specs/README.md
 
 v0.1.63 changes:
 - Updated specs/README.md to reflect that all bugs are fixed
 - Fixed example 07 bubble clipping by adjusting text and positions
-- Synchronized version numbers in pyproject.toml and comix/constants.py to v0.1.63
 
 v0.1.62 changes:
 - Fixed bubble overlapping bug: Panel.add_content() now automatically repositions bubbles to avoid collisions

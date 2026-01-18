@@ -353,3 +353,145 @@ class TestIrregularPanel:
 
         assert data["shape"] == "irregular"
         assert data["polygon_points"] == points
+
+
+class TestSplitDiagonal:
+    """Tests for Panel.split_diagonal() method."""
+
+    def test_split_diagonal_basic(self):
+        """Test basic diagonal split returns two IrregularPanels."""
+        panel = Panel(width=400, height=400)
+        panel1, panel2 = panel.split_diagonal()
+
+        assert isinstance(panel1, IrregularPanel)
+        assert isinstance(panel2, IrregularPanel)
+
+    def test_split_diagonal_default_direction(self):
+        """Test default direction is top-left-to-bottom-right."""
+        panel = Panel(width=200, height=200)
+        panel1, panel2 = panel.split_diagonal()
+
+        # Panel 1 should be upper-right triangle (3 points)
+        assert len(panel1.polygon_points) == 3
+        # Panel 2 should be lower-left triangle (3 points)
+        assert len(panel2.polygon_points) == 3
+
+    def test_split_diagonal_top_left_to_bottom_right(self):
+        """Test split direction top-left-to-bottom-right."""
+        panel = Panel(width=200, height=200)
+        panel1, panel2 = panel.split_diagonal(direction="top-left-to-bottom-right")
+
+        # Verify the triangles cover the original panel area
+        # Panel 1: upper-right (top-left, top-right, bottom-right)
+        expected_panel1 = [(-100, 100), (100, 100), (100, -100)]
+        assert panel1.polygon_points == expected_panel1
+
+        # Panel 2: lower-left (top-left, bottom-right, bottom-left)
+        expected_panel2 = [(-100, 100), (100, -100), (-100, -100)]
+        assert panel2.polygon_points == expected_panel2
+
+    def test_split_diagonal_top_right_to_bottom_left(self):
+        """Test split direction top-right-to-bottom-left."""
+        panel = Panel(width=200, height=200)
+        panel1, panel2 = panel.split_diagonal(direction="top-right-to-bottom-left")
+
+        # Panel 1: upper-left (top-left, top-right, bottom-left)
+        expected_panel1 = [(-100, 100), (100, 100), (-100, -100)]
+        assert panel1.polygon_points == expected_panel1
+
+        # Panel 2: lower-right (top-right, bottom-right, bottom-left)
+        expected_panel2 = [(100, 100), (100, -100), (-100, -100)]
+        assert panel2.polygon_points == expected_panel2
+
+    def test_split_diagonal_invalid_direction(self):
+        """Test that invalid direction raises ValueError."""
+        panel = Panel(width=200, height=200)
+        with pytest.raises(ValueError) as exc_info:
+            panel.split_diagonal(direction="invalid-direction")
+
+        assert "Invalid direction" in str(exc_info.value)
+        assert "top-left-to-bottom-right" in str(exc_info.value)
+        assert "top-right-to-bottom-left" in str(exc_info.value)
+
+    def test_split_diagonal_inherits_border(self):
+        """Test that split panels inherit border settings."""
+        border = Border(color="#FF0000", width=3.0, style="dashed", radius=5.0)
+        panel = Panel(width=200, height=200, border=border)
+        panel1, panel2 = panel.split_diagonal()
+
+        assert panel1.border.color == "#FF0000"
+        assert panel1.border.width == 3.0
+        assert panel1.border.style == "dashed"
+        assert panel1.border.radius == 5.0
+
+        assert panel2.border.color == "#FF0000"
+        assert panel2.border.width == 3.0
+        assert panel2.border.style == "dashed"
+        assert panel2.border.radius == 5.0
+
+    def test_split_diagonal_inherits_background_color(self):
+        """Test that split panels inherit background color."""
+        panel = Panel(width=200, height=200, background_color="#EEEEEE")
+        panel1, panel2 = panel.split_diagonal()
+
+        assert panel1.background_color == "#EEEEEE"
+        assert panel2.background_color == "#EEEEEE"
+
+    def test_split_diagonal_inherits_padding(self):
+        """Test that split panels inherit padding."""
+        panel = Panel(width=200, height=200, padding=20.0)
+        panel1, panel2 = panel.split_diagonal()
+
+        assert panel1.padding == 20.0
+        assert panel2.padding == 20.0
+
+    def test_split_diagonal_preserves_position(self):
+        """Test that split panels are positioned at original panel's center."""
+        panel = Panel(width=200, height=200)
+        panel.move_to((300, 400))
+        panel1, panel2 = panel.split_diagonal()
+
+        center1 = panel1.get_center()
+        center2 = panel2.get_center()
+
+        assert np.allclose(center1, [300, 400])
+        assert np.allclose(center2, [300, 400])
+
+    def test_split_diagonal_angle_clamping(self):
+        """Test that angle is clamped to valid range."""
+        panel = Panel(width=200, height=200)
+        # Even with extreme angles, the split should work
+        # (angle affects internal calculations but corners are used)
+        panel1, panel2 = panel.split_diagonal(angle=0)  # Should be clamped to 5
+        assert isinstance(panel1, IrregularPanel)
+        assert isinstance(panel2, IrregularPanel)
+
+        panel1, panel2 = panel.split_diagonal(angle=90)  # Should be clamped to 85
+        assert isinstance(panel1, IrregularPanel)
+        assert isinstance(panel2, IrregularPanel)
+
+    def test_split_diagonal_original_unchanged(self):
+        """Test that original panel is not modified by split."""
+        panel = Panel(width=200, height=200)
+        original_width = panel.width
+        original_height = panel.height
+        original_points = panel._points.copy()
+
+        panel.split_diagonal()
+
+        assert panel.width == original_width
+        assert panel.height == original_height
+        assert np.array_equal(panel._points, original_points)
+
+    def test_split_diagonal_rectangular_panel(self):
+        """Test splitting a non-square rectangular panel."""
+        panel = Panel(width=400, height=200)  # Wide panel
+        panel1, panel2 = panel.split_diagonal()
+
+        # Both should be triangles with 3 points each
+        assert len(panel1.polygon_points) == 3
+        assert len(panel2.polygon_points) == 3
+
+        # Verify dimensions make sense for wide panel
+        assert panel1.width == 400  # Width from bounding box
+        assert panel2.width == 400

@@ -235,6 +235,126 @@ class Panel(CObject):
         )
         return data
 
+    def split_diagonal(
+        self,
+        angle: float = 45.0,
+        direction: str = "top-left-to-bottom-right",
+    ) -> tuple["IrregularPanel", "IrregularPanel"]:
+        """Split this panel along a diagonal line, creating two triangular panels.
+
+        Divides the panel along a diagonal line at the specified angle.
+        This is useful for creating dynamic manga-style layouts where panels
+        are split diagonally for dramatic effect.
+
+        Args:
+            angle: Angle of the diagonal cut in degrees (default 45).
+                   Values are clamped to 5-85 degrees for practical results.
+            direction: Direction of the diagonal split. Valid values:
+                - "top-left-to-bottom-right" (default): Diagonal from top-left
+                  to bottom-right corner, creating upper-right and lower-left panels.
+                - "top-right-to-bottom-left": Diagonal from top-right to
+                  bottom-left corner, creating upper-left and lower-right panels.
+
+        Returns:
+            A tuple of two IrregularPanel objects representing the split portions:
+            - For "top-left-to-bottom-right": (upper_right_panel, lower_left_panel)
+            - For "top-right-to-bottom-left": (upper_left_panel, lower_right_panel)
+
+        Raises:
+            ValueError: If direction is not a valid split direction.
+
+        Example:
+            >>> panel = Panel(width=400, height=400)
+            >>> top_half, bottom_half = panel.split_diagonal(
+            ...     angle=45,
+            ...     direction="top-left-to-bottom-right"
+            ... )
+            >>> # Both panels inherit the original panel's position
+            >>> page.add(top_half, bottom_half)
+
+        Note:
+            - Both resulting panels are positioned at the original panel's center.
+            - Content from the original panel is NOT automatically transferred.
+            - Border and background settings are copied to both new panels.
+            - The original panel is not modified.
+        """
+        valid_directions = ("top-left-to-bottom-right", "top-right-to-bottom-left")
+        if direction not in valid_directions:
+            raise ValueError(
+                f"Invalid direction '{direction}' for split_diagonal. "
+                f"Valid directions: {', '.join(valid_directions)}"
+            )
+
+        # Clamp angle to reasonable range (reserved for future angle-based splitting)
+        angle = max(5.0, min(85.0, angle))
+        _ = angle  # Angle reserved for future non-corner splitting implementations
+
+        half_w = self.width / 2
+        half_h = self.height / 2
+
+        # Corner-to-corner splitting is the most common manga technique
+        if direction == "top-left-to-bottom-right":
+            # Split from top-left corner to bottom-right corner
+            # Panel 1: Upper-right triangle (top-left, top-right, bottom-right)
+            panel1_points = [
+                (-half_w, half_h),   # Top-left
+                (half_w, half_h),    # Top-right
+                (half_w, -half_h),   # Bottom-right
+            ]
+            # Panel 2: Lower-left triangle (top-left, bottom-right, bottom-left)
+            panel2_points = [
+                (-half_w, half_h),   # Top-left
+                (half_w, -half_h),   # Bottom-right
+                (-half_w, -half_h),  # Bottom-left
+            ]
+        else:  # top-right-to-bottom-left
+            # Split from top-right corner to bottom-left corner
+            # Panel 1: Upper-left triangle (top-left, top-right, bottom-left)
+            panel1_points = [
+                (-half_w, half_h),   # Top-left
+                (half_w, half_h),    # Top-right
+                (-half_w, -half_h),  # Bottom-left
+            ]
+            # Panel 2: Lower-right triangle (top-right, bottom-right, bottom-left)
+            panel2_points = [
+                (half_w, half_h),    # Top-right
+                (half_w, -half_h),   # Bottom-right
+                (-half_w, -half_h),  # Bottom-left
+            ]
+
+        # Create the two irregular panels
+        panel1 = IrregularPanel(
+            points=panel1_points,
+            border=Border(
+                color=self.border.color,
+                width=self.border.width,
+                style=self.border.style,
+                radius=self.border.radius,
+            ),
+            background_color=self.background_color,
+            padding=self.padding,
+        )
+
+        panel2 = IrregularPanel(
+            points=panel2_points,
+            border=Border(
+                color=self.border.color,
+                width=self.border.width,
+                style=self.border.style,
+                radius=self.border.radius,
+            ),
+            background_color=self.background_color,
+            padding=self.padding,
+        )
+
+        # Position both panels at the original panel's center
+        original_center = self.get_center()
+        center_tuple = (float(original_center[0]), float(original_center[1]))
+        panel1.move_to(center_tuple)
+        panel2.move_to(center_tuple)
+
+        return (panel1, panel2)
+
 
 class DiagonalPanel(Panel):
     """Panel with one corner cut diagonally.

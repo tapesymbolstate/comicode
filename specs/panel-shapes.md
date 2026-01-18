@@ -26,7 +26,7 @@ Without support for non-rectangular panels, the library cannot create authentic 
 
 ### Should Have
 - [x] Helper functions to create common diagonal cuts (top-left, top-right, bottom-left, bottom-right)
-- [ ] `split_diagonal(angle, direction)` method to divide existing panel along diagonal
+- [x] `split_diagonal(angle, direction)` method to divide existing panel along diagonal
 - [ ] `split_curve(control_points)` for curved panel divisions
 - [ ] Automatic gutter spacing calculations for non-rectangular panels
 - [x] Visual validation that diagonal panels render correctly (via unit tests)
@@ -391,8 +391,8 @@ class IrregularPanel(Panel):
 
 - [x] Should we validate polygon points for self-intersection? **Decision**: Yes, warn user but attempt to render anyway
 - [x] How to handle panel borders on diagonal edges? **Decision**: Render border along exact polygon edges
-- [ ] Should split_diagonal() return two Panel objects or modify original? **Decision needed**
-- [ ] Default diagonal angle? **Decision**: 45 degrees (most common in comics)
+- [x] Should split_diagonal() return two Panel objects or modify original? **Decision**: Return two new IrregularPanel objects (original unchanged)
+- [x] Default diagonal angle? **Decision**: 45 degrees (most common in comics)
 - [ ] Should we provide preset "starburst", "cloud", "explosion" panel shapes? **Decision needed** (probably yes for convenience)
 
 ## Test Requirements

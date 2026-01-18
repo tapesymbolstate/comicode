@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.70**
+**Current Git Tag: v0.1.71**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,21 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.68)
+## Note: Stable Release (v0.1.71)
 
-All systems stable with 1761 tests passing. Version numbers synchronized across all files.
+All systems stable with 1797 tests passing. Version numbers synchronized across all files.
+
+v0.1.71 changes:
+- Added `Panel.split_diagonal()` method for splitting panels into triangular pieces
+- Supports two directions: "top-left-to-bottom-right" and "top-right-to-bottom-left"
+- Split panels inherit border, background, and padding from original
+- Added 12 new tests for split_diagonal functionality
+
+v0.1.70 changes:
+- Added curved/smooth tail style for speech bubbles
+
+v0.1.69 changes:
+- Bumped version after tail style improvements
 
 v0.1.68 changes:
 - Added non-rectangular panel shapes: DiagonalPanel, TrapezoidPanel, IrregularPanel

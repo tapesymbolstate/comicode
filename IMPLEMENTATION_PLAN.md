@@ -1,57 +1,91 @@
 # Implementation Plan
 
-## Status: All Phases Complete + Animation Export + Video Export + Multi-Page Parser
+## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.63**
+**Current Git Tag: v0.1.63+simplified**
 
-All 8 phases have been implemented with **1743 tests** passing, ruff clean, and mypy passing.
+프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
+Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
 
-### Completed Phases Summary
+### Core Phases (Active)
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| Phase 1 | Core MVP (CObject, Panel, Bubble, Text, Character, Page, SVGRenderer) | Complete |
-| Phase 2 | Styling (Font management, Theme system, Style inheritance) | Complete |
-| Phase 3 | Layout Engine (FlowLayout, Auto bubble positioning, Collision detection) | Complete |
-| Phase 4 | Extensions (Cairo renderer, Effects, Parser, Images, Preview server, Constraints) | Complete |
-| Phase 5 | Multi-page PDF Export (Book class, compile CLI command) | Complete |
-| Phase 6 | Interactive HTML Export (HTMLRenderer with zoom, pan, themes) | Complete |
-| Phase 7 | Animation Export (GIF renderer, Timeline, Easing functions) | Complete |
-| Phase 8 | Video Export (MP4/WebM via VideoRenderer with imageio-ffmpeg) | Complete |
+| Phase 1 | Core MVP (CObject, Panel, Bubble, Text, Character, Page, SVGRenderer) | ✅ Complete |
+| Phase 2 | Styling (Font management, Theme system, Style inheritance) | ✅ Complete |
+| Phase 3 | Layout Engine (FlowLayout, Auto bubble positioning, Collision detection) | ✅ Complete |
+| Phase 4 | Extensions (Cairo renderer, Effects) | ✅ Complete |
+| Phase 5 | Multi-page PDF Export (Book class, compile CLI command) | ✅ Complete |
 
-### Key Features
+### Advanced Phases (Optional, Available)
 
-- **CObject hierarchy**: Full transformation API (move_to, shift, scale, rotate) with convenience methods
+| Phase | Description | Status |
+|-------|-------------|--------|
+| Phase 6 | Interactive HTML Export (HTMLRenderer with zoom, pan, themes) | 📦 Available but not core |
+| Phase 7 | Animation Export (GIF renderer, Timeline, Easing functions) | 📦 Available but not core |
+| Phase 8 | Video Export (MP4/WebM via VideoRenderer with imageio-ffmpeg) | 📦 Available but not core |
+
+### Core Features
+
+- **CObject hierarchy**: Full transformation API (move_to, shift, scale, rotate)
 - **Bubble system**: 5 types (Speech, Thought, Shout, Whisper, Narrator) with auto-positioning
 - **Character system**: 8 styles (Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon) with 11 expressions and 12 poses
-- **Layout**: GridLayout, FlowLayout, ConstraintLayout with priority-based solving
-- **Renderers**: SVG (always available), Cairo PNG/PDF (optional), HTML (interactive), GIF (animated), Video (MP4/WebM)
+- **Layout**: GridLayout, FlowLayout, ConstraintLayout with collision detection
+- **Renderers**: SVG (always available), Cairo PNG/PDF (optional)
 - **Effects**: 6 types (AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect)
-- **Animation System**: Timeline-based animation with 28 easing functions, effect and object animations
-- **Video Export**: MP4 and WebM video output with quality settings, progress callbacks, frame extraction, and audio track support
-- **Parser**: DSL markup for rapid comic creation, with multi-page book support via `parse_book_markup()`
-- **AI Images**: OpenAI DALL-E and Replicate integration
-- **Preview Server**: Hot reload web preview with file watching
 - **Templates**: 7 page templates (FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage)
-- **Interactive HTML Export**: Standalone HTML files with zoom, pan, dark/light themes, fullscreen, keyboard shortcuts, and multi-page navigation
-- **23 Working Examples**: Complete example scripts in examples/ directory including parser DSL, visual effects, animation export, video export, character types showcase, AI image generation, FlowLayout, ConstraintLayout, themes/styles, text/narration, advanced templates, and preview server usage
+- **Multi-page PDF**: Book class for compiling multiple pages
+- **Working Examples**: 23 example scripts demonstrating all core features
 
-### Technical Stack
+### Advanced Features (Optional)
+
+다음 기능들은 구현되어 있지만 core에서 제외되었습니다. `specs/future-features/`를 참고하세요:
+
+- **HTML Export**: Interactive HTML with zoom, pan, themes
+- **Animation System**: Timeline-based GIF animations with 28 easing functions
+- **Video Export**: MP4/WebM output with audio support
+- **Parser DSL**: Markup language for rapid comic creation
+- **AI Images**: OpenAI DALL-E and Replicate integration
+- **Preview Server**: Hot reload web preview
+
+### Technical Stack (Core)
 
 - Python 3.13, managed with `uv`
 - NumPy for coordinate calculations
 - fonttools for font metrics
 - pycairo (optional) for PNG/PDF output
-- Pillow (optional) for GIF animation output
-- imageio-ffmpeg (optional) for MP4/WebM video output
-- watchdog (optional) for file watching
+
+## Project Simplification (2026-01-18)
+
+프로젝트를 정적 만화 제작에 집중하기 위해 다음과 같이 간소화했습니다:
+
+### 변경 사항
+
+1. **문서 구조 정리**:
+   - 복잡한 spec들을 `specs/future-features/`로 이동
+   - README.md와 specs/README.md에서 core 기능만 강조
+   - PRD.md에서 Phase 6-8을 "향후 확장" 섹션으로 이동
+
+2. **Core vs Advanced 분리**:
+   - Core: 정적 이미지 렌더링 (PNG, SVG, PDF)
+   - Advanced: HTML, Animation, Video, AI, Parser, Preview Server
+
+3. **이유**:
+   - 프로젝트 복잡도 감소
+   - 핵심 가치에 집중 ("코드로 그림 그리는 만화")
+   - 유지보수 부담 감소
+
+### 코드는 그대로 유지
+
+모든 advanced 기능들은 코드베이스에 그대로 남아있으며 언제든 사용 가능합니다.
+다만 공식 문서에서는 core 기능만 다룹니다.
 
 ## Future Enhancements (Ideas)
 
-These are potential improvements, not planned work:
+Potential improvements for core features:
 
 1. **Additional Character Styles**: New character classes (e.g., DetailedFace, RealisticStyle)
-2. **Comic Reader Component**: A web component for viewing multi-page comics with navigation
+2. **More Templates**: Additional page layout templates
 
 ## Known Issues
 

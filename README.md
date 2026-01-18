@@ -10,8 +10,7 @@ A code-based comic creation framework inspired by [Manim](https://www.manim.comm
 - **5 Bubble Types**: Speech, Thought, Shout, Whisper, Narrator
 - **7 Page Templates**: FourKoma, TwoByTwo, SplashPage, WebComic, ThreeRowLayout, MangaPage, ActionPage
 - **6 Visual Effects**: AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect
-- **Animation System**: Timeline-based animations with 28 easing functions and GIF/Video export
-- **Multiple Output Formats**: SVG (always available), PNG/PDF (with optional Cairo), HTML (interactive), GIF (animated), MP4/WebM (video)
+- **Multiple Output Formats**: SVG (always available), PNG/PDF (with optional Cairo)
 
 ## Installation
 
@@ -27,18 +26,6 @@ uv sync
 
 # Optional: Install Cairo for PNG/PDF rendering
 uv sync --extra cairo
-
-# Optional: Install AI image generation support
-uv sync --extra ai
-
-# Optional: Install web preview server
-uv sync --extra web
-
-# Optional: Install animation/GIF export support
-uv sync --extra animation
-
-# Optional: Install video export support (MP4/WebM)
-uv sync --extra video
 ```
 
 ## Quick Start
@@ -215,9 +202,6 @@ comix info
 # Render a Python script
 comix render script.py -o output.png
 
-# Start preview server (hot reload)
-comix serve script.py
-
 # Compile multiple pages to PDF
 comix compile page1.py page2.py -o book.pdf
 ```
@@ -249,11 +233,15 @@ uv run ruff check .
 
 ## Documentation
 
+### Core Features
 - [Getting Started Guide](specs/getting-started.md)
 - [Character Basics](specs/character-basics.md)
 - [Speech Bubbles](specs/speech-bubbles.md)
 - [Page Rendering](specs/page-rendering.md)
 - [Working Examples](specs/working-examples.md)
+
+### Advanced Features (Optional)
+See `specs/future-features/` for HTML export, animations, video, AI images, and preview server.
 
 ## License
 

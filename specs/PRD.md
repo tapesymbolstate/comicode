@@ -160,16 +160,7 @@ comix/
 ├── renderer/                # 렌더링 백엔드
 │   ├── __init__.py
 │   ├── svg_renderer.py      # SVG 출력
-│   ├── cairo_renderer.py    # PNG/PDF 출력 (선택적, pycairo 필요)
-│   └── html_renderer.py     # Interactive HTML 출력 (zoom, pan, themes)
-│
-├── parser/                  # 마크업 파서 (선택적)
-│   ├── __init__.py
-│   └── parser.py            # MarkupParser, parse_markup 함수
-│
-├── preview/                 # 미리보기 서버 (선택적, watchdog 필요)
-│   ├── __init__.py
-│   └── server.py            # PreviewServer
+│   └── cairo_renderer.py    # PNG/PDF 출력 (선택적, pycairo 필요)
 │
 └── utils/
     ├── __init__.py
@@ -1382,34 +1373,6 @@ sfx = SFX(
 )
 ```
 
-### 4.3 마크업 파서 (선택적 기능)
-
-```python
-from comix.parser import parse_markup
-
-markup = """
-[page 2x2]
-
-# panel 1
-철수(left, surprised): "뭐라고?!"
-영희(right, smug): "응, 진짜야"
-
-# panel 2  
-철수(closeup): "..."
-sfx: 충격
-
-# panel 3
-[background: 카페 전경]
-narrator: "그날 이후..."
-
-# panel 4
-철수(center): "믿을 수 없어"
-"""
-
-page = parse_markup(markup)
-page.render("output.png")
-```
-
 ---
 
 ## 5. 기술 스택 제안
@@ -1430,17 +1393,14 @@ page.render("output.png")
 
 | 라이브러리 | 용도 |
 |-----------|------|
-| `openai` / `replicate` | AI 이미지 생성 |
-| `lark` | 마크업 파서 |
 | `rich` | CLI 출력 꾸미기 |
-| `watchdog` | 핫 리로드 |
 
 ---
 
 ## 6. 개발 로드맵
 
-> **Note**: All 8 phases are complete as of v0.1.54. See IMPLEMENTATION_PLAN.md for details.
-> Current status: 1743 tests passing, mypy clean, ruff clean, 17 working examples.
+> **Note**: 프로젝트를 간소화하여 정적 만화 제작에 집중합니다.
+> Core phases (1-5) are complete. Phases 6-8 moved to future enhancements.
 
 ### Phase 1: 코어 (MVP) ✅
 - [x] CObject 기본 클래스 (위치, 크기, 회전, 불투명도, z-index)
@@ -1467,43 +1427,51 @@ page.render("output.png")
 
 ### Phase 4: 확장 ✅
 - [x] Cairo Renderer (PNG/PDF)
-- [x] AI 이미지 연동 (OpenAI DALL-E, Replicate)
-- [x] 마크업 파서 (DSL for rapid comic creation)
-- [x] 웹 미리보기 서버 (hot reload)
 - [x] Effect 시스템 (6종류: ShakeEffect, ZoomEffect, MotionLines, FocusLines, AppearEffect, ImpactEffect)
 
 ### Phase 5: Multi-page PDF Export ✅
 - [x] Book 클래스 (multi-page PDF 컴파일)
 - [x] CLI compile 명령어
 
-### Phase 6: Interactive HTML Export ✅
-- [x] HTMLRenderer
-- [x] Zoom 컨트롤 (mouse wheel, +/- buttons, keyboard)
-- [x] Pan 기능 (mouse drag, touch swipe)
-- [x] Theme toggle (dark/light modes)
-- [x] Fullscreen mode
-- [x] 키보드 단축키 (+ zoom in, - zoom out, 0 fit, T theme, F fullscreen)
-- [x] Multi-page navigation (arrow keys)
-- [x] Touch/mobile 지원
+---
 
-### Phase 7: Animation Export ✅
-- [x] Animation 시스템 (Timeline, 28 easing functions)
-- [x] PropertyAnimation (opacity, position, scale, rotation)
-- [x] EffectAnimation (intensity, radius, pattern: pulse/blink/fade)
-- [x] ObjectAnimation (multiple properties simultaneously)
-- [x] AnimationGroup (parallel/sequential composition)
-- [x] GIFRenderer (Pillow + Cairo backend)
+## 7. 향후 확장 (Future Enhancements)
 
-### Phase 8: Video Export ✅
-- [x] VideoRenderer (MP4/WebM via imageio-ffmpeg)
-- [x] Quality settings (low/medium/high)
-- [x] Progress callbacks
-- [x] Frame extraction for post-processing
-- [x] Codec and bitrate configuration
+다음 기능들은 구현되어 있지만, 프로젝트를 정적 만화 제작에 집중하기 위해 보류되었습니다.
+관심있는 경우 `specs/future-features/` 디렉토리의 문서를 참고하세요.
+
+### HTML Export (Interactive)
+- HTMLRenderer
+- Zoom/Pan controls
+- Theme toggle (dark/light)
+- Multi-page navigation
+- Touch/mobile support
+
+### Animation Export (GIF)
+- Timeline-based animation system
+- 28 easing functions
+- PropertyAnimation, EffectAnimation
+- AnimationGroup composition
+- GIF rendering
+
+### Video Export (MP4/WebM)
+- VideoRenderer with ffmpeg
+- Quality settings
+- Audio track support
+- Frame extraction
+
+### AI Image Generation
+- OpenAI DALL-E integration
+- Replicate API support
+- Background generation
+
+### Preview Server
+- Hot reload development server
+- Live preview with watchdog
 
 ---
 
-## 7. 참고
+## 8. 참고
 
 - [Manim Community Edition](https://github.com/ManimCommunity/manim)
 - [ManimGL (3b1b)](https://github.com/3b1b/manim)

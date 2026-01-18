@@ -26,14 +26,17 @@ See [CRITICAL-BUGS-AND-FIXES.md](CRITICAL-BUGS-AND-FIXES.md) for historical deta
 - [Speech Bubbles](speech-bubbles.md) - Adding dialogue with automatic bubble attachment
 - [Page Rendering](page-rendering.md) - Exporting comics to PNG and PDF formats
 - [Working Examples](working-examples.md) - Runnable Python scripts demonstrating usage
+- [Effect System](effect-system.md) - Visual effects (shake, zoom, motion lines, focus, impact)
 
 ### Bug Tracking (Historical)
 
 - **[CRITICAL-BUGS-AND-FIXES.md](CRITICAL-BUGS-AND-FIXES.md)** - Historical record of fixed visual bugs
 
-### Extended Features
+### Future Features (Advanced, Optional)
 
-- [Effect System](effect-system.md) - Visual effects (shake, zoom, motion lines, focus, impact)
+프로젝트를 정적 만화 제작에 집중하기 위해 다음 기능들은 보류되었습니다.
+관심있는 경우 참고할 수 있습니다:
+
 - [Parser DSL](parser-dsl.md) - Markup language for rapid comic creation
 - [AI Images](ai-images.md) - DALL-E and Replicate AI image generation
 - [Preview Server](preview-server.md) - Live reload development server
@@ -47,6 +50,7 @@ See [CRITICAL-BUGS-AND-FIXES.md](CRITICAL-BUGS-AND-FIXES.md) for historical deta
 
 ## Quick Status
 
+### Core Features
 | Spec | Status |
 |------|--------|
 | Getting Started | ✅ Complete |
@@ -55,12 +59,16 @@ See [CRITICAL-BUGS-AND-FIXES.md](CRITICAL-BUGS-AND-FIXES.md) for historical deta
 | Page Rendering | ✅ Complete |
 | Working Examples | ✅ Complete |
 | Effect System | ✅ Complete |
-| Parser DSL | ✅ Complete |
-| AI Images | ✅ Complete |
-| Preview Server | ✅ Complete |
-| HTML Export | ✅ Complete |
-| Animation Export | ✅ Complete |
-| Video Export | ✅ Complete |
+
+### Future Features (Optional)
+| Spec | Status |
+|------|--------|
+| Parser DSL | 📦 Available but not core |
+| AI Images | 📦 Available but not core |
+| Preview Server | 📦 Available but not core |
+| HTML Export | 📦 Available but not core |
+| Animation Export | 📦 Available but not core |
+| Video Export | 📦 Available but not core |
 
 ### Examples Status (examples/output/)
 
@@ -104,14 +112,11 @@ standing, sitting, waving, pointing, walking, running, jumping, dancing, lying, 
 - AppearEffect, ShakeEffect, ZoomEffect
 - MotionLines, FocusLines, ImpactEffect
 
-### Rendering
+### Rendering (Core)
 - **SVG** - Vector output (always available)
 - **PNG** - Raster output (optional, requires pycairo)
 - **PDF** - Document output (optional, requires pycairo)
 - **Multi-page PDF** - Book class for compiling pages
-- **Interactive HTML** - Standalone HTML with zoom, pan, themes
-- **Animated GIF** - Timeline-based animation export (optional, requires Pillow)
-- **Video (MP4/WebM)** - Video export with ffmpeg and audio track support (optional, requires imageio-ffmpeg)
 
 ## Acceptance Criteria Flow
 

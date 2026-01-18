@@ -13,21 +13,24 @@ import threading
 import time
 import webbrowser
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
 if TYPE_CHECKING:
     from comix.page.page import Page
-
-# Check for optional watchdog dependency
-try:
     from watchdog.events import FileSystemEventHandler
     from watchdog.observers import Observer
 
+# Check for optional watchdog dependency
+WATCHDOG_AVAILABLE = False
+
+try:
+    from watchdog.events import FileSystemEventHandler  # noqa: F811
+    from watchdog.observers import Observer  # noqa: F811
+
     WATCHDOG_AVAILABLE = True
 except ImportError:
-    WATCHDOG_AVAILABLE = False
-    Observer = None  # Placeholder when watchdog not installed
-    FileSystemEventHandler = object  # Placeholder when watchdog not installed
+    Observer = None  # type: ignore[assignment]
+    FileSystemEventHandler = object  # type: ignore[misc, assignment]
 
 
 class PreviewError(Exception):
@@ -399,7 +402,7 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 if WATCHDOG_AVAILABLE:
 
-    class ScriptChangeHandler(FileSystemEventHandler):  # type: ignore[misc]
+    class ScriptChangeHandler(FileSystemEventHandler):
         """Watchdog handler for script file changes."""
 
         def __init__(self, loader: ScriptLoader, callback: Callable[[], None] | None = None) -> None:
@@ -460,7 +463,7 @@ class PreviewServer:
 
         self.loader = ScriptLoader(self.script_path)
         self._server: ThreadedHTTPServer | None = None
-        self._observer: Observer | None = None
+        self._observer: Any = None
         self._running = False
 
     def start(self, blocking: bool = True) -> None:

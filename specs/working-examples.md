@@ -1,6 +1,6 @@
 # Working Examples - Executable Comic Creation Examples
 
-> **Status (2026-01-18)**: All 25 examples execute without errors and produce correct visual output. Visual bugs from earlier versions have been fixed (v0.1.85).
+> **Status (2026-01-18)**: All 26 examples execute without errors and produce correct visual output. Visual bugs from earlier versions have been fixed (v0.1.85).
 
 ## What
 A collection of complete, runnable Python scripts that demonstrate common comic creation workflows and serve as templates for developers.
@@ -54,6 +54,7 @@ Without working examples, developers struggle to bridge the gap from API documen
 - [x] Example 23: Preview Server for live development
 - [x] Example 24: New Templates (NewspaperStrip, Widescreen)
 - [x] Example 25: Panel Shapes (DiagonalPanel, TrapezoidPanel, StarburstPanel, CloudPanel, ExplosionPanel, split_diagonal, split_curve)
+- [x] Example 26: Stickman Articulation (joint-level arm/leg control, hand gestures, point_at helper)
 
 ### Won't Have (This Iteration)
 - [ ] Complex multi-page stories (defer to tutorials)
@@ -104,6 +105,7 @@ examples/
 ├── 23_preview_server.py        # Preview Server for live development
 ├── 24_new_templates.py         # NewspaperStrip, Widescreen templates
 ├── 25_panel_shapes.py          # Panel Shapes (DiagonalPanel, TrapezoidPanel, StarburstPanel, CloudPanel, ExplosionPanel)
+├── 26_stickman_articulation.py # Stickman articulation (joint control, hand gestures)
 └── output/                     # Generated files
     ├── 01_simple_dialogue.png
     ├── 02_four_panel_comic.png
@@ -119,7 +121,8 @@ examples/
     ├── 20_*.png                # Themes/Styles outputs
     ├── 21_*.png                # Text/Narration outputs
     ├── 22_*.png                # Advanced template outputs
-    └── 25_*.png                # Panel shapes outputs
+    ├── 25_*.png                # Panel shapes outputs
+    └── 26_*.png                # Stickman articulation outputs
 ```
 
 ### Related Specs
@@ -427,7 +430,7 @@ Feel free to modify these examples to experiment:
 ## Success Metrics
 
 **This spec is successful when:**
-1. ✅ All 25 examples execute without errors
+1. ✅ All 26 examples execute without errors
 2. ✅ All examples produce correct visual output (fixed in v0.1.85)
 3. ✅ A new developer can run examples within 5 minutes
 4. ✅ Examples serve as effective templates for custom comics

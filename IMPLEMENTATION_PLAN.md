@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.66**
+**Current Git Tag: v0.1.67**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,13 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.66)
+## Note: Stable Release (v0.1.67)
 
 All systems stable with 1713 tests passing. Version numbers synchronized across all files.
+
+v0.1.67 changes:
+- Fixed test count inconsistencies in documentation (1713 passed + 30 skipped = 1743 collected)
+- Updated example count from 15 to 23 in specs/visual-validation-requirements.md
 
 v0.1.66 changes:
 - Fixed version inconsistency in specs/README.md (0.1.64 → 0.1.65)

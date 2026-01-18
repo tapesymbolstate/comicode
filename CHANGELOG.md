@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.67] - 2026-01-18
+
+### Documentation
+- Fixed test count inconsistencies across documentation files
+  - Clarified: 1713 passed + 30 skipped = 1743 collected
+- Updated example count from 15 to 23 in specs/visual-validation-requirements.md
+- Corrected test count format in specs/CRITICAL-BUGS-AND-FIXES.md
+
 ## [v0.1.66] - 2026-01-18
 
 ### Documentation

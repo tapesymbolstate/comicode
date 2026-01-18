@@ -91,7 +91,7 @@ wheels = [
 
 [[package]]
 name = "comicode"
-version = "0.1.66"
+version = "0.1.67"
 source = { editable = "." }
 dependencies = [
     { name = "click" },

@@ -598,6 +598,102 @@ class TestStickmanLineWidth:
         assert stickman.line_width == 3.0
 
 
+class TestStickmanAutoLineWidth:
+    """Tests for Stickman auto_line_width feature (line width scaling with height)."""
+
+    def test_auto_line_width_default_enabled(self) -> None:
+        """Test auto_line_width is enabled by default."""
+        stickman = Stickman()
+        assert stickman.auto_line_width is True
+
+    def test_auto_line_width_reference_height(self) -> None:
+        """Test line_width at reference height (100px) equals DEFAULT_LINE_WIDTH (2.0)."""
+        stickman = Stickman(height=100)
+        assert stickman.line_width == 2.0
+
+    def test_auto_line_width_small_character(self) -> None:
+        """Test auto line_width for small character (50px height = 1.0 line_width)."""
+        stickman = Stickman(height=50)
+        assert stickman.line_width == 1.0
+
+    def test_auto_line_width_large_character(self) -> None:
+        """Test auto line_width for large character (200px height = 4.0 line_width)."""
+        stickman = Stickman(height=200)
+        assert stickman.line_width == 4.0
+
+    def test_auto_line_width_clamped_to_minimum(self) -> None:
+        """Test auto line_width is clamped to MIN_LINE_WIDTH (0.5) for very small characters."""
+        stickman = Stickman(height=20)  # Would calculate 0.4, but clamped to 0.5
+        assert stickman.line_width == Stickman.MIN_LINE_WIDTH
+        assert stickman.line_width == 0.5
+
+    def test_auto_line_width_clamped_to_maximum(self) -> None:
+        """Test auto line_width is clamped to MAX_LINE_WIDTH (6.0) for very large characters."""
+        stickman = Stickman(height=500)  # Would calculate 10.0, but clamped to 6.0
+        assert stickman.line_width == Stickman.MAX_LINE_WIDTH
+        assert stickman.line_width == 6.0
+
+    def test_explicit_line_width_overrides_auto(self) -> None:
+        """Test explicit line_width parameter overrides auto calculation."""
+        stickman = Stickman(height=200, line_width=1.5)
+        assert stickman.line_width == 1.5  # Not 4.0 (which auto would give)
+
+    def test_explicit_line_width_still_clamped_to_min(self) -> None:
+        """Test explicit line_width is still clamped to minimum."""
+        stickman = Stickman(height=200, line_width=0.2)
+        assert stickman.line_width == 0.5  # Clamped to MIN
+
+    def test_auto_line_width_disabled(self) -> None:
+        """Test auto_line_width=False uses DEFAULT_LINE_WIDTH regardless of height."""
+        stickman = Stickman(height=200, auto_line_width=False)
+        assert stickman.line_width == Stickman.DEFAULT_LINE_WIDTH
+        assert stickman.line_width == 2.0
+
+    def test_auto_line_width_disabled_explicit_overrides(self) -> None:
+        """Test explicit line_width works when auto_line_width=False."""
+        stickman = Stickman(height=200, auto_line_width=False, line_width=3.5)
+        assert stickman.line_width == 3.5
+
+    def test_auto_line_width_proportional_scaling(self) -> None:
+        """Test line_width scales proportionally with height."""
+        heights = [50, 75, 100, 125, 150, 175, 200]
+        expected = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
+
+        for h, expected_lw in zip(heights, expected):
+            stickman = Stickman(height=h)
+            assert stickman.line_width == pytest.approx(expected_lw, rel=0.01), \
+                f"Height {h}: expected {expected_lw}, got {stickman.line_width}"
+
+    def test_auto_line_width_in_render_data(self) -> None:
+        """Test auto_line_width is included in render data."""
+        stickman = Stickman(height=150)
+        data = stickman.get_render_data()
+        assert "auto_line_width" in data
+        assert data["auto_line_width"] is True
+        assert "line_width" in data
+        assert data["line_width"] == 3.0  # 150/100 * 2.0
+
+    def test_line_width_setter(self) -> None:
+        """Test line_width can be set after creation."""
+        stickman = Stickman(height=200)  # auto would give 4.0
+        assert stickman.line_width == 4.0
+        stickman.line_width = 2.5
+        assert stickman.line_width == 2.5
+
+    def test_auto_line_width_with_child_preset(self) -> None:
+        """Test auto_line_width works with child proportion_style."""
+        stickman = Stickman(height=80, proportion_style="child")
+        expected = 80 / 100 * 2.0  # 1.6
+        assert stickman.line_width == pytest.approx(expected, rel=0.01)
+
+    def test_auto_line_width_constants(self) -> None:
+        """Test class constants for auto line width scaling."""
+        assert Stickman.REFERENCE_HEIGHT == 100.0
+        assert Stickman.DEFAULT_LINE_WIDTH == 2.0
+        assert Stickman.MIN_LINE_WIDTH == 0.5
+        assert Stickman.MAX_LINE_WIDTH == 6.0
+
+
 class TestSimpleFace:
     """Tests for SimpleFace class."""
 

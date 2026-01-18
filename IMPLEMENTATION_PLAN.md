@@ -97,9 +97,18 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.80)
+## Note: Stable Release (v0.1.81)
 
-All systems stable with 1967 tests passing (+ 30 skipped = 1997 collected). Version numbers synchronized across all files.
+All systems stable with 1982 tests passing (+ 30 skipped = 2012 collected). Version numbers synchronized across all files.
+
+v0.1.81 changes:
+- Added `auto_line_width` parameter to Stickman for automatic line width scaling with character height
+- Line width now scales proportionally: 100px height = 2.0 line width, 50px = 1.0, 200px = 4.0
+- Clamped between MIN_LINE_WIDTH (0.5) and MAX_LINE_WIDTH (6.0)
+- Explicit `line_width` parameter overrides auto scaling when specified
+- Added `auto_line_width=False` option to disable scaling and use fixed DEFAULT_LINE_WIDTH (2.0)
+- Added 15 new tests for auto_line_width functionality
+- Updated stickman-reference-based.md spec to mark line width scaling decision as complete
 
 v0.1.80 changes:
 - Fixed mypy configuration for optional dependencies (cairo_renderer.py, gif_renderer.py, video_renderer.py)

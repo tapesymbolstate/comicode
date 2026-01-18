@@ -365,6 +365,15 @@ class Stickman(Character):
         },
     }
 
+    # Reference height for line width scaling (100px is the baseline)
+    REFERENCE_HEIGHT: float = 100.0
+    # Default line width at reference height
+    DEFAULT_LINE_WIDTH: float = 2.0
+    # Minimum line width regardless of scaling
+    MIN_LINE_WIDTH: float = 0.5
+    # Maximum line width regardless of scaling
+    MAX_LINE_WIDTH: float = 6.0
+
     def __init__(
         self,
         name: str = "Stickman",
@@ -374,7 +383,8 @@ class Stickman(Character):
         arm_ratio: float | None = None,
         leg_ratio: float | None = None,
         head_squash: float = 0.0,
-        line_width: float = 2.0,
+        line_width: float | None = None,
+        auto_line_width: bool = True,
         **kwargs: Any,
     ) -> None:
         # Get preset proportions
@@ -399,8 +409,9 @@ class Stickman(Character):
         # Clamp head_squash to valid range (-1.0 to 1.0)
         self.head_squash = max(-1.0, min(1.0, head_squash))
 
-        # Store line_width with minimum value of 0.5
-        self.line_width = max(0.5, line_width)
+        # Line width configuration
+        self.auto_line_width = auto_line_width
+        self._explicit_line_width = line_width  # Store explicit value (may be None)
 
         kwargs.setdefault("style", "stickman")
         super().__init__(name=name, **kwargs)
@@ -507,6 +518,36 @@ class Stickman(Character):
         if self.facing == "left":
             self._points[:, 0] *= -1
 
+    @property
+    def line_width(self) -> float:
+        """Get the effective line width for rendering.
+
+        If an explicit line_width was provided, uses that value (clamped to min 0.5).
+        If auto_line_width is True and no explicit value was given, calculates
+        line width proportionally based on character height:
+        - 100px height = 2.0 line width (reference)
+        - 50px height = 1.0 line width
+        - 200px height = 4.0 line width
+        - Clamped between MIN_LINE_WIDTH (0.5) and MAX_LINE_WIDTH (6.0)
+        """
+        if self._explicit_line_width is not None:
+            # User specified explicit value, use it (with minimum)
+            return max(self.MIN_LINE_WIDTH, self._explicit_line_width)
+
+        if self.auto_line_width:
+            # Calculate proportional line width based on height
+            scale = self.character_height / self.REFERENCE_HEIGHT
+            calculated = self.DEFAULT_LINE_WIDTH * scale
+            return max(self.MIN_LINE_WIDTH, min(self.MAX_LINE_WIDTH, calculated))
+
+        # auto_line_width is False and no explicit value: use default
+        return self.DEFAULT_LINE_WIDTH
+
+    @line_width.setter
+    def line_width(self, value: float) -> None:
+        """Set an explicit line width value."""
+        self._explicit_line_width = value
+
     def get_render_data(self) -> dict[str, Any]:
         """Get data for rendering."""
         data = super().get_render_data()
@@ -518,6 +559,7 @@ class Stickman(Character):
             "leg_ratio": self.leg_ratio,
             "head_squash": self.head_squash,
             "line_width": self.line_width,
+            "auto_line_width": self.auto_line_width,
         })
         return data
 

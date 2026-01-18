@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Animation Export + Video Export + Multi-Page Parser
 
-**Current Git Tag: v0.1.62**
+**Current Git Tag: v0.1.63**
 
 All 8 phases have been implemented with **1743 tests** passing, ruff clean, and mypy passing.
 
@@ -63,9 +63,13 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.62)
+## Note: Stable Release (v0.1.63)
 
 All systems stable with 1743 tests passing. Version numbers synchronized across all files.
+
+v0.1.63 changes:
+- Updated specs/README.md to reflect that all bugs are fixed
+- Fixed example 07 bubble clipping by adjusting text and positions
 
 v0.1.62 changes:
 - Fixed bubble overlapping bug: Panel.add_content() now automatically repositions bubbles to avoid collisions
@@ -75,9 +79,3 @@ v0.1.62 changes:
 
 Previous release (v0.1.61):
 - Attempted transform-based coordinate system (reverted in v0.1.62 due to visual bugs)
-
-Previous release (v0.1.60):
-- Specs updated to accurately reflect 23 working examples
-
-Previous release (v0.1.59):
-- Version numbers synchronized across all files

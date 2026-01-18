@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.93] - 2026-01-18
+
+### Documentation
+- Fixed version inconsistency in specs/README.md (0.1.90 → 0.1.93)
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
+
 ## [v0.1.74] - 2026-01-18
 
 ### Features

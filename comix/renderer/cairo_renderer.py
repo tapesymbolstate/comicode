@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import logging
 import math
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Literal, Sequence
@@ -11,6 +12,8 @@ try:
     import cairo
 except ImportError:
     cairo = None  # type: ignore[assignment]
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from comix.effect.effect import Effect
@@ -451,8 +454,8 @@ class CairoRenderer:
 
             ctx.restore()
 
-        except Exception:
-            pass  # Silently skip on errors
+        except Exception as e:
+            logger.debug("Failed to render background image %s: %s", path, e)
 
     def _render_bubble(self, data: dict[str, Any]) -> None:
         """Render a speech bubble."""

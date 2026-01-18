@@ -5,6 +5,7 @@ Provides font discovery, metrics calculation, and fallback handling.
 
 from __future__ import annotations
 
+import logging
 import os
 import platform
 import subprocess
@@ -14,6 +15,8 @@ from pathlib import Path
 from typing import ClassVar
 
 from fontTools.ttLib import TTFont
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -294,7 +297,8 @@ class FontRegistry:
                 style=style,
                 full_name=full_name or family,
             )
-        except Exception:
+        except Exception as e:
+            logger.debug("Failed to load font info from %s: %s", path, e)
             return None
 
     @staticmethod
@@ -348,8 +352,8 @@ def _extract_font_metrics(font_path: Path) -> FontMetrics:
             line_gap=line_gap,
             avg_char_width=avg_char_width,
         )
-    except Exception:
-        # Return default metrics if font loading fails
+    except Exception as e:
+        logger.debug("Failed to extract font metrics from %s: %s", font_path, e)
         return _get_default_metrics()
 
 

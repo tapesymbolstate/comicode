@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.96] - 2026-01-18
+
+### Bug Fixes
+- **Fixed Stickman upside-down rendering**: Corrected Y-axis coordinate calculations in Stickman character
+  - Root cause: Graphics coordinates use top-left origin where Y increases downward
+  - Original code was subtracting Y to move down the body, causing head to render at bottom
+  - Solution: Now correctly adds Y coordinates to move down (head_top → neck → hips → feet)
+  - Before fix: Min Y = -69.60 (feet), Max Y = 49.93 (head) ❌
+  - After fix: Min Y = -49.93 (head), Max Y = 69.60 (feet) ✅
+
+### Documentation
+- Updated stickman-reference-based.md with critical bug fix documentation
+- Added detailed explanation of Y-axis coordinate system
+- Version numbers synchronized across all files
+- Removed test_stickman_fix.png from repository
+
 ## [v0.1.95] - 2026-01-18
 
 ### Documentation

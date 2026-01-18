@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.93**
+**Current Git Tag: v0.1.94**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,16 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.93)
+## Note: Stable Release (v0.1.94)
 
-All systems stable with 2014 tests passing (+ 30 skipped = 2044 collected). Version numbers synchronized across all files.
+All systems stable with 2015 tests passing (+ 30 skipped = 2045 collected). Version numbers synchronized across all files.
+
+v0.1.94 changes:
+- Added `proportion_style="realistic"` to Stickman for ideal 8-head figure drawing proportions
+- Realistic style uses balanced proportions: head_ratio=0.125, torso_ratio=0.375, arm_ratio=0.375, leg_ratio=0.50
+- Stickman now supports 5 proportion styles: classic, xkcd, tall, realistic, child
+- Added 1 new test for realistic proportion style
+- Updated stickman-reference-based.md spec to mark "realistic" style decision as complete
 
 v0.1.93 changes:
 - Fixed version inconsistency in specs/README.md (0.1.90 → 0.1.93)

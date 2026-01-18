@@ -421,7 +421,7 @@ def test_stickman_proportions():
 - [x] Should "classic" be default or "xkcd"? **Decision**: "classic" (more universally recognized)
 - [x] Should we support custom head_ratio? **Decision**: Yes, for flexibility
 - [x] Should line width scale with height? **Decision**: Yes, implemented via `auto_line_width=True` (default). Line width scales proportionally: 100px height = 2.0 line width, 50px = 1.0, 200px = 4.0. Clamped between 0.5 (MIN) and 6.0 (MAX). Explicit `line_width` parameter overrides auto scaling.
-- [ ] Should we add "realistic" style (8 heads)? **Decision needed** (useful for some comics)
+- [x] Should we add "realistic" style (8 heads)? **Decision**: Yes, added `proportion_style="realistic"` with ideal 8-head figure drawing proportions (head_ratio=0.125, torso_ratio=0.375, arm_ratio=0.375, leg_ratio=0.50). This provides balanced proportions for realistic human figures.
 - [ ] Do we need "front" view with arms/legs spread? **Decision needed** (defer to future)
 
 ## Test Requirements

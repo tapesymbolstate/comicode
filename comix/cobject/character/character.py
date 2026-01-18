@@ -308,12 +308,13 @@ class Stickman(Character):
 
     - "classic": Standard ~7.5 head heights for adults
     - "xkcd": Minimalist style with slightly smaller head
-    - "tall": Heroic proportions (~8 head heights)
+    - "tall": Tall/elongated proportions (~8 head heights)
+    - "realistic": Realistic/heroic proportions (8 heads, ideal figure drawing)
     - "child": Larger head ratio (~4 head heights)
 
     Args:
         name: Character name.
-        proportion_style: Preset proportion style ("classic", "xkcd", "tall", "child").
+        proportion_style: Preset proportion style ("classic", "xkcd", "tall", "realistic", "child").
         head_ratio: Override head size as ratio of total height (0.0-1.0).
         torso_ratio: Override torso length as ratio of total height.
         arm_ratio: Override arm length as ratio of total height.
@@ -356,6 +357,12 @@ class Stickman(Character):
             "torso_ratio": 0.42,
             "arm_ratio": 0.40,
             "leg_ratio": 0.55,
+        },
+        "realistic": {
+            "head_ratio": 0.125,  # 8 heads (ideal figure drawing proportions)
+            "torso_ratio": 0.375,  # 3 heads for torso (more balanced)
+            "arm_ratio": 0.375,   # Arms slightly shorter than tall style
+            "leg_ratio": 0.50,    # 4 heads for legs (equal to half body)
         },
         "child": {
             "head_ratio": 0.25,   # 4 heads (larger head)

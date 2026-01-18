@@ -375,6 +375,15 @@ class TestStickmanProportions:
         assert stickman.head_ratio == 0.25  # 4 heads (larger head)
         assert stickman.leg_ratio == 0.45
 
+    def test_realistic_proportion_style(self):
+        """Test realistic proportion style (ideal 8-head figure drawing)."""
+        stickman = Stickman(proportion_style="realistic")
+        assert stickman.proportion_style == "realistic"
+        assert stickman.head_ratio == 0.125  # 8 heads
+        assert stickman.torso_ratio == 0.375  # 3 heads for torso
+        assert stickman.arm_ratio == 0.375
+        assert stickman.leg_ratio == 0.50  # 4 heads for legs
+
     def test_invalid_proportion_style_fallback(self, caplog: pytest.LogCaptureFixture):
         """Test that invalid proportion style falls back to classic."""
         with caplog.at_level(logging.WARNING, logger="comix.cobject.character.character"):
@@ -423,7 +432,7 @@ class TestStickmanProportions:
 
     def test_all_proportion_presets(self):
         """Test that all proportion presets create valid stickmen."""
-        presets = ["classic", "xkcd", "tall", "child"]
+        presets = ["classic", "xkcd", "tall", "realistic", "child"]
         for preset in presets:
             stickman = Stickman(proportion_style=preset)
             assert len(stickman._points) > 0, f"Failed for preset: {preset}"

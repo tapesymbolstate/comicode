@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.78**
+**Current Git Tag: v0.1.80**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,14 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.79)
+## Note: Stable Release (v0.1.80)
 
 All systems stable with 1967 tests passing (+ 30 skipped = 1997 collected). Version numbers synchronized across all files.
+
+v0.1.80 changes:
+- Fixed mypy configuration for optional dependencies (cairo_renderer.py, gif_renderer.py, video_renderer.py)
+- Added mypy overrides for cairo and PIL optional dependencies in pyproject.toml
+- Fixed inconsistent spacing in PIL.Image.resize() calls
 
 v0.1.79 changes:
 - Added automatic gutter spacing calculations for non-rectangular panels

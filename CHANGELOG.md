@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.109] - 2026-01-18
+
+### Documentation
+- Fixed version inconsistency in specs/README.md (footer showed 0.1.107 instead of current version)
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
+
+### Tests
+- Test count: 2087 passed, 30 skipped (2117 collected)
+
 ## [v0.1.108] - 2026-01-18
 
 ### Documentation

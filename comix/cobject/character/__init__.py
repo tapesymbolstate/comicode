@@ -2,6 +2,7 @@
 
 from comix.cobject.character.character import (
     Anime,
+    AnimalStyle,
     Cartoon,
     Character,
     Chibi,
@@ -16,6 +17,7 @@ from comix.cobject.character.character import (
 
 __all__ = [
     "Anime",
+    "AnimalStyle",
     "Cartoon",
     "Character",
     "Chibi",

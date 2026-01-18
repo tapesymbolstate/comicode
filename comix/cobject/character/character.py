@@ -1741,3 +1741,430 @@ class Superhero(Character):
         data["arm_length_ratio"] = 0.26
         data["leg_length_ratio"] = 0.34
         return data
+
+
+class AnimalStyle(Character):
+    """Anthropomorphic animal character for furry/mascot-style comics.
+
+    A character that combines animal features with humanoid body structure:
+    - Animal head shape based on species (cat, dog, rabbit, fox, bear, bird, wolf)
+    - Ears appropriate to species (pointed, floppy, tall)
+    - Optional tail
+    - Humanoid body proportions for standing/posing
+    - Expressive animal-style face features
+
+    Suitable for furry comics, mascot characters, children's comics, and anthropomorphic stories.
+    """
+
+    # Species presets with head shape and feature configuration
+    SPECIES_PRESETS: dict[str, dict[str, Any]] = {
+        "cat": {
+            "head_shape": "round",
+            "ear_type": "pointed",
+            "ear_angle": 30,
+            "muzzle_size": 0.3,
+            "has_tail": True,
+            "tail_length": 0.4,
+            "tail_curve": 0.3,
+        },
+        "dog": {
+            "head_shape": "round",
+            "ear_type": "floppy",
+            "ear_angle": 45,
+            "muzzle_size": 0.4,
+            "has_tail": True,
+            "tail_length": 0.3,
+            "tail_curve": 0.5,
+        },
+        "rabbit": {
+            "head_shape": "oval",
+            "ear_type": "tall",
+            "ear_angle": 15,
+            "muzzle_size": 0.2,
+            "has_tail": True,
+            "tail_length": 0.1,
+            "tail_curve": 0.0,
+        },
+        "fox": {
+            "head_shape": "pointed",
+            "ear_type": "pointed",
+            "ear_angle": 25,
+            "muzzle_size": 0.45,
+            "has_tail": True,
+            "tail_length": 0.5,
+            "tail_curve": 0.4,
+        },
+        "bear": {
+            "head_shape": "round",
+            "ear_type": "round",
+            "ear_angle": 60,
+            "muzzle_size": 0.35,
+            "has_tail": False,
+            "tail_length": 0.0,
+            "tail_curve": 0.0,
+        },
+        "bird": {
+            "head_shape": "round",
+            "ear_type": "none",
+            "ear_angle": 0,
+            "muzzle_size": 0.5,
+            "has_tail": True,
+            "tail_length": 0.25,
+            "tail_curve": 0.0,
+        },
+        "wolf": {
+            "head_shape": "pointed",
+            "ear_type": "pointed",
+            "ear_angle": 20,
+            "muzzle_size": 0.5,
+            "has_tail": True,
+            "tail_length": 0.45,
+            "tail_curve": 0.2,
+        },
+    }
+
+    def __init__(
+        self,
+        name: str = "AnimalCharacter",
+        species: str = "cat",
+        fur_color: str = "#D2691E",
+        fur_secondary: str = "#FFFFFF",
+        eye_color: str = "#4A90D9",
+        nose_color: str = "#333333",
+        outfit_color: str = "#4169E1",
+        ear_type: str | None = None,
+        has_tail: bool | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize AnimalStyle character.
+
+        Args:
+            name: Character name
+            species: Animal species preset ("cat", "dog", "rabbit", "fox", "bear", "bird", "wolf")
+            fur_color: Primary fur/feather color (default brown)
+            fur_secondary: Secondary fur color for markings (default white)
+            eye_color: Eye color (default blue)
+            nose_color: Nose color (default dark gray)
+            outfit_color: Color for simple outfit (default royal blue)
+            ear_type: Override ear type ("pointed", "floppy", "tall", "round", "none")
+            has_tail: Override whether character has a tail
+            **kwargs: Additional Character parameters
+        """
+        kwargs.setdefault("style", "animal")
+        kwargs.setdefault("color", "#333333")
+        kwargs.setdefault("fill_color", fur_color)
+
+        # Get species preset
+        if species not in self.SPECIES_PRESETS:
+            logger.warning(
+                "Unknown species '%s', falling back to 'cat'. "
+                "Valid species: %s",
+                species,
+                ", ".join(sorted(self.SPECIES_PRESETS.keys())),
+            )
+            species = "cat"
+
+        self.species = species
+        preset = self.SPECIES_PRESETS[species]
+
+        self.fur_color = fur_color
+        self.fur_secondary = fur_secondary
+        self.eye_color = eye_color
+        self.nose_color = nose_color
+        self.outfit_color = outfit_color
+
+        # Use preset values unless overridden
+        self.head_shape = preset["head_shape"]
+        self.ear_type = ear_type if ear_type is not None else preset["ear_type"]
+        self.ear_angle = preset["ear_angle"]
+        self.muzzle_size = preset["muzzle_size"]
+        self._has_tail = has_tail if has_tail is not None else preset["has_tail"]
+        self.tail_length = preset["tail_length"]
+        self.tail_curve = preset["tail_curve"]
+
+        super().__init__(name=name, **kwargs)
+
+    def generate_points(self) -> None:
+        """Generate anthropomorphic animal figure points.
+
+        Structure:
+        - Head: Species-specific shape with ears
+        - Muzzle: Protruding snout/beak based on species
+        - Body: Humanoid proportions
+        - Arms: Humanoid arms with paw-like hands
+        - Legs: Digitigrade or plantigrade legs
+        - Tail: Optional tail based on species
+        """
+        h = self.character_height
+
+        # Proportions for anthropomorphic character
+        head_height = h * 0.18
+        head_width = h * 0.14
+        ear_height = h * 0.10
+        ear_width = h * 0.05
+        neck_height = h * 0.03
+        body_height = h * 0.30
+        body_width = h * 0.18
+        arm_length = h * 0.24
+        leg_length = h * 0.32
+        paw_size = h * 0.04
+
+        points = []
+
+        # Calculate vertical positions
+        head_top = h / 2
+        head_center_y = head_top - head_height / 2
+        head_bottom = head_top - head_height
+        neck_bottom = head_bottom - neck_height
+        shoulder_y = neck_bottom
+        hip_y = shoulder_y - body_height
+
+        # Generate head shape based on species
+        if self.head_shape == "round":
+            # Round head (cat, dog, bear)
+            for angle in np.linspace(0, 2 * np.pi, 24):
+                points.append([
+                    head_width * np.cos(angle),
+                    head_center_y + head_height * 0.5 * np.sin(angle)
+                ])
+        elif self.head_shape == "oval":
+            # Oval head (rabbit) - taller than wide
+            for angle in np.linspace(0, 2 * np.pi, 24):
+                points.append([
+                    head_width * 0.85 * np.cos(angle),
+                    head_center_y + head_height * 0.55 * np.sin(angle)
+                ])
+        else:  # pointed (fox, wolf)
+            # Pointed/angular head - narrower at bottom
+            for angle in np.linspace(0, 2 * np.pi, 24):
+                width_mod = 1.0 if np.sin(angle) >= 0 else 0.7
+                points.append([
+                    head_width * width_mod * np.cos(angle),
+                    head_center_y + head_height * 0.5 * np.sin(angle)
+                ])
+
+        # Generate ears based on ear_type
+        if self.ear_type == "pointed":
+            # Pointed ears (cat, fox, wolf) - triangular
+            ear_offset = head_width * 0.6
+            ear_angle_rad = np.radians(self.ear_angle)
+
+            # Left ear (3 points: base-outside, tip, base-inside)
+            points.append([-ear_offset - ear_width * 0.3, head_top - head_height * 0.1])
+            points.append([
+                -ear_offset - ear_width * np.sin(ear_angle_rad),
+                head_top + ear_height * np.cos(ear_angle_rad)
+            ])
+            points.append([-ear_offset + ear_width * 0.3, head_top - head_height * 0.1])
+
+            # Right ear
+            points.append([ear_offset - ear_width * 0.3, head_top - head_height * 0.1])
+            points.append([
+                ear_offset + ear_width * np.sin(ear_angle_rad),
+                head_top + ear_height * np.cos(ear_angle_rad)
+            ])
+            points.append([ear_offset + ear_width * 0.3, head_top - head_height * 0.1])
+
+        elif self.ear_type == "floppy":
+            # Floppy ears (dog) - droop down
+            ear_offset = head_width * 0.8
+            # Left ear - curves down
+            for t in np.linspace(0, 1, 8):
+                points.append([
+                    -ear_offset - ear_width * 0.5 * np.sin(t * np.pi),
+                    head_center_y + head_height * 0.3 - t * ear_height * 1.5
+                ])
+            # Right ear
+            for t in np.linspace(0, 1, 8):
+                points.append([
+                    ear_offset + ear_width * 0.5 * np.sin(t * np.pi),
+                    head_center_y + head_height * 0.3 - t * ear_height * 1.5
+                ])
+
+        elif self.ear_type == "tall":
+            # Tall ears (rabbit) - long upright
+            ear_offset = head_width * 0.5
+            tall_ear_height = ear_height * 2.5
+
+            # Left ear (elongated oval)
+            for angle in np.linspace(0, 2 * np.pi, 12):
+                points.append([
+                    -ear_offset + ear_width * 0.4 * np.cos(angle),
+                    head_top + tall_ear_height * 0.5 + tall_ear_height * 0.5 * np.sin(angle)
+                ])
+
+            # Right ear
+            for angle in np.linspace(0, 2 * np.pi, 12):
+                points.append([
+                    ear_offset + ear_width * 0.4 * np.cos(angle),
+                    head_top + tall_ear_height * 0.5 + tall_ear_height * 0.5 * np.sin(angle)
+                ])
+
+        elif self.ear_type == "round":
+            # Round ears (bear) - small semicircles
+            ear_offset = head_width * 0.7
+            small_ear_size = ear_height * 0.5
+
+            # Left ear
+            for angle in np.linspace(0, np.pi, 8):
+                points.append([
+                    -ear_offset + small_ear_size * np.cos(angle),
+                    head_top - head_height * 0.1 + small_ear_size * np.sin(angle)
+                ])
+
+            # Right ear
+            for angle in np.linspace(0, np.pi, 8):
+                points.append([
+                    ear_offset + small_ear_size * np.cos(angle),
+                    head_top - head_height * 0.1 + small_ear_size * np.sin(angle)
+                ])
+
+        # Muzzle points (snout/beak)
+        muzzle_length = head_height * self.muzzle_size
+        muzzle_y = head_center_y - head_height * 0.2
+        if self.species == "bird":
+            # Beak shape (triangular)
+            points.append([0, muzzle_y + muzzle_length * 0.3])  # Top
+            points.append([muzzle_length * 0.8, muzzle_y - muzzle_length * 0.2])  # Tip
+            points.append([0, muzzle_y - muzzle_length * 0.3])  # Bottom
+        else:
+            # Standard muzzle (rounded)
+            for angle in np.linspace(-np.pi/2, np.pi/2, 8):
+                points.append([
+                    head_width * 0.3 + muzzle_length * np.cos(angle),
+                    muzzle_y + muzzle_length * 0.5 * np.sin(angle)
+                ])
+
+        # Neck
+        neck_width = h * 0.04
+        points.append([-neck_width, head_bottom])
+        points.append([-neck_width, neck_bottom])
+        points.append([neck_width, neck_bottom])
+        points.append([neck_width, head_bottom])
+
+        # Body (humanoid torso)
+        points.append([-body_width / 2, shoulder_y])  # Left shoulder
+        points.append([-body_width * 0.4, hip_y])  # Left hip
+        points.append([body_width * 0.4, hip_y])  # Right hip
+        points.append([body_width / 2, shoulder_y])  # Right shoulder
+
+        # Arms with paw hands
+        arm_y = shoulder_y - h * 0.02
+
+        # Left arm
+        left_arm_angle = np.radians(self._pose.left_arm)
+        left_elbow_x = -body_width / 2 - arm_length * 0.45 * np.cos(left_arm_angle)
+        left_elbow_y = arm_y - arm_length * 0.45 * np.sin(left_arm_angle)
+        left_paw_x = -body_width / 2 - arm_length * np.cos(left_arm_angle)
+        left_paw_y = arm_y - arm_length * np.sin(left_arm_angle)
+
+        points.append([-body_width / 2, arm_y])  # Shoulder
+        points.append([left_elbow_x, left_elbow_y])  # Elbow
+        points.append([left_paw_x, left_paw_y])  # Paw
+        # Paw shape (rounded with slight indentations for digits)
+        for angle in np.linspace(0, 2 * np.pi, 10):
+            pad_mod = 1.0 + 0.15 * np.cos(4 * angle)  # Slight bumps for paw pads
+            points.append([
+                left_paw_x + paw_size * pad_mod * np.cos(angle),
+                left_paw_y + paw_size * 0.8 * np.sin(angle)
+            ])
+
+        # Right arm
+        right_arm_angle = np.radians(self._pose.right_arm)
+        right_elbow_x = body_width / 2 + arm_length * 0.45 * np.cos(right_arm_angle)
+        right_elbow_y = arm_y - arm_length * 0.45 * np.sin(right_arm_angle)
+        right_paw_x = body_width / 2 + arm_length * np.cos(right_arm_angle)
+        right_paw_y = arm_y - arm_length * np.sin(right_arm_angle)
+
+        points.append([body_width / 2, arm_y])  # Shoulder
+        points.append([right_elbow_x, right_elbow_y])  # Elbow
+        points.append([right_paw_x, right_paw_y])  # Paw
+        # Paw shape
+        for angle in np.linspace(0, 2 * np.pi, 10):
+            pad_mod = 1.0 + 0.15 * np.cos(4 * angle)
+            points.append([
+                right_paw_x + paw_size * pad_mod * np.cos(angle),
+                right_paw_y + paw_size * 0.8 * np.sin(angle)
+            ])
+
+        # Legs
+        leg_gap = body_width * 0.25
+
+        # Left leg
+        left_leg_angle = np.radians(90 + self._pose.left_leg)
+        left_knee_x = -leg_gap - leg_length * 0.45 * np.cos(left_leg_angle)
+        left_knee_y = hip_y - leg_length * 0.45 * np.sin(left_leg_angle)
+        left_foot_x = -leg_gap - leg_length * np.cos(left_leg_angle)
+        left_foot_y = hip_y - leg_length * np.sin(left_leg_angle)
+
+        points.append([-leg_gap, hip_y])  # Hip
+        points.append([left_knee_x, left_knee_y])  # Knee
+        points.append([left_foot_x, left_foot_y])  # Foot
+        # Paw foot (larger than hand paw)
+        for angle in np.linspace(0, 2 * np.pi, 10):
+            points.append([
+                left_foot_x + paw_size * 1.3 * np.cos(angle),
+                left_foot_y + paw_size * 0.6 * np.sin(angle)
+            ])
+
+        # Right leg
+        right_leg_angle = np.radians(90 + self._pose.right_leg)
+        right_knee_x = leg_gap + leg_length * 0.45 * np.cos(right_leg_angle)
+        right_knee_y = hip_y - leg_length * 0.45 * np.sin(right_leg_angle)
+        right_foot_x = leg_gap + leg_length * np.cos(right_leg_angle)
+        right_foot_y = hip_y - leg_length * np.sin(right_leg_angle)
+
+        points.append([leg_gap, hip_y])  # Hip
+        points.append([right_knee_x, right_knee_y])  # Knee
+        points.append([right_foot_x, right_foot_y])  # Foot
+        # Paw foot
+        for angle in np.linspace(0, 2 * np.pi, 10):
+            points.append([
+                right_foot_x + paw_size * 1.3 * np.cos(angle),
+                right_foot_y + paw_size * 0.6 * np.sin(angle)
+            ])
+
+        # Tail (if species has one)
+        if self._has_tail:
+            tail_base_y = hip_y + body_height * 0.1
+            tail_len = h * self.tail_length
+            tail_segments = 8
+
+            # Generate tail curve
+            for i in range(tail_segments):
+                t = i / (tail_segments - 1)
+                # Tail curves based on tail_curve parameter
+                curve = self.tail_curve * np.sin(t * np.pi)
+                points.append([
+                    -body_width * 0.3 - tail_len * t * 0.7 - curve * h * 0.1,
+                    tail_base_y - tail_len * t * 0.5
+                ])
+
+        self._points = np.array(points, dtype=np.float64)
+
+        if self.facing == "left":
+            self._points[:, 0] *= -1
+
+    def get_render_data(self) -> dict[str, Any]:
+        """Get data for rendering."""
+        data = super().get_render_data()
+        # Add animal-specific render info
+        data["species"] = self.species
+        data["fur_color"] = self.fur_color
+        data["fur_secondary"] = self.fur_secondary
+        data["eye_color"] = self.eye_color
+        data["nose_color"] = self.nose_color
+        data["outfit_color"] = self.outfit_color
+        data["head_shape"] = self.head_shape
+        data["ear_type"] = self.ear_type
+        data["ear_angle"] = self.ear_angle
+        data["muzzle_size"] = self.muzzle_size
+        data["has_tail"] = self._has_tail
+        data["tail_length"] = self.tail_length
+        data["tail_curve"] = self.tail_curve
+        data["head_height_ratio"] = 0.18
+        data["head_width_ratio"] = 0.14
+        data["body_height_ratio"] = 0.30
+        data["arm_length_ratio"] = 0.24
+        data["leg_length_ratio"] = 0.32
+        return data

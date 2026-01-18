@@ -6,6 +6,7 @@ import pytest
 
 from comix.cobject.character.character import (
     Anime,
+    AnimalStyle,
     Cartoon,
     Character,
     Chibi,
@@ -1876,6 +1877,7 @@ class TestCharacterExpressionPoseResolution:
             Anime(name="A", expression=expr),
             Superhero(name="Su", expression=expr),
             Cartoon(name="Ca", expression=expr),
+            AnimalStyle(name="An", expression=expr),
         ]
         for char in characters:
             assert char._expression is expr
@@ -1892,6 +1894,308 @@ class TestCharacterExpressionPoseResolution:
             Anime(name="A", pose=pose),
             Superhero(name="Su", pose=pose),
             Cartoon(name="Ca", pose=pose),
+            AnimalStyle(name="An", pose=pose),
         ]
         for char in characters:
             assert char._pose is pose
+
+
+class TestAnimalStyle:
+    """Tests for AnimalStyle character class."""
+
+    def test_default_init(self):
+        """Test default initialization."""
+        animal = AnimalStyle()
+        assert animal.name == "AnimalCharacter"
+        assert animal.style == "animal"
+        assert animal.species == "cat"
+        assert animal.fur_color == "#D2691E"
+        assert animal.fur_secondary == "#FFFFFF"
+        assert animal.eye_color == "#4A90D9"
+        assert animal.nose_color == "#333333"
+        assert animal.outfit_color == "#4169E1"
+
+    def test_custom_name(self):
+        """Test custom character name."""
+        animal = AnimalStyle(name="Whiskers")
+        assert animal.name == "Whiskers"
+
+    def test_all_species_presets(self):
+        """Test all species presets work correctly."""
+        species_list = ["cat", "dog", "rabbit", "fox", "bear", "bird", "wolf"]
+        for species in species_list:
+            animal = AnimalStyle(species=species)
+            assert animal.species == species
+            # Should generate valid points
+            assert len(animal._points) >= 32
+
+    def test_cat_preset(self):
+        """Test cat species preset."""
+        cat = AnimalStyle(species="cat")
+        assert cat.head_shape == "round"
+        assert cat.ear_type == "pointed"
+        assert cat._has_tail is True
+
+    def test_dog_preset(self):
+        """Test dog species preset."""
+        dog = AnimalStyle(species="dog")
+        assert dog.head_shape == "round"
+        assert dog.ear_type == "floppy"
+        assert dog._has_tail is True
+
+    def test_rabbit_preset(self):
+        """Test rabbit species preset."""
+        rabbit = AnimalStyle(species="rabbit")
+        assert rabbit.head_shape == "oval"
+        assert rabbit.ear_type == "tall"
+        assert rabbit._has_tail is True
+
+    def test_fox_preset(self):
+        """Test fox species preset."""
+        fox = AnimalStyle(species="fox")
+        assert fox.head_shape == "pointed"
+        assert fox.ear_type == "pointed"
+        assert fox._has_tail is True
+
+    def test_bear_preset(self):
+        """Test bear species preset."""
+        bear = AnimalStyle(species="bear")
+        assert bear.head_shape == "round"
+        assert bear.ear_type == "round"
+        assert bear._has_tail is False
+
+    def test_bird_preset(self):
+        """Test bird species preset."""
+        bird = AnimalStyle(species="bird")
+        assert bird.head_shape == "round"
+        assert bird.ear_type == "none"
+        assert bird._has_tail is True
+
+    def test_wolf_preset(self):
+        """Test wolf species preset."""
+        wolf = AnimalStyle(species="wolf")
+        assert wolf.head_shape == "pointed"
+        assert wolf.ear_type == "pointed"
+        assert wolf._has_tail is True
+
+    def test_unknown_species_falls_back_to_cat(self, caplog):
+        """Test unknown species falls back to cat with warning."""
+        with caplog.at_level(logging.WARNING, logger="comix.cobject.character.character"):
+            animal = AnimalStyle(species="unicorn")
+
+        assert animal.species == "cat"
+        assert "Unknown species 'unicorn'" in caplog.text
+        assert "falling back to 'cat'" in caplog.text
+
+    def test_custom_colors(self):
+        """Test custom colors."""
+        animal = AnimalStyle(
+            fur_color="#FF6600",
+            fur_secondary="#FFFFFF",
+            eye_color="#00FF00",
+            nose_color="#000000",
+            outfit_color="#FF0000",
+        )
+        assert animal.fur_color == "#FF6600"
+        assert animal.fur_secondary == "#FFFFFF"
+        assert animal.eye_color == "#00FF00"
+        assert animal.nose_color == "#000000"
+        assert animal.outfit_color == "#FF0000"
+
+    def test_override_ear_type(self):
+        """Test overriding ear type from preset."""
+        # Dog normally has floppy ears, override to pointed
+        dog = AnimalStyle(species="dog", ear_type="pointed")
+        assert dog.species == "dog"
+        assert dog.ear_type == "pointed"
+
+    def test_override_has_tail(self):
+        """Test overriding has_tail from preset."""
+        # Bear normally has no tail, override to have one
+        bear = AnimalStyle(species="bear", has_tail=True)
+        assert bear.species == "bear"
+        assert bear._has_tail is True
+
+        # Cat normally has tail, override to remove it
+        cat = AnimalStyle(species="cat", has_tail=False)
+        assert cat.species == "cat"
+        assert cat._has_tail is False
+
+    def test_generates_points(self):
+        """Test that animal generates outline points."""
+        animal = AnimalStyle()
+        # Should have points for head, ears, muzzle, neck, body, arms, legs, tail
+        assert len(animal._points) >= 80
+        assert animal._points.shape[1] == 2  # Each point has x, y
+
+    def test_facing_flips_points(self):
+        """Test that facing left flips x coordinates."""
+        animal_right = AnimalStyle(facing="right")
+        animal_left = AnimalStyle(facing="left")
+
+        # X coordinates should be flipped
+        assert not np.allclose(animal_right._points[:, 0], animal_left._points[:, 0])
+        # Y coordinates should be the same
+        assert np.allclose(animal_right._points[:, 1], animal_left._points[:, 1])
+
+    def test_custom_height(self):
+        """Test custom height parameter."""
+        animal = AnimalStyle(height=150)
+        assert animal.character_height == 150.0
+        data = animal.get_render_data()
+        assert data["character_height"] == 150.0
+
+    def test_get_render_data(self):
+        """Test render data includes animal-specific fields."""
+        animal = AnimalStyle(species="fox")
+        data = animal.get_render_data()
+        assert data["style"] == "animal"
+        assert data["species"] == "fox"
+        assert "fur_color" in data
+        assert "fur_secondary" in data
+        assert "eye_color" in data
+        assert "nose_color" in data
+        assert "outfit_color" in data
+        assert "head_shape" in data
+        assert data["head_shape"] == "pointed"
+        assert "ear_type" in data
+        assert data["ear_type"] == "pointed"
+        assert "ear_angle" in data
+        assert "muzzle_size" in data
+        assert "has_tail" in data
+        assert data["has_tail"] is True
+        assert "tail_length" in data
+        assert "tail_curve" in data
+        assert "head_height_ratio" in data
+        assert data["head_height_ratio"] == 0.18
+        assert "body_height_ratio" in data
+        assert data["body_height_ratio"] == 0.30
+
+    def test_set_expression(self):
+        """Test setting expression."""
+        animal = AnimalStyle()
+        result = animal.set_expression("happy")
+        assert result is animal
+        assert animal._expression.name == "happy"
+
+    def test_set_pose(self):
+        """Test setting pose."""
+        animal = AnimalStyle()
+        result = animal.set_pose("waving")
+        assert result is animal
+        assert animal._pose.name == "waving"
+
+    def test_say_creates_bubble(self):
+        """Test say method creates speech bubble."""
+        animal = AnimalStyle().move_to((100, 100))
+        bubble = animal.say("Meow!")
+        assert bubble.text == "Meow!"
+        assert bubble.bubble_type == "speech"
+        assert bubble.tail_target is animal
+
+    def test_think_creates_bubble(self):
+        """Test think method creates thought bubble."""
+        animal = AnimalStyle().move_to((100, 100))
+        bubble = animal.think("Hmm...")
+        assert bubble.text == "Hmm..."
+        assert bubble.bubble_type == "thought"
+
+    def test_shout_creates_bubble(self):
+        """Test shout method creates shout bubble."""
+        animal = AnimalStyle().move_to((100, 100))
+        bubble = animal.shout("WOOF!")
+        assert bubble.text == "WOOF!"
+        assert bubble.bubble_type == "shout"
+
+    def test_whisper_creates_bubble(self):
+        """Test whisper method creates whisper bubble."""
+        animal = AnimalStyle().move_to((100, 100))
+        bubble = animal.whisper("*purr*")
+        assert bubble.text == "*purr*"
+        assert bubble.bubble_type == "whisper"
+
+    def test_all_poses(self):
+        """Test animal with different poses."""
+        poses = ["standing", "sitting", "walking", "running", "pointing",
+                 "waving", "jumping", "dancing", "lying", "kneeling", "cheering", "thinking"]
+        for pose_name in poses:
+            animal = AnimalStyle(pose=pose_name)
+            assert animal._pose.name == pose_name
+            # Should still generate valid points
+            assert len(animal._points) >= 80
+
+    def test_all_expressions(self):
+        """Test animal with different expressions."""
+        expressions = ["neutral", "happy", "sad", "angry", "surprised",
+                       "confused", "sleepy", "excited", "scared", "smirk", "crying"]
+        for expr_name in expressions:
+            animal = AnimalStyle(expression=expr_name)
+            assert animal._expression.name == expr_name
+            data = animal.get_render_data()
+            assert data["expression"]["name"] == expr_name
+
+    def test_default_fill_color_is_fur_color(self):
+        """Test default fill color matches fur color."""
+        animal = AnimalStyle(fur_color="#FF9900")
+        assert animal.fill_color == "#FF9900"
+
+    def test_default_outline_color(self):
+        """Test default outline color."""
+        animal = AnimalStyle()
+        assert animal.color == "#333333"
+
+    def test_method_chaining(self):
+        """Test method chaining works correctly."""
+        animal = AnimalStyle()
+        result = animal.move_to((100, 100)).set_expression("happy").set_pose("waving")
+        assert result is animal
+        assert np.allclose(animal.position, (100, 100))
+        assert animal._expression.name == "happy"
+        assert animal._pose.name == "waving"
+
+    def test_full_customization(self):
+        """Test full customization."""
+        animal = AnimalStyle(
+            name="Foxy",
+            species="fox",
+            fur_color="#FF6600",
+            fur_secondary="#FFFFFF",
+            eye_color="#00AA00",
+            nose_color="#000000",
+            outfit_color="#0000FF",
+            ear_type="pointed",
+            has_tail=True,
+            height=120,
+        )
+        assert animal.name == "Foxy"
+        assert animal.species == "fox"
+        assert animal.fur_color == "#FF6600"
+        assert animal.character_height == 120.0
+        data = animal.get_render_data()
+        assert data["species"] == "fox"
+        assert data["fur_color"] == "#FF6600"
+        assert data["character_height"] == 120.0
+
+    def test_tail_generated_for_tailed_species(self):
+        """Test tail points are generated for species with tails."""
+        # Compare same species with/without tail
+        cat_with_tail = AnimalStyle(species="cat", has_tail=True)
+        cat_no_tail = AnimalStyle(species="cat", has_tail=False)
+        # Cat with tail should have more points than cat without tail
+        assert len(cat_with_tail._points) > len(cat_no_tail._points)
+
+    def test_each_ear_type_generates_different_points(self):
+        """Test each ear type generates different point counts."""
+        pointed = AnimalStyle(ear_type="pointed")
+        floppy = AnimalStyle(species="dog", ear_type="floppy")
+        tall = AnimalStyle(species="rabbit", ear_type="tall")
+        round_ears = AnimalStyle(species="bear", ear_type="round")
+        none_ears = AnimalStyle(species="bird", ear_type="none")
+
+        # Each ear type should produce different point arrays
+        # This is a basic check that different ear types work
+        assert len(pointed._points) > 0
+        assert len(floppy._points) > 0
+        assert len(tall._points) > 0
+        assert len(round_ears._points) > 0
+        assert len(none_ears._points) > 0

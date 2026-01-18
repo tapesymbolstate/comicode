@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.82**
+**Current Git Tag: v0.1.83**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -29,7 +29,7 @@ Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
 
 - **CObject hierarchy**: Full transformation API (move_to, shift, scale, rotate)
 - **Bubble system**: 5 types (Speech, Thought, Shout, Whisper, Narrator) with auto-positioning
-- **Character system**: 8 styles (Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon) with 11 expressions and 12 poses
+- **Character system**: 9 styles (Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon, AnimalStyle) with 11 expressions and 12 poses
 - **Layout**: GridLayout, FlowLayout, ConstraintLayout with collision detection
 - **Renderers**: SVG (always available), Cairo PNG/PDF (optional)
 - **Effects**: 6 types (AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect)
@@ -97,9 +97,23 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.81)
+## Note: Stable Release (v0.1.83)
 
-All systems stable with 1982 tests passing (+ 30 skipped = 2012 collected). Version numbers synchronized across all files.
+All systems stable with 2014 tests passing (+ 30 skipped = 2044 collected). Version numbers synchronized across all files.
+
+v0.1.83 changes:
+- Added `AnimalStyle` character class - anthropomorphic animal characters for furry/mascot-style comics
+- 7 species presets: cat, dog, rabbit, fox, bear, bird, wolf
+- Species-specific features: head shapes (round, oval, pointed), ear types (pointed, floppy, tall, round, none)
+- Customizable colors: fur_color, fur_secondary, eye_color, nose_color, outfit_color
+- Optional tail with configurable length and curve
+- Override ear_type and has_tail from species presets
+- Added 32 new tests for AnimalStyle functionality
+- Character system now has 9 styles (was 8)
+
+v0.1.82 changes:
+- Documentation updates: IMPLEMENTATION_PLAN.md, CRITICAL-BUGS-AND-FIXES.md
+- Updated version tag and test counts
 
 v0.1.81 changes:
 - Added `auto_line_width` parameter to Stickman for automatic line width scaling with character height

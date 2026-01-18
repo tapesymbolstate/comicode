@@ -37,6 +37,7 @@ from comix.cobject.bubble.bubble import (
 from comix.cobject.text.text import Text, StyledText, SFX
 from comix.cobject.character.character import (
     Anime,
+    AnimalStyle,
     Cartoon,
     Character,
     Chibi,
@@ -235,6 +236,7 @@ __all__ = [
     "SFX",
     # Characters
     "Anime",
+    "AnimalStyle",
     "Cartoon",
     "Character",
     "Chibi",

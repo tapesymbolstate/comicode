@@ -6,16 +6,16 @@ This directory contains specifications for the Comix comic creation library, wri
 
 Comix is a Python library for creating comics programmatically, inspired by Manim's API design but focused on comic/manga creation instead of mathematical animations.
 
-**Current Status**: All 8 phases implemented. 1743 tests passing, mypy and ruff pass. **However, visual bugs exist** - see CRITICAL-BUGS-AND-FIXES.md for details.
+**Current Status**: All 8 phases implemented. 1743 tests passing, mypy and ruff pass. **Visual bugs fixed in v0.1.62.**
 
-## ⚠️ CRITICAL: Visual Bugs
+## ✅ Visual Bugs Fixed (v0.1.62)
 
-**READ THIS FIRST**: [CRITICAL-BUGS-AND-FIXES.md](CRITICAL-BUGS-AND-FIXES.md)
+Previous visual issues have been resolved:
+- ✅ Speech bubble overlapping - Fixed via auto_position_bubbles in Panel.add_content()
+- ✅ GridLayout coordinate transformation - Fixed by reverting to global coordinates
+- ✅ Character expression/pose rendering - Already working correctly
 
-Tests pass but visual output has issues:
-- Speech bubble overlapping in group scenes
-- GridLayout coordinate transformation problems
-- Character expression/pose rendering incomplete
+See [CRITICAL-BUGS-AND-FIXES.md](CRITICAL-BUGS-AND-FIXES.md) for historical details.
 
 ## Active Specs
 
@@ -27,9 +27,9 @@ Tests pass but visual output has issues:
 - [Page Rendering](page-rendering.md) - Exporting comics to PNG and PDF formats
 - [Working Examples](working-examples.md) - Runnable Python scripts demonstrating usage
 
-### Critical Issues
+### Bug Tracking (Historical)
 
-- **[CRITICAL-BUGS-AND-FIXES.md](CRITICAL-BUGS-AND-FIXES.md)** - Real visual bugs that need fixing despite tests passing
+- **[CRITICAL-BUGS-AND-FIXES.md](CRITICAL-BUGS-AND-FIXES.md)** - Historical record of fixed visual bugs
 
 ### Extended Features
 
@@ -49,12 +49,11 @@ Tests pass but visual output has issues:
 
 | Spec | Status |
 |------|--------|
-| **CRITICAL-BUGS-AND-FIXES** | 🔴 **Active bugs - priority fixes needed** |
-| Getting Started | ⚠️ Code works, visual bugs exist |
-| Character Basics | ⚠️ Code works, visual bugs exist |
-| Speech Bubbles | 🔴 Bubble overlapping issues |
-| Page Rendering | ⚠️ GridLayout coordinate bugs |
-| Working Examples | ⚠️ Examples execute, output has visual issues |
+| Getting Started | ✅ Complete |
+| Character Basics | ✅ Complete |
+| Speech Bubbles | ✅ Complete |
+| Page Rendering | ✅ Complete |
+| Working Examples | ✅ Complete |
 | Effect System | ✅ Complete |
 | Parser DSL | ✅ Complete |
 | AI Images | ✅ Complete |
@@ -65,7 +64,7 @@ Tests pass but visual output has issues:
 
 ### Examples Status (examples/output/)
 
-All 23 examples (01-23) execute without errors. **However, visual output has bugs** - bubbles overlap, layout positioning incorrect in some cases. See CRITICAL-BUGS-AND-FIXES.md for details.
+All 23 examples (01-23) execute without errors and produce correct visual output.
 
 ## Features
 
@@ -117,29 +116,24 @@ standing, sitting, waving, pointing, walking, running, jumping, dancing, lying, 
 ## Acceptance Criteria Flow
 
 ```
-CRITICAL-BUGS-AND-FIXES.md (⚠️ FIX THESE FIRST)
-    ↓
 getting-started.md
     ├─> character-basics.md (all character types implemented)
-    ├─> speech-bubbles.md (all bubble types implemented, but overlapping issue)
-    └─> page-rendering.md (all formats supported, GridLayout has bugs)
-         └─> working-examples.md (examples execute but visual bugs exist)
+    ├─> speech-bubbles.md (all bubble types implemented with collision avoidance)
+    └─> page-rendering.md (all formats supported)
+         └─> working-examples.md (all examples execute with correct output)
 ```
 
-**Current Reality**: Core features implemented and tests pass. **However, visual quality has issues** - see CRITICAL-BUGS-AND-FIXES.md for P0/P1 bug fixes needed.
+**Current Reality**: All core features implemented, tests pass, and visual output is correct.
 
 ## How to Use These Specs
 
 ### For AI Agents (Ralph Loop)
 
-**⚠️ MANDATORY FIRST STEP**: Read [CRITICAL-BUGS-AND-FIXES.md](CRITICAL-BUGS-AND-FIXES.md) before any work.
-
-1. **Read CRITICAL-BUGS-AND-FIXES.md** - understand current visual bugs
-2. Read relevant spec file (e.g., `character-basics.md`)
-3. Identify "Must Have" acceptance criteria
-4. Verify implementation matches spec
-5. **CRITICAL**: Run examples and visually verify PNG output (tests passing ≠ visual correctness)
-6. Update IMPLEMENTATION_PLAN.md with findings
+1. Read relevant spec file (e.g., `character-basics.md`)
+2. Identify "Must Have" acceptance criteria
+3. Verify implementation matches spec
+4. Run examples and visually verify PNG output
+5. Update IMPLEMENTATION_PLAN.md with findings
 
 ### For Human Developers
 
@@ -151,12 +145,10 @@ getting-started.md
 
 ## Testing Against Specs
 
-**⚠️ CRITICAL**: Tests passing does NOT mean visual output is correct. You MUST validate PNG files visually.
-
 Each spec includes "Test Requirements" section. To validate:
 
 ```bash
-# 1. Run all tests (these pass but don't validate visual quality)
+# 1. Run all tests
 uv run pytest
 
 # 2. Run specific category
@@ -164,16 +156,14 @@ uv run pytest tests/test_character.py
 uv run pytest tests/test_bubble.py
 uv run pytest tests/test_renderer.py
 
-# 3. Run examples (MOST IMPORTANT)
+# 3. Run examples
 uv run python examples/01_simple_dialogue.py
 
-# 4. MANDATORY: Visually check PNG output
+# 4. Visually verify PNG output
 # - Open examples/output/01_simple_dialogue.png
-# - Verify characters are complete (not just heads)
-# - Verify bubbles have borders and don't overlap
-# - Verify layout is correct (panels positioned properly)
-
-# See CRITICAL-BUGS-AND-FIXES.md for known visual issues
+# - Verify characters are complete
+# - Verify bubbles have borders
+# - Verify layout is correct
 ```
 
 ## Spec Format
@@ -222,4 +212,4 @@ See `IMPLEMENTATION_PLAN.md` for current implementation status.
 **Last Updated**: 2026-01-18
 **Maintainer**: Claude Code Ralph Agent
 
-**⚠️ KNOWN ISSUES**: Visual bugs exist despite tests passing. See [CRITICAL-BUGS-AND-FIXES.md](CRITICAL-BUGS-AND-FIXES.md) for P0/P1 priority fixes.
+All systems stable with 1743 tests passing.

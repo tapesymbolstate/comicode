@@ -1,7 +1,6 @@
 # Examples Maintenance - 예제 정리 및 관리 기준
 
-> **Note**: This document contains **process guidelines** for future maintenance.
-> All 23 examples (01-23) are currently working correctly as of v0.1.61.
+> **⚠️ CRITICAL UPDATE (2026-01-18)**: While all 23 examples execute without errors, **visual bugs exist in the output**. See CRITICAL-BUGS-AND-FIXES.md for details.
 
 ## What
 examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 예제만 유지**하고, 버그가 있는 예제는 명확히 표시하거나 임시 제거한다.
@@ -11,10 +10,10 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 
 현재 상황 (2026-01-18):
 - ✅ 01-23 예제 파일 모두 존재
-- ✅ 모든 예제가 정상 작동
-- ✅ 시각적 출력 검증 완료
+- ✅ 모든 예제가 에러 없이 실행됨 (no exceptions)
+- ❌ **시각적 출력에 버그 존재** (bubble overlapping, layout issues)
 
-**참고: 아래 정리 기준은 향후 예제가 깨질 경우를 위한 것입니다.**
+**참고**: 코드 실행 성공 ≠ 시각적 품질 OK. PNG 파일을 육안으로 확인해야 함.
 
 ## Acceptance Criteria
 
@@ -34,14 +33,14 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 
 ## Current Examples Status
 
-**All 23 examples are working.** As of 2026-01-18, all examples execute successfully and produce correct output.
+**All 23 examples execute without errors**, but visual bugs exist. See CRITICAL-BUGS-AND-FIXES.md.
 
 | Example | Status |
 |---------|--------|
-| 01_simple_dialogue.py | ✅ Working |
-| 02_four_panel_comic.py | ✅ Working |
-| 03_group_scene.py | ✅ Working |
-| 04_expressions.py | ✅ Working |
+| 01_simple_dialogue.py | ✅ Executes correctly, visual output OK |
+| 02_four_panel_comic.py | ⚠️ Executes, possible layout issues |
+| 03_group_scene.py | 🔴 **Executes, bubble overlapping confirmed** |
+| 04_expressions.py | ⚠️ Executes, GridLayout bugs possible |
 | 05_bubble_types.py | ✅ Working |
 | 06_multi_page_pdf.py | ✅ Working |
 | 07_custom_layout.py | ✅ Working |

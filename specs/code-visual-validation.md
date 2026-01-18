@@ -1,6 +1,8 @@
 # Code-Visual Validation Report - 코드와 시각적 결과 일치 검증
 
-> **NOTE (2026-01-18)**: This document's bug analysis is now **obsolete**. All issues described below have been resolved. All 1743 tests pass, all 23 examples (01-23) execute successfully and produce correct output, and mypy/ruff pass. This document is retained for historical reference only.
+> **NOTE (2026-01-18)**: This document is **archived for historical reference**. While tests pass and examples execute, **visual bugs still exist**. See **CRITICAL-BUGS-AND-FIXES.md** for current issues and fixes needed.
+>
+> The bugs described below were thought to be resolved, but user confirmation indicates visual problems persist (bubble overlapping, layout issues). The current source of truth is CRITICAL-BUGS-AND-FIXES.md.
 
 ---
 

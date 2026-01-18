@@ -1,8 +1,8 @@
 # Visual Validation Requirements - 시각적 검증 필수 사항
 
-> **Note**: This document contains **process guidelines** for developers, not implementation features.
-> The unchecked items are verification checklists to follow during development work.
-> As of v0.1.0, all rendering features are implemented and working correctly.
+> **⚠️ CRITICAL UPDATE (2026-01-18)**: This document's process is correct, but was NOT followed. While tests pass, **visual bugs exist**. See CRITICAL-BUGS-AND-FIXES.md for details.
+>
+> This document contains **mandatory process guidelines** for all development work.
 
 ## What
 모든 구현 작업은 반드시 실제 렌더링 결과물을 육안으로 확인하고 검증해야 한다.
@@ -10,12 +10,12 @@
 ## Why
 **코드가 에러 없이 실행되고 테스트가 통과해도 실제 결과물이 엉망일 수 있다.**
 
-현재 문제:
-- ✅ 1607개 테스트 통과
+현재 상황 (2026-01-18):
+- ✅ 1743개 테스트 통과
 - ✅ 코드 에러 없음
-- ✅ 실제 만화도 올바르게 렌더링됨
+- ❌ **실제 만화에 시각적 버그 존재** (bubble overlapping, layout issues)
 
-**테스트만으로는 충분하지 않다. 눈으로 직접 확인해야 한다.**
+**이것이 이 문서의 프로세스를 따라야 하는 이유다. 테스트만으로는 충분하지 않다. 눈으로 직접 확인해야 한다.**
 
 ## CRITICAL: Ralph Agent 작업 방식
 

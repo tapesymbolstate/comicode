@@ -1,12 +1,16 @@
 # Working Examples - Executable Comic Creation Examples
 
+> **⚠️ CRITICAL (2026-01-18)**: All examples execute without errors, but **visual bugs exist in the output**. See CRITICAL-BUGS-AND-FIXES.md for details.
+>
+> **Known issues**: Bubble overlapping (example 03), GridLayout coordinate bugs (examples 02, 04, 07), and possibly others.
+
 ## What
 A collection of complete, runnable Python scripts that demonstrate common comic creation workflows and serve as templates for developers.
 
 ## Why
 Documentation alone is not enough. Developers learn best from working code they can run, modify, and experiment with. Examples must:
 - Actually execute without errors
-- Produce visible, correct output
+- Produce visible, **correct** output ⚠️ **This criterion is not fully met - visual bugs exist**
 - Cover common use cases
 - Be simple enough to understand quickly
 - Serve as copy-paste starting points
@@ -16,13 +20,13 @@ Without working examples, developers struggle to bridge the gap from API documen
 ## Acceptance Criteria
 
 ### Must Have
-- [x] Example 1: Two-panel dialogue (2 stick figures talking)
-- [x] Example 2: Four-panel comic (4koma style story)
-- [x] Example 3: Single panel with multiple characters
-- [x] Example 4: Character expressions showcase (happy, sad, angry, etc.)
-- [x] Example 5: Different bubble types (speech, thought, shout)
+- [x] Example 1: Two-panel dialogue (2 stick figures talking) - ✅ Visual output OK
+- [x] Example 2: Four-panel comic (4koma style story) - ⚠️ Possible GridLayout bugs
+- [x] Example 3: Single panel with multiple characters - 🔴 **Bubble overlapping confirmed**
+- [x] Example 4: Character expressions showcase (happy, sad, angry, etc.) - ⚠️ GridLayout bugs possible
+- [x] Example 5: Different bubble types (speech, thought, shout) - ✅ Working
 - [x] All examples execute without errors using `uv run python example_name.py`
-- [x] All examples produce visible PNG output showing complete comic
+- [ ] All examples produce visible PNG output showing complete comic - ⚠️ **PARTIALLY MET**: Examples execute but visual bugs exist
 - [x] Basic examples (01-04, 07) are under 50 lines; complex examples may be longer for comprehensiveness
 - [x] Each example has clear comments explaining each step
 
@@ -418,8 +422,10 @@ Feel free to modify these examples to experiment:
 ## Success Metrics
 
 **This spec is successful when:**
-1. All 23 examples execute without errors
-2. All examples produce correct visual output
-3. A new developer can run examples within 5 minutes
-4. Examples serve as effective templates for custom comics
-5. Example code is clear enough to understand without extensive docs
+1. ✅ All 23 examples execute without errors
+2. ❌ **All examples produce correct visual output** - NOT MET: Visual bugs exist (see CRITICAL-BUGS-AND-FIXES.md)
+3. ✅ A new developer can run examples within 5 minutes
+4. ⚠️ Examples serve as effective templates for custom comics - partially (code works, but visual bugs need fixing)
+5. ✅ Example code is clear enough to understand without extensive docs
+
+**Current Status**: 3 of 5 metrics fully met, 1 partially met, 1 not met. Visual bugs are blocking full success.

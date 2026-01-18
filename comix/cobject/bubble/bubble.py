@@ -59,6 +59,47 @@ def _calculate_auto_tail_length(
     return float(np.clip(auto_length, min_length, max_length))
 
 
+def _calculate_auto_tail_width(
+    bubble_pos: tuple[float, float],
+    target_pos: tuple[float, float],
+    base_width: float = 20.0,
+    min_width: float = 8.0,
+    max_width: float = 30.0,
+    close_distance: float = 50.0,
+    far_distance: float = 200.0,
+) -> float:
+    """Calculate automatic tail width based on bubble-target distance.
+
+    Closer bubbles get wider tails (more prominent connection),
+    farther bubbles get narrower tails (subtle pointer).
+
+    Args:
+        bubble_pos: Bubble center position.
+        target_pos: Target (character) center position.
+        base_width: Base tail width (used when distance is at midpoint).
+        min_width: Minimum tail width for very far bubbles.
+        max_width: Maximum tail width for very close bubbles.
+        close_distance: Distance at which tail is widest.
+        far_distance: Distance at which tail is narrowest.
+
+    Returns:
+        Calculated tail width in pixels.
+    """
+    distance = float(np.linalg.norm(
+        np.array(bubble_pos) - np.array(target_pos)
+    ))
+
+    # Linear interpolation between max_width (close) and min_width (far)
+    if distance <= close_distance:
+        return max_width
+    if distance >= far_distance:
+        return min_width
+
+    # Interpolate between close and far distances
+    ratio = (distance - close_distance) / (far_distance - close_distance)
+    return float(max_width - ratio * (max_width - min_width))
+
+
 class Bubble(CObject):
     """Base class for speech bubbles.
 
@@ -71,20 +112,31 @@ class Bubble(CObject):
         - "fixed": Uses the specified tail_length value regardless of distance.
         - "none": No tail is rendered (useful for narrator boxes).
 
+    Tail Width Scaling:
+        When auto_tail_width=True (default) and tail_mode="auto", the tail width
+        also scales with distance for a more natural appearance:
+        - Closer bubbles get wider tails (more prominent connection)
+        - Farther bubbles get narrower tails (subtle pointer)
+
     Args:
         tail_mode: Tail length mode ("auto", "fixed", "none"). Default "auto".
         tail_style: Tail visual style ("classic", "smooth", "minimal"). Default "classic".
         min_tail_length: Minimum tail length when tail_mode="auto".
         max_tail_length: Maximum tail length when tail_mode="auto".
         tail_distance_threshold: Distance below which auto tail is disabled.
+        auto_tail_width: Whether to auto-scale tail width with distance. Default True.
+        min_tail_width: Minimum tail width for far bubbles. Default 8px.
+        max_tail_width: Maximum tail width for close bubbles. Default 30px.
+        tail_width_close_distance: Distance at which tail is widest. Default 50px.
+        tail_width_far_distance: Distance at which tail is narrowest. Default 200px.
 
     Example:
-        >>> # Auto-length tail (default)
+        >>> # Auto-length and auto-width tail (default)
         >>> bubble = SpeechBubble(text="Hello!")
         >>> bubble.attach_to(character)
         >>>
-        >>> # Fixed length tail
-        >>> bubble = SpeechBubble(text="Fixed!", tail_mode="fixed", tail_length=40)
+        >>> # Fixed length tail with auto width disabled
+        >>> bubble = SpeechBubble(text="Fixed!", tail_mode="fixed", auto_tail_width=False)
         >>>
         >>> # No tail (narrator)
         >>> bubble = SpeechBubble(text="Meanwhile...", tail_mode="none")
@@ -118,6 +170,11 @@ class Bubble(CObject):
         min_tail_length: float = 15.0,
         max_tail_length: float = 50.0,
         tail_distance_threshold: float = 20.0,
+        auto_tail_width: bool = True,
+        min_tail_width: float = 8.0,
+        max_tail_width: float = 30.0,
+        tail_width_close_distance: float = 50.0,
+        tail_width_far_distance: float = 200.0,
         border_color: str = "#000000",
         border_width: float = 2.0,
         border_style: str = "solid",
@@ -172,10 +229,17 @@ class Bubble(CObject):
             tail_style = "classic"
         self.tail_style = tail_style
 
-        # Auto-tail parameters
+        # Auto-tail length parameters
         self.min_tail_length = min_tail_length
         self.max_tail_length = max_tail_length
         self.tail_distance_threshold = tail_distance_threshold
+
+        # Auto-tail width parameters
+        self.auto_tail_width = auto_tail_width
+        self.min_tail_width = min_tail_width
+        self.max_tail_width = max_tail_width
+        self.tail_width_close_distance = tail_width_close_distance
+        self.tail_width_far_distance = tail_width_far_distance
 
         self.border_color = border_color
         self.border_width = border_width
@@ -251,14 +315,19 @@ class Bubble(CObject):
             - "classic": Sharp triangular tail (default)
             - "smooth": Curved bezier tail for softer appearance
             - "minimal": Small, subtle nub tail
+
+        When auto_tail_width is True and tail_mode is "auto", the tail width
+        also scales with distance: closer bubbles get wider tails (more prominent),
+        farther bubbles get narrower tails (subtle pointer).
         """
         # No tail for "none" mode
         if self.tail_mode == "none":
             self._tail_points = np.zeros((0, 2), dtype=np.float64)
             return
 
-        # Determine effective tail length
+        # Determine effective tail length and width
         effective_length = self.tail_length  # Default for "fixed" mode
+        effective_width = self.tail_width  # Default width
 
         if self.tail_mode == "auto" and self.tail_target is not None:
             bubble_pos = tuple(self.get_center())
@@ -275,6 +344,18 @@ class Bubble(CObject):
                 self.tail_distance_threshold,
             )
 
+            # Calculate auto tail width if enabled
+            if self.auto_tail_width:
+                effective_width = _calculate_auto_tail_width(
+                    bubble_pos,
+                    target_pos,
+                    base_width=self.tail_width,
+                    min_width=self.min_tail_width,
+                    max_width=self.max_tail_width,
+                    close_distance=self.tail_width_close_distance,
+                    far_distance=self.tail_width_far_distance,
+                )
+
         # Generate tail points based on tail_style
         if self.tail_style == "smooth":
             tail_points = create_smooth_tail_points(
@@ -282,7 +363,7 @@ class Bubble(CObject):
                 height=self._height,
                 direction=self.tail_direction,
                 length=effective_length,
-                tip_width=self.tail_width,
+                tip_width=effective_width,
             )
         elif self.tail_style == "minimal":
             tail_points = create_minimal_tail_points(
@@ -290,7 +371,7 @@ class Bubble(CObject):
                 height=self._height,
                 direction=self.tail_direction,
                 length=effective_length,
-                tip_width=self.tail_width,
+                tip_width=effective_width,
             )
         else:
             # Default "classic" style - sharp triangular tail
@@ -299,7 +380,7 @@ class Bubble(CObject):
                 height=self._height,
                 direction=self.tail_direction,
                 length=effective_length,
-                tip_width=self.tail_width,
+                tip_width=effective_width,
             )
 
         if len(tail_points) > 0:
@@ -336,6 +417,41 @@ class Bubble(CObject):
             self.min_tail_length,
             self.max_tail_length,
             self.tail_distance_threshold,
+        )
+
+    def get_effective_tail_width(self) -> float:
+        """Get the effective tail width after auto-calculation.
+
+        When auto_tail_width is enabled and tail_mode is "auto", the width
+        scales with distance: closer = wider, farther = narrower.
+
+        Returns:
+            The current effective tail width in pixels.
+        """
+        if self.tail_mode == "none":
+            return 0.0
+
+        if self.tail_mode == "fixed" or not self.auto_tail_width:
+            return self.tail_width
+
+        # Auto mode with auto width: calculate based on target distance
+        if self.tail_target is None:
+            return self.tail_width
+
+        bubble_pos = tuple(self.get_center())
+        if isinstance(self.tail_target, CObject):
+            target_pos = tuple(self.tail_target.get_center())
+        else:
+            target_pos = self.tail_target
+
+        return _calculate_auto_tail_width(
+            bubble_pos,
+            target_pos,
+            base_width=self.tail_width,
+            min_width=self.min_tail_width,
+            max_width=self.max_tail_width,
+            close_distance=self.tail_width_close_distance,
+            far_distance=self.tail_width_far_distance,
         )
 
     def set_text(self, text: str) -> Self:
@@ -681,9 +797,15 @@ class Bubble(CObject):
                 "tail_mode": self.tail_mode,
                 "tail_style": self.tail_style,
                 "effective_tail_length": self.get_effective_tail_length(),
+                "effective_tail_width": self.get_effective_tail_width(),
                 "min_tail_length": self.min_tail_length,
                 "max_tail_length": self.max_tail_length,
                 "tail_distance_threshold": self.tail_distance_threshold,
+                "auto_tail_width": self.auto_tail_width,
+                "min_tail_width": self.min_tail_width,
+                "max_tail_width": self.max_tail_width,
+                "tail_width_close_distance": self.tail_width_close_distance,
+                "tail_width_far_distance": self.tail_width_far_distance,
                 "border_color": self.border_color,
                 "border_width": self.border_width,
                 "border_style": self.border_style,

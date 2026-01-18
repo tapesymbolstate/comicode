@@ -26,7 +26,7 @@ Professional comics use short, clean tail indicators that subtly show who's spea
 ### Should Have
 - [x] Curved/bezier tail option for softer appearance (implemented via `tail_style="smooth"`)
 - [x] `smart_attach_to()` method positions bubble optimally AND sets appropriate tail
-- [ ] Tail width scales with distance (closer = wider, farther = narrower)
+- [x] Tail width scales with distance (closer = wider, farther = narrower) - implemented via `auto_tail_width=True`
 - [x] Multiple tail style presets: "classic" (triangle), "smooth" (curved), "minimal" (small nub)
 - [x] Automatic tail omission if bubble is very close to character (< 20px)
 
@@ -411,8 +411,8 @@ def smart_attach_to(
 - [x] Should tail_mode="auto" be default? **Decision**: Yes, provides best UX
 - [x] What's appropriate length_ratio (40%? 50%?)? **Decision**: 40% (prevents overly long tails)
 - [x] Should we provide tail_style="curved"? **Decision**: Yes, "smooth" style for organic look
-- [ ] Should tail width also scale with distance? **Decision needed** (probably yes for very far bubbles)
-- [ ] Should smart_attach_to() replace attach_to()? **Decision needed** (probably keep both)
+- [x] Should tail width also scale with distance? **Decision**: Yes, implemented via `auto_tail_width=True` (default). Closer = wider (max 30px), farther = narrower (min 8px)
+- [x] Should smart_attach_to() replace attach_to()? **Decision**: No, keep both. smart_attach_to() for convenience, attach_to() for control
 
 ## Test Requirements
 

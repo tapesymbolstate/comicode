@@ -939,3 +939,222 @@ class TestTailStyles:
         for style in ["classic", "smooth", "minimal"]:
             bubble = SpeechBubble(text="Hello!", tail_mode="none", tail_style=style)
             assert len(bubble._tail_points) == 0, f"Style {style} should have no tail"
+
+
+class TestAutoTailWidth:
+    """Tests for automatic tail width scaling with distance."""
+
+    def test_auto_tail_width_default_enabled(self):
+        """Test that auto_tail_width is enabled by default."""
+        bubble = SpeechBubble(text="Hello!")
+        assert bubble.auto_tail_width is True
+
+    def test_auto_tail_width_can_be_disabled(self):
+        """Test that auto_tail_width can be disabled."""
+        bubble = SpeechBubble(text="Hello!", auto_tail_width=False)
+        assert bubble.auto_tail_width is False
+
+    def test_auto_tail_width_parameters_stored(self):
+        """Test that auto tail width parameters are stored correctly."""
+        bubble = SpeechBubble(
+            text="Hello!",
+            min_tail_width=10,
+            max_tail_width=35,
+            tail_width_close_distance=60,
+            tail_width_far_distance=250,
+        )
+        assert bubble.min_tail_width == 10
+        assert bubble.max_tail_width == 35
+        assert bubble.tail_width_close_distance == 60
+        assert bubble.tail_width_far_distance == 250
+
+    def test_calculate_auto_tail_width_close_distance(self):
+        """Test tail width is max when bubble is close to target."""
+        from comix.cobject.bubble.bubble import _calculate_auto_tail_width
+
+        result = _calculate_auto_tail_width(
+            bubble_pos=(100, 100),
+            target_pos=(130, 100),  # 30 pixels apart (close)
+            min_width=8,
+            max_width=30,
+            close_distance=50,
+            far_distance=200,
+        )
+        assert result == 30.0  # Should be max width
+
+    def test_calculate_auto_tail_width_far_distance(self):
+        """Test tail width is min when bubble is far from target."""
+        from comix.cobject.bubble.bubble import _calculate_auto_tail_width
+
+        result = _calculate_auto_tail_width(
+            bubble_pos=(100, 100),
+            target_pos=(400, 100),  # 300 pixels apart (far)
+            min_width=8,
+            max_width=30,
+            close_distance=50,
+            far_distance=200,
+        )
+        assert result == 8.0  # Should be min width
+
+    def test_calculate_auto_tail_width_interpolation(self):
+        """Test tail width interpolates between close and far distances."""
+        from comix.cobject.bubble.bubble import _calculate_auto_tail_width
+
+        # Distance = 125 (midpoint between 50 and 200)
+        result = _calculate_auto_tail_width(
+            bubble_pos=(100, 100),
+            target_pos=(225, 100),  # 125 pixels apart (mid)
+            min_width=8,
+            max_width=30,
+            close_distance=50,
+            far_distance=200,
+        )
+        # Should be roughly halfway between 8 and 30 = 19
+        assert 15 < result < 25
+
+    def test_auto_tail_width_with_bubble_and_character_close(self):
+        """Test auto tail width with actual bubble close to character."""
+        char = Stickman(height=100)
+        char.move_to((200, 200))
+
+        bubble = SpeechBubble(text="Hello!", tail_mode="auto", auto_tail_width=True)
+        bubble.move_to((200, 260))  # Close to character (60px)
+        bubble.point_to(char)
+        bubble.generate_points()
+
+        effective_width = bubble.get_effective_tail_width()
+        # Should be close to max width since bubble is close
+        assert effective_width >= 25  # Close to max of 30
+
+    def test_auto_tail_width_with_bubble_and_character_far(self):
+        """Test auto tail width with actual bubble far from character."""
+        char = Stickman(height=100)
+        char.move_to((200, 200))
+
+        bubble = SpeechBubble(text="Hello!", tail_mode="auto", auto_tail_width=True)
+        bubble.move_to((200, 500))  # Far from character (300px)
+        bubble.point_to(char)
+        bubble.generate_points()
+
+        effective_width = bubble.get_effective_tail_width()
+        # Should be close to min width since bubble is far
+        assert effective_width <= 12  # Close to min of 8
+
+    def test_auto_tail_width_disabled_uses_fixed_width(self):
+        """Test that disabling auto_tail_width uses fixed tail_width."""
+        char = Stickman(height=100)
+        char.move_to((200, 200))
+
+        bubble = SpeechBubble(
+            text="Hello!",
+            tail_mode="auto",
+            auto_tail_width=False,
+            tail_width=25,
+        )
+        bubble.move_to((200, 500))  # Far from character
+        bubble.point_to(char)
+        bubble.generate_points()
+
+        effective_width = bubble.get_effective_tail_width()
+        # Should use fixed width regardless of distance
+        assert effective_width == 25
+
+    def test_auto_tail_width_fixed_mode_ignores_auto(self):
+        """Test that tail_mode='fixed' ignores auto_tail_width."""
+        char = Stickman(height=100)
+        char.move_to((200, 200))
+
+        bubble = SpeechBubble(
+            text="Hello!",
+            tail_mode="fixed",
+            auto_tail_width=True,
+            tail_width=22,
+        )
+        bubble.move_to((200, 500))
+        bubble.point_to(char)
+        bubble.generate_points()
+
+        effective_width = bubble.get_effective_tail_width()
+        # Fixed mode should use fixed width
+        assert effective_width == 22
+
+    def test_auto_tail_width_none_mode_returns_zero(self):
+        """Test that tail_mode='none' returns zero width."""
+        bubble = SpeechBubble(text="Hello!", tail_mode="none", auto_tail_width=True)
+        effective_width = bubble.get_effective_tail_width()
+        assert effective_width == 0.0
+
+    def test_auto_tail_width_no_target_uses_fixed(self):
+        """Test that without tail_target, uses fixed tail_width."""
+        bubble = SpeechBubble(
+            text="Hello!",
+            tail_mode="auto",
+            auto_tail_width=True,
+            tail_width=18,
+        )
+        # No point_to called, no tail_target
+        effective_width = bubble.get_effective_tail_width()
+        assert effective_width == 18
+
+    def test_auto_tail_width_in_render_data(self):
+        """Test that auto tail width parameters are in render data."""
+        bubble = SpeechBubble(
+            text="Hello!",
+            auto_tail_width=True,
+            min_tail_width=10,
+            max_tail_width=35,
+            tail_width_close_distance=60,
+            tail_width_far_distance=250,
+        )
+        data = bubble.get_render_data()
+
+        assert data["auto_tail_width"] is True
+        assert data["min_tail_width"] == 10
+        assert data["max_tail_width"] == 35
+        assert data["tail_width_close_distance"] == 60
+        assert data["tail_width_far_distance"] == 250
+
+    def test_effective_tail_width_in_render_data(self):
+        """Test that effective_tail_width is in render data."""
+        char = Stickman(height=100)
+        char.move_to((200, 200))
+
+        bubble = SpeechBubble(text="Hello!", tail_mode="auto", auto_tail_width=True)
+        bubble.move_to((200, 280))
+        bubble.point_to(char)
+        bubble.generate_points()
+
+        data = bubble.get_render_data()
+        assert "effective_tail_width" in data
+        assert data["effective_tail_width"] > 0
+
+    def test_auto_tail_width_affects_tail_points(self):
+        """Test that auto tail width affects the generated tail points."""
+        char = Stickman(height=100)
+        char.move_to((200, 200))
+
+        # Create bubble close to character (should have wider tail)
+        bubble_close = SpeechBubble(
+            text="Close!",
+            tail_mode="auto",
+            auto_tail_width=True,
+        )
+        bubble_close.move_to((200, 260))
+        bubble_close.point_to(char)
+        bubble_close.generate_points()
+
+        # Create bubble far from character (should have narrower tail)
+        bubble_far = SpeechBubble(
+            text="Far!",
+            tail_mode="auto",
+            auto_tail_width=True,
+        )
+        bubble_far.move_to((200, 450))
+        bubble_far.point_to(char)
+        bubble_far.generate_points()
+
+        # The close bubble should have wider tail
+        close_width = bubble_close.get_effective_tail_width()
+        far_width = bubble_far.get_effective_tail_width()
+
+        assert close_width > far_width

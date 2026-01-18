@@ -2,6 +2,25 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.74] - 2026-01-18
+
+### Features
+- **Automatic tail width scaling**: Speech bubble tails now automatically scale their width based on distance to the character
+  - Closer bubbles get wider tails (max 30px) for prominent connection
+  - Farther bubbles get narrower tails (min 8px) for subtle pointer
+  - New parameters: `auto_tail_width`, `min_tail_width`, `max_tail_width`, `tail_width_close_distance`, `tail_width_far_distance`
+  - New method: `get_effective_tail_width()` returns the calculated tail width
+  - Enabled by default with `auto_tail_width=True`
+
+### Tests
+- Added 15 new tests for tail width scaling functionality
+- Test count: 1854 passed, 30 skipped (1884 collected)
+
+### Documentation
+- Updated bubble-tail-improvements.md to mark tail width scaling as implemented
+- All "Should Have" acceptance criteria in bubble-tail-improvements.md now complete
+- Updated version numbers across all files
+
 ## [v0.1.73] - 2026-01-18
 
 ### Features

@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.73**
+**Current Git Tag: v0.1.74**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,17 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.73)
+## Note: Stable Release (v0.1.74)
 
-All systems stable with 1839 tests passing (+ 30 skipped = 1869 collected). Version numbers synchronized across all files.
+All systems stable with 1854 tests passing (+ 30 skipped = 1884 collected). Version numbers synchronized across all files.
+
+v0.1.74 changes:
+- Added automatic tail width scaling with distance for speech bubbles
+- Closer bubbles get wider tails (max 30px), farther bubbles get narrower tails (min 8px)
+- New parameters: auto_tail_width, min_tail_width, max_tail_width, tail_width_close_distance, tail_width_far_distance
+- Added get_effective_tail_width() method to Bubble class
+- Added 15 new tests for tail width scaling functionality
+- All "Should Have" items in bubble-tail-improvements.md now complete
 
 v0.1.73 changes:
 - Added `Panel.split_curve()` method for splitting panels along curved bezier lines

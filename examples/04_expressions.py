@@ -1,4 +1,5 @@
 """Showcase of different character expressions."""
+# Status: ✅ Working (v0.1.108)
 
 from comix import Stickman, TwoByTwo
 

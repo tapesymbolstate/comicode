@@ -14,47 +14,49 @@ Generated PNG files will be saved to `examples/output/`.
 
 ## Examples List
 
+**Status Legend**: ✅ Working | 🔴 Broken | 🚧 Work in Progress
+
 ### Core Examples (01-05)
 
-1. **01_simple_dialogue.py** - Two characters having a conversation (2 panels)
-2. **02_four_panel_comic.py** - Traditional 4-panel (4koma) comic structure
-3. **03_group_scene.py** - Multiple characters in a single panel
-4. **04_expressions.py** - Different character expressions (happy, sad, angry, etc.)
-5. **05_bubble_types.py** - Different speech bubble styles (speech, thought, shout, whisper)
+1. ✅ **01_simple_dialogue.py** - Two characters having a conversation (2 panels)
+2. ✅ **02_four_panel_comic.py** - Traditional 4-panel (4koma) comic structure
+3. ✅ **03_group_scene.py** - Multiple characters in a single panel
+4. ✅ **04_expressions.py** - Different character expressions (happy, sad, angry, etc.)
+5. ✅ **05_bubble_types.py** - Different speech bubble styles (speech, thought, shout, whisper)
 
 ### Advanced Examples (06-11)
 
-6. **06_multi_page_pdf.py** - Creating multi-page PDF comics using the Book class
-7. **07_custom_layout.py** - Custom grid layouts (3x2, 2x3, etc.)
-8. **08_manual_positioning.py** - Precise manual positioning of elements
-9. **09_using_templates.py** - Using built-in templates (FourKoma, TwoByTwo, ActionPage, WebComic)
-10. **10_error_handling.py** - Graceful error handling and fallbacks
-11. **11_html_export.py** - Interactive HTML export with zoom, pan, dark/light themes
+6. ✅ **06_multi_page_pdf.py** - Creating multi-page PDF comics using the Book class
+7. ✅ **07_custom_layout.py** - Custom grid layouts (3x2, 2x3, etc.)
+8. ✅ **08_manual_positioning.py** - Precise manual positioning of elements
+9. ✅ **09_using_templates.py** - Using built-in templates (FourKoma, TwoByTwo, ActionPage, WebComic)
+10. ✅ **10_error_handling.py** - Graceful error handling and fallbacks
+11. ✅ **11_html_export.py** - Interactive HTML export with zoom, pan, dark/light themes
 
 ### Extended Examples (12-17)
 
-12. **12_parser_dsl.py** - Create comics from markup text using the DSL parser
-13. **13_visual_effects.py** - Manga-style visual effects (shake, zoom, motion, focus, impact)
-14. **14_animation_export.py** - GIF animation export with Timeline and easing functions
-15. **15_video_export.py** - MP4/WebM video export with quality settings
-16. **16_character_types.py** - Showcase of all 9 character types with expressions and poses
-17. **17_ai_image_generation.py** - AI image generation with DALL-E and Replicate
+12. ✅ **12_parser_dsl.py** - Create comics from markup text using the DSL parser
+13. ✅ **13_visual_effects.py** - Manga-style visual effects (shake, zoom, motion, focus, impact)
+14. ✅ **14_animation_export.py** - GIF animation export with Timeline and easing functions
+15. ✅ **15_video_export.py** - MP4/WebM video export with quality settings
+16. ✅ **16_character_types.py** - Showcase of all 9 character types with expressions and poses
+17. ✅ **17_ai_image_generation.py** - AI image generation with DALL-E and Replicate
 
 ### Layout & Styling Examples (18-20)
 
-18. **18_flow_layout.py** - FlowLayout for responsive, content-aware positioning
+18. ✅ **18_flow_layout.py** - FlowLayout for responsive, content-aware positioning
     - Horizontal flow with automatic wrapping
     - Vertical flow for column-based layouts
     - Alignment options (start, center, end)
     - Variable-sized panels that maintain proportions
 
-19. **19_constraint_layout.py** - ConstraintLayout for precise, relational positioning
+19. ✅ **19_constraint_layout.py** - ConstraintLayout for precise, relational positioning
     - Basic edge constraints (left, right, top, bottom)
     - Relative positioning between elements
     - Center alignment and proportional sizing
     - Complex multi-panel manga arrangements
 
-20. **20_themes_and_styles.py** - Themes and Styles for consistent comic styling
+20. ✅ **20_themes_and_styles.py** - Themes and Styles for consistent comic styling
     - Built-in style presets (MANGA, WEBTOON, COMIC, MINIMAL)
     - Built-in themes and their visual differences
     - Creating custom themes with ColorPalette
@@ -62,13 +64,13 @@ Generated PNG files will be saved to `examples/output/`.
 
 ### Text & Templates Examples (21-22)
 
-21. **21_text_and_narration.py** - StyledText, SFX, and NarratorBubble
+21. ✅ **21_text_and_narration.py** - StyledText, SFX, and NarratorBubble
     - Caption boxes for scene descriptions
     - Sound effects (onomatopoeia) with outlines
     - Time and place indicators
     - Story narration and combined text types
 
-22. **22_advanced_templates.py** - ThreeRowLayout and MangaPage templates
+22. ✅ **22_advanced_templates.py** - ThreeRowLayout and MangaPage templates
     - ThreeRowLayout with custom panel configurations
     - MangaPage presets (six_panel, dialogue, action)
     - Custom row heights and proportions
@@ -76,22 +78,22 @@ Generated PNG files will be saved to `examples/output/`.
 
 ### Development Workflow (23-26)
 
-23. **23_preview_server.py** - Preview Server for live development
+23. ✅ **23_preview_server.py** - Preview Server for live development
     - Hot-reload capability for rapid iteration
     - CLI usage: `uv run comix serve script.py`
     - Creating preview-friendly scripts
     - One-shot preview mode
 
-24. **24_new_templates.py** - NewspaperStrip and Widescreen templates
+24. ✅ **24_new_templates.py** - NewspaperStrip and Widescreen templates
     - NewspaperStrip for classic 3-4 horizontal panel comics
     - Widescreen for cinematic 16:9 or 21:9 aspect ratio layouts
 
-25. **25_panel_shapes.py** - Advanced panel shapes for dynamic layouts
+25. ✅ **25_panel_shapes.py** - Advanced panel shapes for dynamic layouts
     - DiagonalPanel, TrapezoidPanel, StarburstPanel, CloudPanel, ExplosionPanel
     - Panel splitting methods (split_diagonal, split_curve)
     - Mixed shapes comic demonstrating multiple panel types
 
-26. **26_stickman_articulation.py** - Joint-level control for Stickman characters
+26. ✅ **26_stickman_articulation.py** - Joint-level control for Stickman characters
     - set_arm_angles() for shoulder and elbow control (0-360° / 0-180°)
     - set_leg_angles() for hip and knee control
     - set_hands() with 7 gesture options (none, fist, open, point, peace, thumbs_up, relaxed)

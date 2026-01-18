@@ -6,6 +6,7 @@ This example demonstrates precise control over:
 - Custom colors and styling
 - Bubble attachment and positioning
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import Page, Panel, Stickman
 from comix.cobject.bubble import SpeechBubble

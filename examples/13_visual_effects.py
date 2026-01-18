@@ -3,6 +3,7 @@
 Demonstrates the 6 effect types available in the effects system:
 ShakeEffect, ZoomEffect, MotionLines, FocusLines, AppearEffect, ImpactEffect
 """
+# Status: ✅ Working (v0.1.108)
 
 import math
 from comix import Page, Panel, Stickman

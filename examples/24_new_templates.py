@@ -4,6 +4,7 @@ This example demonstrates the newly added page templates:
 - NewspaperStrip: Classic 3-4 horizontal panel newspaper format
 - Widescreen: Cinematic 16:9 aspect ratio panels for modern webcomics
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import Stickman
 from comix.page.templates import NewspaperStrip, Widescreen

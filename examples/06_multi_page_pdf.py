@@ -5,6 +5,7 @@ This example demonstrates creating a multi-page comic book with:
 - Story pages using different layouts
 - PDF export with all pages combined
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import Book, Page, Panel, Stickman, Text
 from comix.page.templates import SplashPage, TwoByTwo

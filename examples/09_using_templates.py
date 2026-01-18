@@ -6,6 +6,7 @@ This example demonstrates the variety of pre-built templates:
 - ActionPage (large panel + small panels)
 - WebComic (vertical scroll format)
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import Stickman
 from comix.page.templates import FourKoma, TwoByTwo, ActionPage, WebComic

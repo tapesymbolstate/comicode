@@ -3,6 +3,7 @@
 Demonstrates the markup parser for rapid comic creation without writing
 Python code for every element. The DSL reads like a screenplay.
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix.parser import parse_markup
 

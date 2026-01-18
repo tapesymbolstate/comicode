@@ -5,6 +5,7 @@ This example demonstrates creating custom grid layouts with:
 - Different gutter (spacing) settings
 - Auto-layout positioning
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import Page, Panel, Stickman
 

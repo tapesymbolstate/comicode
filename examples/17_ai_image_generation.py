@@ -10,6 +10,7 @@ Demonstrates the AI image generation system for comic artwork:
 Requires: uv sync --extra ai
 Environment: OPENAI_API_KEY and/or REPLICATE_API_TOKEN
 """
+# Status: ✅ Working (v0.1.108)
 
 import os
 from pathlib import Path

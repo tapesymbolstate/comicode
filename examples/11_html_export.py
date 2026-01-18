@@ -10,6 +10,7 @@ Demonstrates the HTML renderer's interactive features:
 - Keyboard shortcuts
 - Touch support for mobile
 """
+# Status: ✅ Working (v0.1.108)
 
 from pathlib import Path
 

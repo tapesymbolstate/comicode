@@ -12,6 +12,7 @@ This example demonstrates:
 - Story narration
 - Combining multiple text types in panels
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import Page, Panel, Stickman
 from comix.cobject.text.text import Text, StyledText, SFX

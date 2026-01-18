@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.108] - 2026-01-18
+
+### Documentation
+- Added status indicators (✅/🔴/🚧) to examples/README.md for all 26 examples
+- Added status comments to all 26 example files (e.g., `# Status: ✅ Working (v0.1.108)`)
+- Updated examples-maintenance.md: Marked all "Must Have" acceptance criteria as complete
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
+
+### Tests
+- Test count: 2087 passed, 30 skipped (2117 collected)
+
 ## [v0.1.107] - 2026-01-18
 
 ### Documentation

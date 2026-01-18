@@ -10,6 +10,7 @@ This example demonstrates:
 - Center alignment and proportional sizing
 - Complex multi-panel arrangements
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import Page, Panel, Stickman
 from comix.layout.constraints import ConstraintLayout

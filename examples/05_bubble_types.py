@@ -1,4 +1,5 @@
 """Showcase of different speech bubble types."""
+# Status: ✅ Working (v0.1.108)
 
 from comix import (
     Page,

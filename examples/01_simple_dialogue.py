@@ -1,4 +1,5 @@
 """Simple two-panel dialogue between two stick figures."""
+# Status: ✅ Working (v0.1.108)
 
 from comix import Page, Panel, Stickman
 

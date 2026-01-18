@@ -10,6 +10,7 @@ This example demonstrates:
 - Alignment options (start, center, end)
 - Variable-sized panels that maintain their proportions
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import Page, Panel, Stickman
 from comix.layout.flow import FlowLayout

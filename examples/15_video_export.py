@@ -8,6 +8,7 @@ Demonstrates the video export system for creating video files:
 
 Requires: uv sync --extra video
 """
+# Status: ✅ Working (v0.1.108)
 
 from pathlib import Path
 

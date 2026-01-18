@@ -4,6 +4,7 @@ Demonstrates how to position multiple characters and speech bubbles
 in a single panel without overlap. Uses manual bubble positioning
 to ensure clean, readable dialogue placement.
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import Page, Panel, Stickman
 

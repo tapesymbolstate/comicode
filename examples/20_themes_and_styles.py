@@ -12,6 +12,7 @@ This example demonstrates:
 - Creating custom themes
 - Using ThemeRegistry for theme management
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import Page, Panel, Stickman
 from comix.style.style import Style, MANGA_STYLE, WEBTOON_STYLE, COMIC_STYLE, MINIMAL_STYLE

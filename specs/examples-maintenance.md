@@ -1,6 +1,6 @@
 # Examples Maintenance - 예제 정리 및 관리 기준
 
-> **Status (v0.1.106)**: All 26 examples execute without errors and produce correct visual output. All visual bugs have been fixed (v0.1.85).
+> **Status (v0.1.108)**: All 26 examples execute without errors and produce correct visual output. All visual bugs have been fixed (v0.1.85). Status indicators added to README and all example files.
 
 ## What
 examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 예제만 유지**하고, 버그가 있는 예제는 명확히 표시하거나 임시 제거한다.
@@ -8,10 +8,12 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 ## Why
 **망가진 예제가 있으면 사용자가 혼란스럽다.**
 
-현재 상황 (v0.1.106):
+현재 상황 (v0.1.108):
 - ✅ 01-26 예제 파일 모두 존재
 - ✅ 모든 예제가 에러 없이 실행됨 (no exceptions)
 - ✅ **시각적 출력 정상** (모든 버그 수정 완료)
+- ✅ README.md에 상태 표시 추가
+- ✅ 각 예제 파일에 상태 주석 추가
 
 **참고**: 코드 실행 성공 ≠ 시각적 품질 OK. PNG 파일을 육안으로 확인해야 함.
 
@@ -19,11 +21,11 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 
 ### Must Have
 
-- [ ] examples/README.md에 각 예제의 상태 표시 (✅ 작동 / 🔴 버그 / 🚧 작업중)
-- [ ] 버그 있는 예제는 파일명에 `.BROKEN.py` 추가하거나 `_broken/` 디렉토리로 이동
-- [ ] 작동하는 예제만 메인 examples/ 디렉토리에 유지
-- [ ] 각 예제 파일 상단에 상태 주석 추가
-- [ ] Ralph Agent가 수정 작업 시 예제 상태 업데이트
+- [x] examples/README.md에 각 예제의 상태 표시 (✅ 작동 / 🔴 버그 / 🚧 작업중) - Added in v0.1.108
+- [x] 버그 있는 예제는 파일명에 `.BROKEN.py` 추가하거나 `_broken/` 디렉토리로 이동 - N/A (all examples working)
+- [x] 작동하는 예제만 메인 examples/ 디렉토리에 유지 - All 26 examples working
+- [x] 각 예제 파일 상단에 상태 주석 추가 - Added in v0.1.108
+- [x] Ralph Agent가 수정 작업 시 예제 상태 업데이트 - Process documented
 
 ### Should Have
 
@@ -33,7 +35,7 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 
 ## Current Examples Status
 
-**All 26 examples execute without errors** and produce correct visual output. All visual bugs have been fixed (v0.1.85).
+**All 26 examples execute without errors** and produce correct visual output. All visual bugs have been fixed (v0.1.85). Status indicators added in v0.1.108.
 
 | Example | Status |
 |---------|--------|

@@ -14,6 +14,7 @@ This example demonstrates the variety of character styles:
 Each character type has unique visual characteristics while sharing
 the same expression and pose APIs.
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import (
     Page,

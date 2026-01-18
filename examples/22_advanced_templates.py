@@ -12,6 +12,7 @@ This example demonstrates:
 - Custom row heights and proportions
 - Combining templates for varied page designs
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import Stickman
 from comix.page.templates import ThreeRowLayout, MangaPage

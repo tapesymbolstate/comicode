@@ -8,6 +8,7 @@ This example demonstrates non-rectangular panel types:
 - ExplosionPanel: Jagged explosion panels for action scenes
 - Panel splitting: split_diagonal() and split_curve() methods
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import (
     Page,

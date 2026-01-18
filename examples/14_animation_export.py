@@ -7,6 +7,7 @@ Demonstrates the animation system for exporting animated GIFs:
 - AnimationGroup for parallel/sequential animations
 - Various easing functions for smooth motion
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import Page, Panel, Stickman
 from comix.effect import ImpactEffect, ZoomEffect, FocusLines

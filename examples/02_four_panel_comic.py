@@ -1,4 +1,5 @@
 """Four-panel comic (4koma style) with a simple joke."""
+# Status: ✅ Working (v0.1.108)
 
 from comix import FourKoma, Stickman
 

@@ -52,6 +52,7 @@ For the preview server to work, your script must:
 
 The script below demonstrates a preview-friendly comic.
 """
+# Status: ✅ Working (v0.1.108)
 
 from comix import Page, Panel, Stickman
 

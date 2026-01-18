@@ -8,7 +8,7 @@ A collection of complete, runnable Python scripts that demonstrate common comic 
 ## Why
 Documentation alone is not enough. Developers learn best from working code they can run, modify, and experiment with. Examples must:
 - Actually execute without errors
-- Produce visible, **correct** output ⚠️ **This criterion is not fully met - visual bugs exist**
+- Produce visible, **correct** output ✅
 - Cover common use cases
 - Be simple enough to understand quickly
 - Serve as copy-paste starting points
@@ -343,7 +343,7 @@ Generated PNG files will be saved to `examples/output/`.
 13. **13_visual_effects.py** - Visual effects (shake, zoom, motion, focus, impact)
 14. **14_animation_export.py** - GIF animation export with Timeline and easing
 15. **15_video_export.py** - MP4/WebM video export with quality settings
-16. **16_character_types.py** - All 8 character types with expressions and poses
+16. **16_character_types.py** - All 9 character types with expressions and poses
 17. **17_ai_image_generation.py** - AI image generation with DALL-E and Replicate
 18. **18_flow_layout.py** - FlowLayout for responsive positioning
 19. **19_constraint_layout.py** - ConstraintLayout for precise, relational positioning
@@ -351,6 +351,7 @@ Generated PNG files will be saved to `examples/output/`.
 21. **21_text_and_narration.py** - StyledText, SFX, NarratorBubble
 22. **22_advanced_templates.py** - ThreeRowLayout, MangaPage templates
 23. **23_preview_server.py** - Preview Server for live development
+24. **24_new_templates.py** - NewspaperStrip, Widescreen templates
 
 ## Requirements
 
@@ -422,10 +423,10 @@ Feel free to modify these examples to experiment:
 ## Success Metrics
 
 **This spec is successful when:**
-1. ✅ All 23 examples execute without errors
-2. ❌ **All examples produce correct visual output** - NOT MET: Visual bugs exist (see CRITICAL-BUGS-AND-FIXES.md)
+1. ✅ All 24 examples execute without errors
+2. ✅ All examples produce correct visual output (fixed in v0.1.85)
 3. ✅ A new developer can run examples within 5 minutes
-4. ⚠️ Examples serve as effective templates for custom comics - partially (code works, but visual bugs need fixing)
+4. ✅ Examples serve as effective templates for custom comics
 5. ✅ Example code is clear enough to understand without extensive docs
 
-**Current Status**: 3 of 5 metrics fully met, 1 partially met, 1 not met. Visual bugs are blocking full success.
+**Current Status**: All 5 metrics fully met. All visual bugs fixed in v0.1.85.

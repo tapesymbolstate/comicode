@@ -22,15 +22,17 @@ if TYPE_CHECKING:
 
 # Check for optional watchdog dependency
 WATCHDOG_AVAILABLE = False
+_FileSystemEventHandlerBase: type = object
 
 try:
     from watchdog.events import FileSystemEventHandler  # noqa: F811
     from watchdog.observers import Observer  # noqa: F811
 
+    _FileSystemEventHandlerBase = FileSystemEventHandler
     WATCHDOG_AVAILABLE = True
 except ImportError:
-    Observer = None  # type: ignore[assignment]
-    FileSystemEventHandler = object  # type: ignore[misc, assignment]
+    Observer = None
+    FileSystemEventHandler = None
 
 
 class PreviewError(Exception):
@@ -402,7 +404,7 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 if WATCHDOG_AVAILABLE:
 
-    class ScriptChangeHandler(FileSystemEventHandler):
+    class ScriptChangeHandler(_FileSystemEventHandlerBase):  # type: ignore[misc]
         """Watchdog handler for script file changes."""
 
         def __init__(self, loader: ScriptLoader, callback: Callable[[], None] | None = None) -> None:

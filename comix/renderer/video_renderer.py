@@ -22,17 +22,19 @@ try:
 except ImportError:
     cairo = None  # type: ignore[assignment]
 
+_ffmpeg_exe: Callable[[], str] | None = None
+
 try:
     import imageio.v3 as iio
     from imageio_ffmpeg import get_ffmpeg_exe as _get_ffmpeg_exe
 
-    def _ffmpeg_exe() -> str:
+    def _get_ffmpeg_path() -> str:
         return _get_ffmpeg_exe()  # type: ignore[no-any-return]
 
+    _ffmpeg_exe = _get_ffmpeg_path
     _IMAGEIO_AVAILABLE = True
 except ImportError:
-    iio = None  # type: ignore[assignment]
-    _ffmpeg_exe = None  # type: ignore[assignment]
+    iio = None
     _IMAGEIO_AVAILABLE = False
 
 if TYPE_CHECKING:
@@ -156,7 +158,7 @@ class VideoRenderer:
         else:
             temp_video_path = output_path
 
-        with iio.imopen(  # type: ignore[call-overload]
+        with iio.imopen(
             temp_video_path,
             "w",
             plugin="pyav",
@@ -238,6 +240,7 @@ class VideoRenderer:
         """Combine video with audio track using ffmpeg."""
         import subprocess
 
+        assert _ffmpeg_exe is not None
         ffmpeg_exe = _ffmpeg_exe()
         subprocess.run(
             [

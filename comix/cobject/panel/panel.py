@@ -355,6 +355,197 @@ class Panel(CObject):
 
         return (panel1, panel2)
 
+    def split_curve(
+        self,
+        control_points: list[tuple[float, float]] | None = None,
+        direction: str = "top-left-to-bottom-right",
+        curve_intensity: float = 0.3,
+        num_curve_points: int = 20,
+    ) -> tuple["IrregularPanel", "IrregularPanel"]:
+        """Split this panel along a curved bezier line, creating two curved panels.
+
+        Divides the panel along a curved line using bezier control points.
+        This is useful for creating dynamic manga-style layouts with flowing,
+        organic panel divisions instead of straight diagonal cuts.
+
+        Args:
+            control_points: Optional list of (x, y) tuples defining bezier control
+                points. If None, default S-curve control points are generated based
+                on direction and curve_intensity. Points should be in relative
+                coordinates (-0.5 to 0.5 for each axis).
+            direction: Direction of the curved split. Valid values:
+                - "top-left-to-bottom-right" (default): Curve from top-left area
+                  to bottom-right area.
+                - "top-right-to-bottom-left": Curve from top-right area to
+                  bottom-left area.
+            curve_intensity: How much the curve bulges (0.0-1.0). Higher values
+                create more pronounced curves. Default is 0.3. Only used when
+                control_points is None.
+            num_curve_points: Number of points to generate along the curve.
+                Higher values create smoother curves. Default is 20.
+
+        Returns:
+            A tuple of two IrregularPanel objects representing the split portions.
+
+        Raises:
+            ValueError: If direction is not valid or control_points has < 2 points.
+
+        Example:
+            >>> panel = Panel(width=400, height=400)
+            >>> # Simple curved split with default S-curve
+            >>> top_panel, bottom_panel = panel.split_curve()
+            >>>
+            >>> # Custom bezier curve control points (relative coordinates)
+            >>> ctrl = [(-0.5, 0.5), (-0.2, 0.3), (0.2, -0.3), (0.5, -0.5)]
+            >>> left_panel, right_panel = panel.split_curve(control_points=ctrl)
+
+        Note:
+            - Both resulting panels are positioned at the original panel's center.
+            - Content from the original panel is NOT automatically transferred.
+            - Border and background settings are copied to both new panels.
+            - The original panel is not modified.
+        """
+        from comix.utils.bezier import bezier_curve
+
+        valid_directions = ("top-left-to-bottom-right", "top-right-to-bottom-left")
+        if direction not in valid_directions:
+            raise ValueError(
+                f"Invalid direction '{direction}' for split_curve. "
+                f"Valid directions: {', '.join(valid_directions)}"
+            )
+
+        half_w = self.width / 2
+        half_h = self.height / 2
+
+        # Generate default control points if not provided
+        if control_points is None:
+            curve_intensity = max(0.0, min(1.0, curve_intensity))
+
+            if direction == "top-left-to-bottom-right":
+                # S-curve from top-left to bottom-right
+                control_points = [
+                    (-0.5, 0.5),   # Start: top-left corner
+                    (-0.5 + curve_intensity, 0.5 - curve_intensity * 0.5),  # Control 1
+                    (0.5 - curve_intensity, -0.5 + curve_intensity * 0.5),  # Control 2
+                    (0.5, -0.5),   # End: bottom-right corner
+                ]
+            else:  # top-right-to-bottom-left
+                # S-curve from top-right to bottom-left
+                control_points = [
+                    (0.5, 0.5),    # Start: top-right corner
+                    (0.5 - curve_intensity, 0.5 - curve_intensity * 0.5),  # Control 1
+                    (-0.5 + curve_intensity, -0.5 + curve_intensity * 0.5),  # Control 2
+                    (-0.5, -0.5),  # End: bottom-left corner
+                ]
+
+        if len(control_points) < 2:
+            raise ValueError(
+                f"split_curve requires at least 2 control points, got: {len(control_points)}"
+            )
+
+        # Convert relative coordinates to absolute coordinates
+        abs_control_points = [
+            (p[0] * self.width, p[1] * self.height) for p in control_points
+        ]
+
+        # Generate curve points using cubic bezier
+        if len(abs_control_points) == 2:
+            # Linear interpolation for 2 points
+            p0, p1 = abs_control_points
+            t_values = np.linspace(0, 1, num_curve_points)
+            curve_points = [
+                (p0[0] + t * (p1[0] - p0[0]), p0[1] + t * (p1[1] - p0[1]))
+                for t in t_values
+            ]
+        elif len(abs_control_points) == 3:
+            # Quadratic bezier for 3 points
+            p0, p1, p2 = abs_control_points
+            t_values = np.linspace(0, 1, num_curve_points)
+            curve_points = [
+                (
+                    (1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * p1[0] + t ** 2 * p2[0],
+                    (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * p1[1] + t ** 2 * p2[1],
+                )
+                for t in t_values
+            ]
+        else:
+            # Cubic bezier for 4+ points (use first 4)
+            p0 = abs_control_points[0]
+            p1 = abs_control_points[1]
+            p2 = abs_control_points[-2] if len(abs_control_points) > 3 else abs_control_points[1]
+            p3 = abs_control_points[-1]
+            curve_array = bezier_curve(p0, p1, p2, p3, num_curve_points)
+            curve_points = [(pt[0], pt[1]) for pt in curve_array]
+
+        # Build panel polygons based on direction
+        # Panel 1 includes the "upper/left" side of the curve
+        # Panel 2 includes the "lower/right" side of the curve
+
+        if direction == "top-left-to-bottom-right":
+            # Panel 1: Top-right region (above the curve)
+            # Corners: top-left, top-right, bottom-right, then curve back to top-left
+            panel1_points = [
+                (-half_w, half_h),   # Top-left
+                (half_w, half_h),    # Top-right
+                (half_w, -half_h),   # Bottom-right
+            ]
+            # Add curve points in reverse (from bottom-right to top-left)
+            panel1_points.extend(reversed(curve_points))
+
+            # Panel 2: Bottom-left region (below the curve)
+            # Start with curve, then corners
+            panel2_points = list(curve_points)
+            panel2_points.append((-half_w, -half_h))  # Bottom-left corner
+        else:  # top-right-to-bottom-left
+            # Panel 1: Top-left region (left of the curve)
+            panel1_points = [
+                (-half_w, half_h),   # Top-left
+            ]
+            # Add curve points (from top-right to bottom-left)
+            panel1_points.extend(curve_points)
+            panel1_points.append((-half_w, -half_h))  # Bottom-left corner
+
+            # Panel 2: Bottom-right region (right of the curve)
+            # Corners first, then curve in reverse
+            panel2_points = [
+                (half_w, half_h),    # Top-right
+                (half_w, -half_h),   # Bottom-right
+            ]
+            panel2_points.extend(reversed(curve_points))
+
+        # Create the two irregular panels
+        panel1 = IrregularPanel(
+            points=panel1_points,
+            border=Border(
+                color=self.border.color,
+                width=self.border.width,
+                style=self.border.style,
+                radius=self.border.radius,
+            ),
+            background_color=self.background_color,
+            padding=self.padding,
+        )
+
+        panel2 = IrregularPanel(
+            points=panel2_points,
+            border=Border(
+                color=self.border.color,
+                width=self.border.width,
+                style=self.border.style,
+                radius=self.border.radius,
+            ),
+            background_color=self.background_color,
+            padding=self.padding,
+        )
+
+        # Position both panels at the original panel's center
+        original_center = self.get_center()
+        center_tuple = (float(original_center[0]), float(original_center[1]))
+        panel1.move_to(center_tuple)
+        panel2.move_to(center_tuple)
+
+        return (panel1, panel2)
+
 
 class DiagonalPanel(Panel):
     """Panel with one corner cut diagonally.

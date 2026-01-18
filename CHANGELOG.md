@@ -2,6 +2,47 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.73] - 2026-01-18
+
+### Features
+- **Panel.split_curve() method**: Split panels along curved bezier lines for flowing, organic panel divisions
+  - Supports custom bezier control points for precise curve control
+  - Automatic S-curve generation with configurable `curve_intensity` (0.0-1.0)
+  - Both directions: "top-left-to-bottom-right" and "top-right-to-bottom-left"
+  - Supports 2, 3, or 4+ control points (linear, quadratic, or cubic bezier)
+  - Split panels inherit border, background, and padding from original
+
+### Tests
+- Added 20 new tests for split_curve functionality
+- Test count: 1839 passed, 30 skipped (1869 collected)
+
+### Documentation
+- Updated panel-shapes.md to mark split_curve() as implemented
+- Updated version numbers across all files
+
+## [v0.1.72] - 2026-01-18
+
+### Features
+- **NewspaperStrip template**: Classic 3-4 horizontal panel layout for newspaper-style comics
+- **Widescreen template**: Cinematic 16:9 aspect ratio panels for modern webcomics
+
+### Tests
+- Added 22 new tests for new templates
+- Test count: 1819 passed, 30 skipped (1849 collected)
+
+### Documentation
+- Added example 24 demonstrating new templates
+
+## [v0.1.71] - 2026-01-18
+
+### Features
+- **Panel.split_diagonal() method**: Dynamic comic layout splitting for triangular panel pieces
+  - Supports two directions: "top-left-to-bottom-right" and "top-right-to-bottom-left"
+  - Split panels inherit border, background, and padding from original
+
+### Tests
+- Added 12 new tests for split_diagonal functionality
+
 ## [v0.1.70] - 2026-01-18
 
 ### Features

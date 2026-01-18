@@ -495,3 +495,230 @@ class TestSplitDiagonal:
         # Verify dimensions make sense for wide panel
         assert panel1.width == 400  # Width from bounding box
         assert panel2.width == 400
+
+
+class TestSplitCurve:
+    """Tests for Panel.split_curve() method."""
+
+    def test_split_curve_basic(self):
+        """Test basic curved split returns two IrregularPanels."""
+        panel = Panel(width=400, height=400)
+        panel1, panel2 = panel.split_curve()
+
+        assert isinstance(panel1, IrregularPanel)
+        assert isinstance(panel2, IrregularPanel)
+
+    def test_split_curve_default_direction(self):
+        """Test default direction is top-left-to-bottom-right."""
+        panel = Panel(width=200, height=200)
+        panel1, panel2 = panel.split_curve()
+
+        # Both panels should have more points than diagonal split (due to curve)
+        assert len(panel1.polygon_points) > 3
+        assert len(panel2.polygon_points) > 3
+
+    def test_split_curve_top_left_to_bottom_right(self):
+        """Test split direction top-left-to-bottom-right."""
+        panel = Panel(width=200, height=200)
+        panel1, panel2 = panel.split_curve(direction="top-left-to-bottom-right")
+
+        # Verify both panels were created with multiple curve points
+        assert len(panel1.polygon_points) >= 20  # num_curve_points default + corners
+        assert len(panel2.polygon_points) >= 20
+
+    def test_split_curve_top_right_to_bottom_left(self):
+        """Test split direction top-right-to-bottom-left."""
+        panel = Panel(width=200, height=200)
+        panel1, panel2 = panel.split_curve(direction="top-right-to-bottom-left")
+
+        # Verify both panels were created with multiple curve points
+        assert len(panel1.polygon_points) >= 20
+        assert len(panel2.polygon_points) >= 20
+
+    def test_split_curve_invalid_direction(self):
+        """Test that invalid direction raises ValueError."""
+        panel = Panel(width=200, height=200)
+        with pytest.raises(ValueError) as exc_info:
+            panel.split_curve(direction="invalid-direction")
+
+        assert "Invalid direction" in str(exc_info.value)
+        assert "top-left-to-bottom-right" in str(exc_info.value)
+        assert "top-right-to-bottom-left" in str(exc_info.value)
+
+    def test_split_curve_inherits_border(self):
+        """Test that split panels inherit border settings."""
+        border = Border(color="#FF0000", width=3.0, style="dashed", radius=5.0)
+        panel = Panel(width=200, height=200, border=border)
+        panel1, panel2 = panel.split_curve()
+
+        assert panel1.border.color == "#FF0000"
+        assert panel1.border.width == 3.0
+        assert panel1.border.style == "dashed"
+        assert panel1.border.radius == 5.0
+
+        assert panel2.border.color == "#FF0000"
+        assert panel2.border.width == 3.0
+        assert panel2.border.style == "dashed"
+        assert panel2.border.radius == 5.0
+
+    def test_split_curve_inherits_background_color(self):
+        """Test that split panels inherit background color."""
+        panel = Panel(width=200, height=200, background_color="#EEEEEE")
+        panel1, panel2 = panel.split_curve()
+
+        assert panel1.background_color == "#EEEEEE"
+        assert panel2.background_color == "#EEEEEE"
+
+    def test_split_curve_inherits_padding(self):
+        """Test that split panels inherit padding."""
+        panel = Panel(width=200, height=200, padding=20.0)
+        panel1, panel2 = panel.split_curve()
+
+        assert panel1.padding == 20.0
+        assert panel2.padding == 20.0
+
+    def test_split_curve_preserves_position(self):
+        """Test that split panels are positioned at original panel's center."""
+        panel = Panel(width=200, height=200)
+        panel.move_to((300, 400))
+        panel1, panel2 = panel.split_curve()
+
+        center1 = panel1.get_center()
+        center2 = panel2.get_center()
+
+        assert np.allclose(center1, [300, 400])
+        assert np.allclose(center2, [300, 400])
+
+    def test_split_curve_original_unchanged(self):
+        """Test that original panel is not modified by split."""
+        panel = Panel(width=200, height=200)
+        original_width = panel.width
+        original_height = panel.height
+        original_points = panel._points.copy()
+
+        panel.split_curve()
+
+        assert panel.width == original_width
+        assert panel.height == original_height
+        assert np.array_equal(panel._points, original_points)
+
+    def test_split_curve_custom_control_points(self):
+        """Test split with custom bezier control points."""
+        panel = Panel(width=400, height=400)
+
+        # Custom S-curve control points (relative coordinates)
+        control_points = [
+            (-0.5, 0.5),   # Top-left
+            (-0.2, 0.2),   # Control 1
+            (0.2, -0.2),   # Control 2
+            (0.5, -0.5),   # Bottom-right
+        ]
+        panel1, panel2 = panel.split_curve(control_points=control_points)
+
+        assert isinstance(panel1, IrregularPanel)
+        assert isinstance(panel2, IrregularPanel)
+
+    def test_split_curve_two_control_points(self):
+        """Test split with only two control points (linear interpolation)."""
+        panel = Panel(width=200, height=200)
+
+        # Linear split (two points)
+        control_points = [
+            (-0.5, 0.5),   # Top-left
+            (0.5, -0.5),   # Bottom-right
+        ]
+        panel1, panel2 = panel.split_curve(control_points=control_points)
+
+        assert isinstance(panel1, IrregularPanel)
+        assert isinstance(panel2, IrregularPanel)
+
+    def test_split_curve_three_control_points(self):
+        """Test split with three control points (quadratic bezier)."""
+        panel = Panel(width=200, height=200)
+
+        # Quadratic curve (three points)
+        control_points = [
+            (-0.5, 0.5),   # Start
+            (0.0, 0.0),    # Control
+            (0.5, -0.5),   # End
+        ]
+        panel1, panel2 = panel.split_curve(control_points=control_points)
+
+        assert isinstance(panel1, IrregularPanel)
+        assert isinstance(panel2, IrregularPanel)
+
+    def test_split_curve_single_control_point_error(self):
+        """Test that single control point raises ValueError."""
+        panel = Panel(width=200, height=200)
+
+        with pytest.raises(ValueError) as exc_info:
+            panel.split_curve(control_points=[(0.0, 0.0)])
+
+        assert "at least 2 control points" in str(exc_info.value)
+
+    def test_split_curve_intensity_zero(self):
+        """Test curve intensity of 0 creates nearly straight line."""
+        panel = Panel(width=200, height=200)
+        panel1, panel2 = panel.split_curve(curve_intensity=0.0)
+
+        # Should still work even with no curve bulge
+        assert isinstance(panel1, IrregularPanel)
+        assert isinstance(panel2, IrregularPanel)
+
+    def test_split_curve_intensity_high(self):
+        """Test curve intensity of 1.0 creates maximum curve."""
+        panel = Panel(width=200, height=200)
+        panel1, panel2 = panel.split_curve(curve_intensity=1.0)
+
+        assert isinstance(panel1, IrregularPanel)
+        assert isinstance(panel2, IrregularPanel)
+
+    def test_split_curve_intensity_clamping(self):
+        """Test curve intensity is clamped to valid range."""
+        panel = Panel(width=200, height=200)
+
+        # Values outside 0-1 should be clamped
+        panel1, panel2 = panel.split_curve(curve_intensity=-0.5)
+        assert isinstance(panel1, IrregularPanel)
+
+        panel1, panel2 = panel.split_curve(curve_intensity=2.0)
+        assert isinstance(panel1, IrregularPanel)
+
+    def test_split_curve_num_points(self):
+        """Test custom number of curve points."""
+        panel = Panel(width=200, height=200)
+
+        # Fewer points for faster rendering
+        panel1, panel2 = panel.split_curve(num_curve_points=5)
+        assert len(panel1.polygon_points) >= 5
+
+        # More points for smoother curve
+        panel1, panel2 = panel.split_curve(num_curve_points=50)
+        assert len(panel1.polygon_points) >= 50
+
+    def test_split_curve_rectangular_panel(self):
+        """Test splitting a non-square rectangular panel."""
+        panel = Panel(width=400, height=200)  # Wide panel
+        panel1, panel2 = panel.split_curve()
+
+        # Both should be irregular panels with curved edge
+        assert isinstance(panel1, IrregularPanel)
+        assert isinstance(panel2, IrregularPanel)
+
+    def test_split_curve_many_control_points(self):
+        """Test split with more than 4 control points uses first and last pairs."""
+        panel = Panel(width=300, height=300)
+
+        # 6 control points - should use p0, p1, p[-2], p[-1]
+        control_points = [
+            (-0.5, 0.5),
+            (-0.3, 0.3),
+            (-0.1, 0.1),
+            (0.1, -0.1),
+            (0.3, -0.3),
+            (0.5, -0.5),
+        ]
+        panel1, panel2 = panel.split_curve(control_points=control_points)
+
+        assert isinstance(panel1, IrregularPanel)
+        assert isinstance(panel2, IrregularPanel)

@@ -27,7 +27,7 @@ Without support for non-rectangular panels, the library cannot create authentic 
 ### Should Have
 - [x] Helper functions to create common diagonal cuts (top-left, top-right, bottom-left, bottom-right)
 - [x] `split_diagonal(angle, direction)` method to divide existing panel along diagonal
-- [ ] `split_curve(control_points)` for curved panel divisions
+- [x] `split_curve(control_points)` for curved panel divisions
 - [ ] Automatic gutter spacing calculations for non-rectangular panels
 - [x] Visual validation that diagonal panels render correctly (via unit tests)
 

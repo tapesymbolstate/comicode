@@ -226,6 +226,13 @@ class CairoRenderer:
 
         if obj_type == "Panel":
             self._render_panel(data)
+            # Apply transform for panel content - makes child coordinates relative to panel center
+            pos = data.get("position", [0, 0])
+            ctx.save()
+            ctx.translate(pos[0], pos[1])
+            for child in cobject.submobjects:
+                self._render_cobject(child)
+            ctx.restore()
         elif obj_type in (
             "Bubble",
             "SpeechBubble",
@@ -235,24 +242,36 @@ class CairoRenderer:
             "NarratorBubble",
         ):
             self._render_bubble(data)
+            for child in cobject.submobjects:
+                self._render_cobject(child)
         elif obj_type in ("Text", "StyledText", "SFX"):
             self._render_text(data)
+            for child in cobject.submobjects:
+                self._render_cobject(child)
         elif obj_type in ("Stickman", "SimpleFace", "ChubbyStickman", "Robot", "Chibi", "Anime", "Superhero", "Cartoon", "Character"):
             self._render_character(data)
+            for child in cobject.submobjects:
+                self._render_cobject(child)
         elif obj_type == "Rectangle":
             self._render_rectangle(data)
+            for child in cobject.submobjects:
+                self._render_cobject(child)
         elif obj_type == "Circle":
             self._render_circle(data)
+            for child in cobject.submobjects:
+                self._render_cobject(child)
         elif obj_type == "Line":
             self._render_line(data)
+            for child in cobject.submobjects:
+                self._render_cobject(child)
         elif obj_type in ("Image", "AIImage"):
             self._render_image(data)
+            for child in cobject.submobjects:
+                self._render_cobject(child)
         else:
             self._render_generic(data)
-
-        # Render children
-        for child in cobject.submobjects:
-            self._render_cobject(child)
+            for child in cobject.submobjects:
+                self._render_cobject(child)
 
         if opacity < 1.0:
             ctx.pop_group_to_source()

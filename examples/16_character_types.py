@@ -72,9 +72,9 @@ def create_character_showcase() -> None:
             # Stickman and ChubbyStickman use default parameters
             char = char_class(name=name, height=100, color=color)
 
-        # Position character in center of their panel area
-        # Grid positions will be set by auto_layout
-        char.move_to((250, 300))
+        # Position character relative to panel center (0, 0)
+        # Characters are positioned slightly below center to leave room for bubble above
+        char.move_to((0, 30))
 
         # Set a happy expression to show personality
         char.set_expression("happy")
@@ -113,7 +113,7 @@ def create_expression_comparison() -> None:
         else:
             char = char_class(name=name, height=100, color=color)
 
-        char.move_to((150, 200))
+        char.move_to((0, 30))
         char.set_expression("surprised")
 
         bubble = char.say("Surprised!")
@@ -154,7 +154,7 @@ def create_pose_showcase() -> None:
         else:
             char = char_class(height=100, color=color)
 
-        char.move_to((200, 200))
+        char.move_to((0, 30))
         char.set_pose(pose)
 
         bubble = char.say(f"{pose.title()}!")

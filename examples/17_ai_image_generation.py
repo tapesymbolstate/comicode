@@ -140,7 +140,7 @@ if openai_available:
         )
         live_img.generate()
 
-        print(f"  Generation successful!")
+        print("  Generation successful!")
         print(f"  Is generated: {live_img.is_generated}")
 
         metadata = live_img.get_generation_metadata()
@@ -176,7 +176,7 @@ if replicate_available:
         )
         rep_img.generate()
 
-        print(f"  Generation successful!")
+        print("  Generation successful!")
         print(f"  Is generated: {rep_img.is_generated}")
 
         rep_page = Page(width=560, height=560)

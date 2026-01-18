@@ -1036,7 +1036,7 @@ class Stickman(Character):
             # Forearm bends from the upper arm direction
             # Elbow bend is relative to upper arm (0° = straight continuation)
             # For left arm, positive elbow bend curves toward body
-            forearm_left_angle = upper_left_angle - left_elbow_rad * np.pi / 180
+            forearm_left_angle = upper_left_angle - left_elbow_rad
 
             # Hand position
             hand_left_x = elbow_left_x - forearm_length * np.cos(forearm_left_angle)
@@ -1062,7 +1062,7 @@ class Stickman(Character):
             elbow_right_y = arm_y - upper_arm_length * np.sin(upper_right_angle)
 
             # Forearm with elbow bend (for right arm, positive curves away from body)
-            forearm_right_angle = upper_right_angle + right_elbow_rad * np.pi / 180
+            forearm_right_angle = upper_right_angle + right_elbow_rad
 
             # Hand position
             hand_right_x = elbow_right_x + forearm_length * np.cos(forearm_right_angle)
@@ -1089,7 +1089,7 @@ class Stickman(Character):
             knee_left_y = hip_y + upper_leg_length * np.sin(upper_left_leg_angle)
 
             # Lower leg bends from upper leg direction
-            lower_left_leg_angle = upper_left_leg_angle + left_knee_rad * np.pi / 180
+            lower_left_leg_angle = upper_left_leg_angle + left_knee_rad
 
             # Foot position
             foot_left_x = knee_left_x - lower_leg_length * np.cos(lower_left_leg_angle)
@@ -1112,7 +1112,7 @@ class Stickman(Character):
             knee_right_y = hip_y + upper_leg_length * np.sin(upper_right_leg_angle)
 
             # Lower leg bends
-            lower_right_leg_angle = upper_right_leg_angle - right_knee_rad * np.pi / 180
+            lower_right_leg_angle = upper_right_leg_angle - right_knee_rad
 
             # Foot position
             foot_right_x = knee_right_x + lower_leg_length * np.cos(lower_right_leg_angle)

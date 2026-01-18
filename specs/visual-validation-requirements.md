@@ -11,7 +11,7 @@
 **코드가 에러 없이 실행되고 테스트가 통과해도 실제 결과물이 엉망일 수 있다.**
 
 현재 상황 (2026-01-18):
-- ✅ 1713개 테스트 통과 (+ 30 skipped = 1743 collected)
+- ✅ 1797개 테스트 통과 (+ 30 skipped = 1827 collected)
 - ✅ 코드 에러 없음
 - ✅ **시각적 버그 수정 완료 (v0.1.62)**
 
@@ -93,7 +93,7 @@
 
 ## Current Known Issues (실제 결과물 검증 결과)
 
-**No known issues.** As of 2026-01-18, all 1713 tests pass (+ 30 skipped = 1743 collected), all 23 examples (01-23) execute successfully and produce correct output, and mypy/ruff pass.
+**No known issues.** As of 2026-01-18, all 1797 tests pass (+ 30 skipped = 1827 collected), all 23 examples (01-23) execute successfully and produce correct output, and mypy/ruff pass.
 
 ## Implementation Strategy
 

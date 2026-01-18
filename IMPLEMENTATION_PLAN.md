@@ -99,7 +99,7 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ## Note: Stable Release (v0.1.72)
 
-All systems stable with 1819 tests passing. Version numbers synchronized across all files.
+All systems stable with 1819 tests passing (+ 30 skipped = 1849 collected). Version numbers synchronized across all files.
 
 v0.1.72 changes:
 - Added `NewspaperStrip` template for classic 3-4 horizontal panel newspaper comics

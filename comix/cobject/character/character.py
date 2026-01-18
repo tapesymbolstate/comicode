@@ -345,20 +345,24 @@ class ArmController:
 
         config = self.ARM_PRESETS[preset]
 
+        shoulder_angle = float(config["shoulder"])
+        elbow_angle = float(config.get("elbow", 0))
+        hand_gesture = str(config["hand"]) if "hand" in config else None
+
         if self._side == "left":
             self._character.set_arm_angles(
-                left_shoulder=config["shoulder"],
-                left_elbow=config.get("elbow", 0)
+                left_shoulder=shoulder_angle,
+                left_elbow=elbow_angle
             )
-            if "hand" in config:
-                self._character.set_hands(left=config["hand"])
+            if hand_gesture is not None:
+                self._character.set_hands(left=hand_gesture)
         else:
             self._character.set_arm_angles(
-                right_shoulder=config["shoulder"],
-                right_elbow=config.get("elbow", 0)
+                right_shoulder=shoulder_angle,
+                right_elbow=elbow_angle
             )
-            if "hand" in config:
-                self._character.set_hands(right=config["hand"])
+            if hand_gesture is not None:
+                self._character.set_hands(right=hand_gesture)
 
         return self._character
 
@@ -798,7 +802,6 @@ class Stickman(Character):
 
         # Get shoulder position (approximate based on character position)
         char_center = self.get_center()
-        shoulder_offset = self.character_height * 0.1  # 10% below head
         shoulder_y = char_center[1] - self.character_height * 0.5 + self.character_height * self.head_ratio * 2 + self.character_height * self.torso_ratio * 0.1
 
         # For left arm, shoulder is slightly to the left; for right, slightly right

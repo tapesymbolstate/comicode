@@ -7,11 +7,13 @@ import pytest
 from comix.cobject.character.character import (
     Anime,
     AnimalStyle,
+    ArmController,
     Cartoon,
     Character,
     Chibi,
     ChubbyStickman,
     Expression,
+    LegController,
     Pose,
     Robot,
     SimpleFace,
@@ -2208,10 +2210,6 @@ class TestAnimalStyle:
         assert len(tall._points) > 0
         assert len(round_ears._points) > 0
         assert len(none_ears._points) > 0
-
-
-# Import controllers for articulation tests
-from comix.cobject.character.character import ArmController, LegController
 
 
 class TestStickmanArticulation:

@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.98**
+**Current Git Tag: v0.1.99**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,14 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.98)
+## Note: Stable Release (v0.1.99)
 
 All systems stable with 2087 tests passing (+ 30 skipped = 2117 collected). Version numbers synchronized across all files.
+
+v0.1.99 changes:
+- Fixed 6 mypy type errors in character.py: ArmController.set_preset() now properly casts preset values
+- Fixed ruff error: Removed unused `shoulder_offset` variable in point_at() method
+- Fixed ruff error: Moved ArmController/LegController imports to top of test_character.py
 
 v0.1.98 changes:
 - Added Stickman Articulation system for joint-level control of limbs

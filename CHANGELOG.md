@@ -2,6 +2,36 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.99] - 2026-01-18
+
+### Bug Fixes
+- **Fixed mypy type errors in character.py**: ArmController.set_preset() now properly casts preset dict values to correct types (float for angles, str for hand gesture)
+- **Fixed ruff error**: Removed unused `shoulder_offset` variable in point_at() method
+- **Fixed ruff error**: Moved ArmController/LegController imports to top of test_character.py to resolve E402 (module-level import not at top of file)
+
+### Tests
+- Test count: 2087 passed, 30 skipped (2117 collected)
+
+## [v0.1.98] - 2026-01-18
+
+### Features
+- **Stickman Articulation System**: Added joint-level control for precise limb positioning
+  - New methods: `set_arm_angles()`, `set_leg_angles()`, `set_hands()`, `point_at()`
+  - Shoulder angles (0-360°): 0° = down, 90° = forward, 180° = up, 270° = back
+  - Elbow/Knee angles (0-180°): 0° = straight, 90° = right angle, 180° = fully bent
+  - 7 hand gesture options: none, fist, open, point, peace, thumbs_up, relaxed
+  - ArmController and LegController helper classes with preset poses
+
+### Examples
+- Added example 26 (26_stickman_articulation.py) demonstrating all articulation features
+
+### Tests
+- Added 72 new tests for articulation functionality
+- Test count: 2087 passed, 30 skipped (2117 collected)
+
+### Documentation
+- Updated stickman-articulation.md spec to mark implementation complete
+
 ## [v0.1.97] - 2026-01-18
 
 ### Maintenance

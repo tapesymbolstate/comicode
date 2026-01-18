@@ -48,11 +48,12 @@ class CairoRenderer:
         format: str | None = None,
         quality: Literal["low", "medium", "high"] = "medium",
     ) -> str:
-        """Render the page to a PNG or PDF file.
+        """Render the page to a PNG, PDF, JPEG, or WebP file.
 
         Args:
             output_path: Path to save the output file.
-            format: Output format ("png" or "pdf"). Auto-detected from path if None.
+            format: Output format ("png", "pdf", "jpg", "jpeg", "webp").
+                    Auto-detected from path if None.
             quality: Rendering quality ("low", "medium", "high").
 
         Returns:
@@ -74,6 +75,10 @@ class CairoRenderer:
 
         if format == "pdf":
             return self._render_pdf(output_path)
+        elif format in ("jpg", "jpeg"):
+            return self._render_jpeg(output_path, quality)
+        elif format == "webp":
+            return self._render_webp(output_path, quality)
         else:
             return self._render_png(output_path)
 
@@ -177,6 +182,99 @@ class CairoRenderer:
         self._draw_page()
 
         self._surface.write_to_png(output_path)
+        return output_path
+
+    def _render_jpeg(
+        self, output_path: str, quality: Literal["low", "medium", "high"]
+    ) -> str:
+        """Render to JPEG format using Pillow.
+
+        Args:
+            output_path: Path to save the JPEG file.
+            quality: Rendering quality ("low", "medium", "high").
+
+        Returns:
+            Path to the rendered file.
+
+        Raises:
+            ImportError: If Pillow is not installed.
+        """
+        try:
+            from PIL import Image as PILImage
+        except ImportError:
+            raise ImportError(
+                "Pillow is required for JPEG output. Install with: uv sync --extra cairo"
+            )
+
+        # First render to PNG in memory
+        scale = self._dpi / 72.0
+        width = int(self.page.width * scale)
+        height = int(self.page.height * scale)
+
+        self._surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
+        self._ctx = cairo.Context(self._surface)
+        self._ctx.scale(scale, scale)
+        self._draw_page()
+
+        # Convert Cairo surface to PIL Image
+        data = self._surface.get_data()
+        pil_image = PILImage.frombuffer(
+            "RGBA", (width, height), bytes(data), "raw", "BGRA", 0, 1
+        )
+
+        # Convert to RGB (JPEG doesn't support alpha)
+        rgb_image = PILImage.new("RGB", pil_image.size, (255, 255, 255))
+        rgb_image.paste(pil_image, mask=pil_image.split()[3])
+
+        # Map quality to JPEG quality (0-100)
+        jpeg_quality = {"low": 60, "medium": 85, "high": 95}.get(quality, 85)
+
+        rgb_image.save(output_path, "JPEG", quality=jpeg_quality)
+        return output_path
+
+    def _render_webp(
+        self, output_path: str, quality: Literal["low", "medium", "high"]
+    ) -> str:
+        """Render to WebP format using Pillow.
+
+        Args:
+            output_path: Path to save the WebP file.
+            quality: Rendering quality ("low", "medium", "high").
+
+        Returns:
+            Path to the rendered file.
+
+        Raises:
+            ImportError: If Pillow is not installed.
+        """
+        try:
+            from PIL import Image as PILImage
+        except ImportError:
+            raise ImportError(
+                "Pillow is required for WebP output. Install with: uv sync --extra cairo"
+            )
+
+        # First render to PNG in memory
+        scale = self._dpi / 72.0
+        width = int(self.page.width * scale)
+        height = int(self.page.height * scale)
+
+        self._surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
+        self._ctx = cairo.Context(self._surface)
+        self._ctx.scale(scale, scale)
+        self._draw_page()
+
+        # Convert Cairo surface to PIL Image
+        data = self._surface.get_data()
+        pil_image = PILImage.frombuffer(
+            "RGBA", (width, height), bytes(data), "raw", "BGRA", 0, 1
+        )
+
+        # Map quality to WebP quality (0-100)
+        webp_quality = {"low": 60, "medium": 80, "high": 95}.get(quality, 80)
+
+        # WebP supports alpha, so we can save RGBA directly
+        pil_image.save(output_path, "WEBP", quality=webp_quality)
         return output_path
 
     def _draw_page(self) -> None:

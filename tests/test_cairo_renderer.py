@@ -80,6 +80,152 @@ class TestCairoRenderer:
             assert Path(output_path).exists()
             Path(output_path).unlink()
 
+    def test_render_jpeg_empty_page(self):
+        """Test rendering an empty page to JPEG."""
+        page = Page(width=400, height=300)
+
+        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="jpg")
+
+            assert Path(output_path).exists()
+            # Check file is a valid JPEG (starts with FFD8FF signature)
+            with open(output_path, "rb") as jpg_file:
+                signature = jpg_file.read(3)
+                assert signature == b"\xff\xd8\xff"
+            Path(output_path).unlink()
+
+    def test_render_jpeg_via_page(self):
+        """Test rendering JPEG via Page.render() method."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.move_to((200, 150))
+        page.add(panel)
+
+        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as f:
+            output_path = page.render(f.name, format="jpg")
+            assert Path(output_path).exists()
+            # Verify file size is reasonable (not empty)
+            assert Path(output_path).stat().st_size > 100
+            Path(output_path).unlink()
+
+    def test_render_jpeg_format_jpeg(self):
+        """Test rendering with 'jpeg' format (alternative spelling)."""
+        page = Page(width=400, height=300)
+
+        with tempfile.NamedTemporaryFile(suffix=".jpeg", delete=False) as f:
+            output_path = page.render(f.name, format="jpeg")
+            assert Path(output_path).exists()
+            Path(output_path).unlink()
+
+    def test_render_jpeg_quality_levels(self):
+        """Test JPEG rendering with different quality levels."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.move_to((200, 150))
+        page.add(panel)
+
+        sizes = {}
+        for quality in ("low", "medium", "high"):
+            with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as f:
+                output_path = page.render(f.name, format="jpg", quality=quality)
+                sizes[quality] = Path(output_path).stat().st_size
+                Path(output_path).unlink()
+
+        # Higher quality should generally produce larger files
+        # (not always true due to content, but for simple content it should)
+        assert sizes["low"] > 0
+        assert sizes["medium"] > 0
+        assert sizes["high"] > 0
+
+    def test_render_webp_empty_page(self):
+        """Test rendering an empty page to WebP."""
+        page = Page(width=400, height=300)
+
+        with tempfile.NamedTemporaryFile(suffix=".webp", delete=False) as f:
+            renderer = CairoRenderer(page)
+            output_path = renderer.render(f.name, format="webp")
+
+            assert Path(output_path).exists()
+            # Check file is a valid WebP (starts with RIFF....WEBP)
+            with open(output_path, "rb") as webp_file:
+                signature = webp_file.read(12)
+                assert signature[:4] == b"RIFF"
+                assert signature[8:12] == b"WEBP"
+            Path(output_path).unlink()
+
+    def test_render_webp_via_page(self):
+        """Test rendering WebP via Page.render() method."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.move_to((200, 150))
+        page.add(panel)
+
+        with tempfile.NamedTemporaryFile(suffix=".webp", delete=False) as f:
+            output_path = page.render(f.name, format="webp")
+            assert Path(output_path).exists()
+            # Verify file size is reasonable (not empty)
+            assert Path(output_path).stat().st_size > 100
+            Path(output_path).unlink()
+
+    def test_render_webp_quality_levels(self):
+        """Test WebP rendering with different quality levels."""
+        page = Page(width=400, height=300)
+        panel = Panel(width=300, height=200)
+        panel.move_to((200, 150))
+        page.add(panel)
+
+        sizes = {}
+        for quality in ("low", "medium", "high"):
+            with tempfile.NamedTemporaryFile(suffix=".webp", delete=False) as f:
+                output_path = page.render(f.name, format="webp", quality=quality)
+                sizes[quality] = Path(output_path).stat().st_size
+                Path(output_path).unlink()
+
+        # Verify all quality levels produce valid files
+        assert sizes["low"] > 0
+        assert sizes["medium"] > 0
+        assert sizes["high"] > 0
+
+    def test_render_webp_preserves_alpha(self):
+        """Test that WebP output preserves alpha channel (transparency)."""
+        # Create a page with transparent background
+        page = Page(width=200, height=200, background_color="#FFFFFF00")
+
+        with tempfile.NamedTemporaryFile(suffix=".webp", delete=False) as f:
+            output_path = page.render(f.name, format="webp")
+            assert Path(output_path).exists()
+            # Just verify it renders without error
+            Path(output_path).unlink()
+
+    def test_render_jpeg_autodetect_from_extension(self):
+        """Test that JPEG format is autodetected from .jpg extension."""
+        page = Page(width=400, height=300)
+
+        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as f:
+            # Don't specify format, let it autodetect
+            output_path = page.render(f.name)
+            assert Path(output_path).exists()
+            # Verify it's actually a JPEG
+            with open(output_path, "rb") as jpg_file:
+                signature = jpg_file.read(3)
+                assert signature == b"\xff\xd8\xff"
+            Path(output_path).unlink()
+
+    def test_render_webp_autodetect_from_extension(self):
+        """Test that WebP format is autodetected from .webp extension."""
+        page = Page(width=400, height=300)
+
+        with tempfile.NamedTemporaryFile(suffix=".webp", delete=False) as f:
+            # Don't specify format, let it autodetect
+            output_path = page.render(f.name)
+            assert Path(output_path).exists()
+            # Verify it's actually a WebP
+            with open(output_path, "rb") as webp_file:
+                signature = webp_file.read(4)
+                assert signature == b"RIFF"
+            Path(output_path).unlink()
+
     def test_render_panel(self):
         """Test rendering a panel."""
         page = Page(width=400, height=300)

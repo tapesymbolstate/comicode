@@ -50,6 +50,10 @@ class Page:
         margin: float = 20.0,
         gutter: float = 10.0,
     ) -> None:
+        if width <= 0 or height <= 0:
+            raise ValueError(
+                f"Page dimensions must be positive. Got width={width}, height={height}"
+            )
         self.width = width
         self.height = height
         self.background_color = background_color
@@ -181,6 +185,9 @@ class Page:
         """Build the page content. Override in subclasses."""
         pass
 
+    # Supported output formats
+    SUPPORTED_FORMATS = ("svg", "png", "pdf", "jpg", "jpeg", "webp", "html", "htm")
+
     def render(
         self,
         output_path: str = "output.svg",
@@ -192,7 +199,8 @@ class Page:
 
         Args:
             output_path: Output file path.
-            format: Output format ("svg", "png", "pdf", "html"). Auto-detected from path if None.
+            format: Output format ("svg", "png", "pdf", "jpg", "jpeg", "webp", "html").
+                    Auto-detected from path if None.
             quality: Rendering quality ("low", "medium", "high").
             **html_options: Additional options for HTML rendering:
                 - title: HTML document title
@@ -216,7 +224,7 @@ class Page:
 
             svg_renderer = SVGRenderer(self)
             return svg_renderer.render(output_path)
-        elif format in ("png", "pdf"):
+        elif format in ("png", "pdf", "jpg", "jpeg", "webp"):
             from comix.renderer.cairo_renderer import CairoRenderer
 
             cairo_renderer = CairoRenderer(self)
@@ -227,7 +235,10 @@ class Page:
             html_renderer = HTMLRenderer(self, **html_options)  # type: ignore[arg-type]
             return html_renderer.render(output_path)
         else:
-            raise NotImplementedError(f"Format '{format}' not yet implemented")
+            supported = ", ".join(self.SUPPORTED_FORMATS)
+            raise NotImplementedError(
+                f"Format '{format}' is not supported. Supported formats: {supported}"
+            )
 
     def show(self) -> None:
         """Preview the page in a web browser.

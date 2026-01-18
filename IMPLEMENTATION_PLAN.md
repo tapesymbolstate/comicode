@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.112**
+**Current Git Tag: v0.1.113**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -31,7 +31,7 @@ Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
 - **Bubble system**: 5 types (Speech, Thought, Shout, Whisper, Narrator) with auto-positioning
 - **Character system**: 9 styles (Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon, AnimalStyle) with 11 expressions, 12 poses, and Stickman articulation (joint-level control)
 - **Layout**: GridLayout, FlowLayout, ConstraintLayout with collision detection
-- **Renderers**: SVG (always available), Cairo PNG/PDF (optional)
+- **Renderers**: SVG (always available), Cairo PNG/PDF/JPEG/WebP (optional)
 - **Effects**: 6 types (AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect)
 - **Templates**: 9 page templates (FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage, NewspaperStrip, Widescreen)
 - **Multi-page PDF**: Book class for compiling multiple pages
@@ -97,9 +97,16 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.112)
+## Note: Stable Release (v0.1.113)
 
-All systems stable with 2107 tests passing (+ 30 skipped = 2137 collected). Version numbers synchronized across all files.
+All systems stable with 2124 tests passing (+ 30 skipped = 2154 collected). Version numbers synchronized across all files.
+
+v0.1.113 changes:
+- Added JPEG and WebP format support to Page.render() and CairoRenderer
+- Added input validation for Page dimensions (must be positive)
+- Improved error message for unsupported formats with list of supported formats
+- Added 17 new tests for JPEG/WebP rendering and Page validation
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
 
 v0.1.112 changes:
 - Added missing v0.1.111 entry to CHANGELOG.md

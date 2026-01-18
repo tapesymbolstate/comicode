@@ -2,6 +2,23 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.113] - 2026-01-19
+
+### Added
+- JPEG format support for Page.render() and CairoRenderer (`.jpg`, `.jpeg`)
+- WebP format support for Page.render() and CairoRenderer (`.webp`)
+- Input validation for Page dimensions (width and height must be positive)
+- Improved error message for unsupported formats with list of supported formats
+- Page.SUPPORTED_FORMATS constant listing all supported output formats
+
+### Tests
+- 17 new tests for JPEG/WebP rendering and Page validation
+- Test count: 2124 passed, 30 skipped (2154 collected)
+
+### Documentation
+- Updated renderer documentation to include JPEG/WebP formats
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
+
 ## [v0.1.112] - 2026-01-19
 
 ### Documentation

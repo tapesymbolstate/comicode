@@ -43,6 +43,54 @@ class TestPage:
         assert page.margin == 30
         assert page.gutter == 15
 
+    def test_invalid_dimensions_negative_width(self):
+        """Test that negative width raises ValueError."""
+        import pytest
+
+        with pytest.raises(ValueError, match="Page dimensions must be positive"):
+            Page(width=-100, height=400)
+
+    def test_invalid_dimensions_negative_height(self):
+        """Test that negative height raises ValueError."""
+        import pytest
+
+        with pytest.raises(ValueError, match="Page dimensions must be positive"):
+            Page(width=400, height=-100)
+
+    def test_invalid_dimensions_zero_width(self):
+        """Test that zero width raises ValueError."""
+        import pytest
+
+        with pytest.raises(ValueError, match="Page dimensions must be positive"):
+            Page(width=0, height=400)
+
+    def test_invalid_dimensions_zero_height(self):
+        """Test that zero height raises ValueError."""
+        import pytest
+
+        with pytest.raises(ValueError, match="Page dimensions must be positive"):
+            Page(width=400, height=0)
+
+    def test_invalid_dimensions_both_negative(self):
+        """Test that both negative dimensions raises ValueError."""
+        import pytest
+
+        with pytest.raises(ValueError, match="Page dimensions must be positive"):
+            Page(width=-100, height=-200)
+
+    def test_supported_formats_constant(self):
+        """Test that SUPPORTED_FORMATS contains expected formats."""
+        expected = ("svg", "png", "pdf", "jpg", "jpeg", "webp", "html", "htm")
+        assert Page.SUPPORTED_FORMATS == expected
+
+    def test_unsupported_format_error_message(self):
+        """Test that unsupported format error includes list of supported formats."""
+        import pytest
+
+        page = Page()
+        with pytest.raises(NotImplementedError, match="Supported formats:"):
+            page.render("output.xyz", format="xyz")
+
     def test_add_remove(self):
         """Test adding and removing objects."""
         page = Page()

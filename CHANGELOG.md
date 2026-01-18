@@ -2,6 +2,24 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.110] - 2026-01-18
+
+### Added
+- 20 new edge case tests for geometry utilities in tests/test_utils.py:
+  - Rotation edge cases (0°, 180°, 270°, large angles > 360°, negative angles)
+  - scale_points with negative factors (mirroring) and zero factor
+  - distance and midpoint with large/small coordinate values
+  - angle_between edge cases including same point and negative quadrant
+  - normalize_angle boundary cases (0, ±π)
+  - bounding_box with single point and negative coordinates
+
+### Documentation
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
+
+### Tests
+- Test count: 2107 passed, 30 skipped (2137 collected)
+- Improved test coverage for comix/utils/geometry.py functions
+
 ## [v0.1.109] - 2026-01-18
 
 ### Documentation

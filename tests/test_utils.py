@@ -277,6 +277,124 @@ class TestGeometryUtils:
         rotated = rotate_point(point, 2 * np.pi)
         assert np.allclose(rotated, point, atol=1e-10)
 
+    def test_rotate_point_zero_degrees(self):
+        """Test rotating point by 0 degrees returns same point."""
+        point = (5, 7)
+        rotated = rotate_point(point, 0)
+        assert np.allclose(rotated, point, atol=1e-10)
+
+    def test_rotate_point_180_degrees(self):
+        """Test rotating point by 180 degrees."""
+        point = (1, 0)
+        rotated = rotate_point(point, np.pi)
+        assert np.allclose(rotated, [-1, 0], atol=1e-10)
+
+    def test_rotate_point_270_degrees(self):
+        """Test rotating point by 270 degrees."""
+        point = (1, 0)
+        rotated = rotate_point(point, 3 * np.pi / 2)
+        assert np.allclose(rotated, [0, -1], atol=1e-10)
+
+    def test_rotate_point_large_angle(self):
+        """Test rotating point by angle > 360 degrees."""
+        point = (1, 0)
+        # 450 degrees = 90 degrees (1.25 full rotations)
+        rotated = rotate_point(point, 5 * np.pi / 2)
+        assert np.allclose(rotated, [0, 1], atol=1e-10)
+
+    def test_rotate_point_negative_angle(self):
+        """Test rotating point by negative angle (-90 degrees)."""
+        point = (1, 0)
+        rotated = rotate_point(point, -np.pi / 2)
+        assert np.allclose(rotated, [0, -1], atol=1e-10)
+
+    def test_rotate_points_180_degrees(self):
+        """Test rotating multiple points by 180 degrees."""
+        points = np.array([[1, 0], [0, 1], [1, 1]])
+        rotated = rotate_points(points, np.pi)
+        expected = np.array([[-1, 0], [0, -1], [-1, -1]])
+        assert np.allclose(rotated, expected, atol=1e-10)
+
+    def test_rotate_points_large_angle(self):
+        """Test rotating multiple points by angle > 360 degrees."""
+        points = np.array([[1, 0], [0, 1]])
+        # 720 degrees = 0 degrees (2 full rotations)
+        rotated = rotate_points(points, 4 * np.pi)
+        assert np.allclose(rotated, points, atol=1e-10)
+
+    def test_scale_points_negative_factor(self):
+        """Test scaling with negative factor (mirroring)."""
+        points = np.array([[1, 1], [2, 2]])
+        scaled = scale_points(points, -1.0)
+        expected = np.array([[-1, -1], [-2, -2]])
+        assert np.allclose(scaled, expected)
+
+    def test_scale_points_nonuniform_negative(self):
+        """Test non-uniform scaling with negative factors (mirroring)."""
+        points = np.array([[1, 1], [2, 2]])
+        scaled = scale_points(points, (-1.0, 2.0))  # Mirror X, scale Y
+        expected = np.array([[-1, 2], [-2, 4]])
+        assert np.allclose(scaled, expected)
+
+    def test_scale_points_zero_factor(self):
+        """Test scaling with zero factor collapses to center."""
+        points = np.array([[1, 1], [3, 3]])
+        center = (2, 2)
+        scaled = scale_points(points, 0.0, center)
+        expected = np.array([[2, 2], [2, 2]])
+        assert np.allclose(scaled, expected)
+
+    def test_distance_large_values(self):
+        """Test distance with large coordinate values."""
+        d = distance((0, 0), (3e6, 4e6))
+        assert np.isclose(d, 5e6)
+
+    def test_distance_small_values(self):
+        """Test distance with very small coordinate values."""
+        d = distance((0, 0), (3e-10, 4e-10))
+        assert np.isclose(d, 5e-10)
+
+    def test_midpoint_large_values(self):
+        """Test midpoint with large coordinate values."""
+        mid = midpoint((0, 0), (1e10, 1e10))
+        assert np.allclose(mid, [5e9, 5e9])
+
+    def test_angle_between_same_point(self):
+        """Test angle between same point (degenerate case)."""
+        angle = angle_between((5, 5), (5, 5))
+        assert np.isclose(angle, 0)  # atan2(0, 0) = 0
+
+    def test_angle_between_negative_quadrant(self):
+        """Test angle in third quadrant (negative x and y)."""
+        angle = angle_between((0, 0), (-1, -1))
+        assert np.isclose(angle, -3 * np.pi / 4)
+
+    def test_normalize_angle_zero(self):
+        """Test normalizing zero angle."""
+        assert normalize_angle(0) == 0
+
+    def test_normalize_angle_exactly_pi(self):
+        """Test normalizing exactly pi stays at pi."""
+        assert np.isclose(normalize_angle(np.pi), np.pi)
+
+    def test_normalize_angle_exactly_negative_pi(self):
+        """Test normalizing exactly -pi stays at -pi."""
+        assert np.isclose(normalize_angle(-np.pi), -np.pi)
+
+    def test_bounding_box_single_point(self):
+        """Test bounding box of single point."""
+        points = np.array([[5, 10]])
+        min_pt, max_pt = bounding_box(points)
+        assert np.allclose(min_pt, [5, 10])
+        assert np.allclose(max_pt, [5, 10])
+
+    def test_bounding_box_negative_coords(self):
+        """Test bounding box with negative coordinates."""
+        points = np.array([[-10, -20], [5, 15], [-5, 10]])
+        min_pt, max_pt = bounding_box(points)
+        assert np.allclose(min_pt, [-10, -20])
+        assert np.allclose(max_pt, [5, 15])
+
 
 class TestBezierUtilsEdgeCases:
     """Additional edge case tests for bezier utility functions."""

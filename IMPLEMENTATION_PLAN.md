@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.89**
+**Current Git Tag: v0.1.90**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,15 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.89)
+## Note: Stable Release (v0.1.90)
 
 All systems stable with 2014 tests passing (+ 30 skipped = 2044 collected). Version numbers synchronized across all files.
+
+v0.1.90 changes:
+- Fixed README.md example count from 24 to 25
+- Updated PRD.md templates list to include NewspaperStrip and Widescreen (9 templates total)
+- Updated PRD.md character list to include AnimalStyle (9 character types total)
+- Version numbers synchronized across all files
 
 v0.1.89 changes:
 - Fixed documentation inconsistencies in specs/README.md (version 0.1.83 → 0.1.89)

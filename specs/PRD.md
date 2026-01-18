@@ -107,7 +107,7 @@ comix/
 │   ├── __init__.py
 │   ├── page.py              # Page, SinglePanel, Strip 클래스
 │   ├── book.py              # Book 클래스 (multi-page PDF 컴파일)
-│   └── templates.py         # FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage
+│   └── templates.py         # FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage, NewspaperStrip, Widescreen
 │
 ├── cobject/                 # Mobject에 대응 (Comix Object)
 │   ├── cobject.py           # 기본 클래스
@@ -126,7 +126,7 @@ comix/
 │   │
 │   ├── character/           # 캐릭터 관련
 │   │   ├── __init__.py
-│   │   └── character.py     # Character, Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Cartoon, Superhero, Expression, Pose 클래스
+│   │   └── character.py     # Character, Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Cartoon, Superhero, AnimalStyle, Expression, Pose 클래스
 │   │
 │   ├── shapes/              # 기본 도형
 │   │   ├── __init__.py

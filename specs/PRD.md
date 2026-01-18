@@ -1405,7 +1405,7 @@ sfx = SFX(
 ### Phase 1: 코어 (MVP) ✅
 - [x] CObject 기본 클래스 (위치, 크기, 회전, 불투명도, z-index)
 - [x] Panel, Bubble (5종류), Text, SFX
-- [x] Character 클래스 (8종류: Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Cartoon, Superhero)
+- [x] Character 클래스 (9종류: Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Cartoon, Superhero, AnimalStyle)
 - [x] Expression 시스템 (11개: neutral, happy, sad, angry, surprised, confused, sleepy, excited, scared, smirk, crying)
 - [x] Pose 시스템 (12개: standing, sitting, waving, pointing, walking, running, jumping, dancing, lying, kneeling, cheering, thinking)
 - [x] SVG Renderer

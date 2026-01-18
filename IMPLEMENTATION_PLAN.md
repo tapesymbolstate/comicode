@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.83**
+**Current Git Tag: v0.1.84**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,18 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.83)
+## Note: Stable Release (v0.1.84)
 
 All systems stable with 2014 tests passing (+ 30 skipped = 2044 collected). Version numbers synchronized across all files.
+
+v0.1.84 changes:
+- Updated documentation to reflect 9 character types (added AnimalStyle references)
+- Updated specs/README.md with correct version (0.1.83), test counts (2014), and AnimalStyle
+- Updated specs/character-basics.md with AnimalStyle character type
+- Updated specs/PRD.md with 9 character types
+- Enhanced example 16 to showcase all 9 character types including AnimalStyle
+- Added new `create_animal_species_showcase()` function demonstrating all 7 animal species
+- Documentation now consistent across all spec files
 
 v0.1.83 changes:
 - Added `AnimalStyle` character class - anthropomorphic animal characters for furry/mascot-style comics

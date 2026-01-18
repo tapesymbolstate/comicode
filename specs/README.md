@@ -76,7 +76,7 @@ All 24 examples (01-24) execute without errors and produce correct visual output
 
 ## Features
 
-### Character Types
+### Character Types (9 styles)
 - **Stickman** - Basic stick figure with expressions
 - **SimpleFace** - Emoticon-style face
 - **ChubbyStickman** - Rounded, friendly stick figure
@@ -85,6 +85,7 @@ All 24 examples (01-24) execute without errors and produce correct visual output
 - **Anime** - Natural proportion anime character
 - **Superhero** - Heroic character with costume options
 - **Cartoon** - Classic Western cartoon style
+- **AnimalStyle** - Anthropomorphic animal characters (cat, dog, rabbit, fox, bear, bird, wolf)
 
 ### Expressions (11 types)
 neutral, happy, sad, angry, surprised, confused, sleepy, excited, scared, smirk, crying
@@ -215,8 +216,8 @@ See `IMPLEMENTATION_PLAN.md` for current implementation status.
 
 ---
 
-**Version**: 0.1.81 (as of 2026-01-18)
+**Version**: 0.1.83 (as of 2026-01-18)
 **Last Updated**: 2026-01-18
 **Maintainer**: Claude Code Ralph Agent
 
-All systems stable with 1982 tests passing (+ 30 skipped = 2012 collected).
+All systems stable with 2014 tests passing (+ 30 skipped = 2044 collected).

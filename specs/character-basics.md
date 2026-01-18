@@ -34,9 +34,10 @@ Without working character rendering, comics appear broken or incomplete.
 - [x] Character has a name property for debugging
 
 ### Implemented Beyond Original Scope
-- [x] 8 character styles: Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon
+- [x] 9 character styles: Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon, AnimalStyle
 - [x] 11 expressions: neutral, happy, sad, angry, surprised, confused, sleepy, excited, scared, smirk, crying
 - [x] 12 poses: standing, sitting, waving, pointing, walking, running, jumping, dancing, lying, kneeling, cheering, thinking
+- [x] AnimalStyle species: cat, dog, rabbit, fox, bear, bird, wolf with customizable fur colors and features
 
 ### Won't Have
 - [ ] Custom body part proportions (beyond character style presets)

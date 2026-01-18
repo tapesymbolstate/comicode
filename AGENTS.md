@@ -20,7 +20,7 @@ comicode/
 │   │   ├── panel/            # Panel, Border, Gutter
 │   │   ├── bubble/           # Speech bubbles (Speech, Thought, Shout, Whisper, Narrator)
 │   │   ├── text/             # Text, StyledText, SFX
-│   │   ├── character/        # 8 types: Stickman, SimpleFace, Chibi, Anime, Robot, etc.
+│   │   ├── character/        # 9 types: Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon, AnimalStyle
 │   │   ├── shapes/           # Rectangle, Circle, Line
 │   │   └── image/            # Image, AIImage
 │   ├── page/                 # Page, Strip, SinglePanel
@@ -35,7 +35,7 @@ comicode/
 ├── specs/                    # PRD and specifications
 │   └── PRD.md                # Full architecture design
 ├── tests/                    # Test files (29 test modules)
-├── examples/                 # 15 working examples
+├── examples/                 # 26 working examples
 ├── main.py                   # Entry point
 └── pyproject.toml            # Project config
 ```

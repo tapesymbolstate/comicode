@@ -1061,6 +1061,194 @@ class TestExplosionPanel:
         assert len(panel.polygon_points) == 16  # 8 rays * 2
 
 
+class TestGutterSpacing:
+    """Tests for automatic gutter spacing calculations for non-rectangular panels."""
+
+    def test_get_world_polygon_basic(self):
+        """Test get_world_polygon returns points in world coordinates."""
+        panel = Panel(width=200, height=200)
+        panel.move_to((300, 400))
+
+        world_poly = panel.get_world_polygon()
+        assert len(world_poly) == 5  # Rectangle with closing point
+
+        # Points should be offset by panel center
+        # Local points are relative to panel center (0,0)
+        # World points should be relative to page origin
+        assert np.allclose(world_poly[0], [200, 300])  # -100+300, -100+400
+        assert np.allclose(world_poly[1], [400, 300])  # 100+300, -100+400
+
+    def test_get_world_polygon_diagonal(self):
+        """Test get_world_polygon for diagonal panel."""
+        panel = DiagonalPanel(width=200, height=200, direction="top-left")
+        panel.move_to((100, 100))
+
+        world_poly = panel.get_world_polygon()
+        assert len(world_poly) == 6  # Diagonal has 5 corners + closing point
+
+    def test_get_world_polygon_with_default_panel(self):
+        """Test get_world_polygon with default panel at origin."""
+        panel = Panel()
+        # Default panel has points generated automatically at origin
+        world_poly = panel.get_world_polygon()
+        # Panel is centered at origin by default
+        assert len(world_poly) == 5  # Rectangle with closing point
+
+    def test_distance_to_panel_same_position(self):
+        """Test distance between overlapping panels is 0."""
+        panel1 = Panel(width=100, height=100)
+        panel2 = Panel(width=100, height=100)
+        panel1.move_to((100, 100))
+        panel2.move_to((100, 100))
+
+        dist = panel1.distance_to_panel(panel2)
+        assert dist == 0.0
+
+    def test_distance_to_panel_separated(self):
+        """Test distance between separated rectangular panels."""
+        panel1 = Panel(width=100, height=100)
+        panel2 = Panel(width=100, height=100)
+        panel1.move_to((100, 100))
+        panel2.move_to((300, 100))  # 100px gap between panels
+
+        dist = panel1.distance_to_panel(panel2)
+        # Distance should be 100px (edges are at 150 and 250)
+        assert abs(dist - 100.0) < 1.0
+
+    def test_distance_to_panel_diagonal(self):
+        """Test distance between diagonal panels."""
+        panel1 = DiagonalPanel(width=200, height=200, direction="top-right")
+        panel2 = DiagonalPanel(width=200, height=200, direction="top-left")
+        panel1.move_to((100, 100))
+        panel2.move_to((300, 100))
+
+        dist = panel1.distance_to_panel(panel2)
+        # Should have some distance between them
+        assert dist >= 0.0
+
+    def test_distance_to_panel_trapezoid(self):
+        """Test distance between trapezoid panels."""
+        panel1 = TrapezoidPanel(top_width=150, bottom_width=100, height=200)
+        panel2 = TrapezoidPanel(top_width=100, bottom_width=150, height=200)
+        panel1.move_to((100, 100))
+        panel2.move_to((300, 100))
+
+        dist = panel1.distance_to_panel(panel2)
+        assert dist >= 0.0
+
+    def test_calculate_gutter_offset_no_adjustment_needed(self):
+        """Test gutter offset when panels already have sufficient spacing."""
+        panel1 = Panel(width=100, height=100)
+        panel2 = Panel(width=100, height=100)
+        panel1.move_to((100, 100))
+        panel2.move_to((300, 100))  # 100px apart
+
+        # Requesting only 10px gutter should need no adjustment
+        dx, dy = Panel.calculate_gutter_offset(panel1, panel2, 10.0, "right")
+        assert dx == 0.0
+        assert dy == 0.0
+
+    def test_calculate_gutter_offset_adjustment_needed(self):
+        """Test gutter offset when panels need adjustment."""
+        panel1 = Panel(width=100, height=100)
+        panel2 = Panel(width=100, height=100)
+        panel1.move_to((100, 100))
+        panel2.move_to((155, 100))  # Only 5px apart (edge at 150, edge at 155-50=105)
+
+        # Distance is 5px, want 10px, so need 5px adjustment
+        dx, dy = Panel.calculate_gutter_offset(panel1, panel2, 10.0, "right")
+        assert dx >= 0.0  # Should suggest moving right
+
+    def test_calculate_gutter_offset_directions(self):
+        """Test gutter offset for all directions."""
+        panel1 = Panel(width=100, height=100)
+        panel2 = Panel(width=100, height=100)
+        panel1.move_to((100, 100))
+        panel2.move_to((100, 100))  # Overlapping
+
+        # Test all directions
+        dx, dy = Panel.calculate_gutter_offset(panel1, panel2, 10.0, "right")
+        assert dx >= 0.0
+        assert dy == 0.0
+
+        dx, dy = Panel.calculate_gutter_offset(panel1, panel2, 10.0, "left")
+        assert dx <= 0.0
+        assert dy == 0.0
+
+        dx, dy = Panel.calculate_gutter_offset(panel1, panel2, 10.0, "below")
+        assert dx == 0.0
+        assert dy <= 0.0
+
+        dx, dy = Panel.calculate_gutter_offset(panel1, panel2, 10.0, "above")
+        assert dx == 0.0
+        assert dy >= 0.0
+
+    def test_calculate_gutter_offset_diagonal_panels(self):
+        """Test gutter offset calculation for diagonal panels."""
+        # Two diagonal panels with cut corners facing each other
+        panel1 = DiagonalPanel(width=200, height=200, direction="top-right")
+        panel2 = DiagonalPanel(width=200, height=200, direction="top-left")
+
+        # Position them using bounding box
+        panel1.move_to((100, 100))
+        panel2.move_to((310, 100))  # 10px gutter by bounding box
+
+        # Calculate what adjustment is needed for actual polygon edges
+        dx, dy = Panel.calculate_gutter_offset(panel1, panel2, 10.0, "right")
+        # Adjustment could be positive, negative, or zero depending on cut direction
+        assert isinstance(dx, float)
+        assert isinstance(dy, float)
+
+    def test_calculate_gutter_offset_overlapping_panels(self):
+        """Test gutter offset with overlapping panels."""
+        panel1 = Panel(width=100, height=100)
+        panel2 = Panel(width=100, height=100)
+        # Both at origin = completely overlapping
+        panel1.move_to((50, 50))
+        panel2.move_to((50, 50))
+
+        # Overlapping panels should need adjustment
+        dx, dy = Panel.calculate_gutter_offset(panel1, panel2, 10.0, "right")
+        # Distance is 0, need 10px gutter
+        assert dx == 10.0
+        assert dy == 0.0
+
+    def test_gutter_spacing_irregular_panels(self):
+        """Test gutter calculation for irregular shaped panels."""
+        # Create two star-shaped panels
+        panel1 = StarburstPanel(width=200, height=200, num_points=8)
+        panel2 = StarburstPanel(width=200, height=200, num_points=8)
+
+        panel1.move_to((150, 150))
+        panel2.move_to((350, 150))
+
+        dist = panel1.distance_to_panel(panel2)
+        # Distance should be positive (panels not overlapping)
+        assert dist >= 0.0
+
+    def test_gutter_spacing_cloud_panels(self):
+        """Test gutter calculation for cloud-shaped panels."""
+        panel1 = CloudPanel(width=200, height=200, num_bumps=8)
+        panel2 = CloudPanel(width=200, height=200, num_bumps=8)
+
+        panel1.move_to((150, 150))
+        panel2.move_to((380, 150))
+
+        dist = panel1.distance_to_panel(panel2)
+        assert dist >= 0.0
+
+    def test_gutter_spacing_mixed_panel_types(self):
+        """Test gutter calculation between different panel types."""
+        panel1 = DiagonalPanel(width=200, height=200, direction="top-right")
+        panel2 = TrapezoidPanel(top_width=200, bottom_width=150, height=200)
+
+        panel1.move_to((100, 100))
+        panel2.move_to((320, 100))
+
+        dist = panel1.distance_to_panel(panel2)
+        assert dist >= 0.0
+
+
 class TestPresetPanelPointGeneration:
     """Tests for the internal point generation functions."""
 

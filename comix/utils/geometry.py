@@ -142,3 +142,133 @@ def bounding_box(
     max_point = np.max(points, axis=0)
 
     return (min_point, max_point)
+
+
+def point_to_segment_distance(
+    point: tuple[float, float],
+    seg_start: tuple[float, float],
+    seg_end: tuple[float, float],
+) -> float:
+    """Calculate the minimum distance from a point to a line segment.
+
+    Args:
+        point: The point (x, y).
+        seg_start: Start of the line segment (x, y).
+        seg_end: End of the line segment (x, y).
+
+    Returns:
+        The minimum distance from the point to the line segment.
+    """
+    px, py = point
+    x1, y1 = seg_start
+    x2, y2 = seg_end
+
+    dx = x2 - x1
+    dy = y2 - y1
+
+    if dx == 0 and dy == 0:
+        return distance(point, seg_start)
+
+    t = max(0, min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)))
+
+    proj_x = x1 + t * dx
+    proj_y = y1 + t * dy
+
+    return distance(point, (proj_x, proj_y))
+
+
+def segment_to_segment_distance(
+    seg1_start: tuple[float, float],
+    seg1_end: tuple[float, float],
+    seg2_start: tuple[float, float],
+    seg2_end: tuple[float, float],
+) -> float:
+    """Calculate the minimum distance between two line segments.
+
+    Args:
+        seg1_start: Start of first segment.
+        seg1_end: End of first segment.
+        seg2_start: Start of second segment.
+        seg2_end: End of second segment.
+
+    Returns:
+        The minimum distance between the two segments.
+    """
+    d1 = point_to_segment_distance(seg1_start, seg2_start, seg2_end)
+    d2 = point_to_segment_distance(seg1_end, seg2_start, seg2_end)
+    d3 = point_to_segment_distance(seg2_start, seg1_start, seg1_end)
+    d4 = point_to_segment_distance(seg2_end, seg1_start, seg1_end)
+
+    return min(d1, d2, d3, d4)
+
+
+def polygon_to_polygon_distance(
+    polygon1: NDArray[np.float64],
+    polygon2: NDArray[np.float64],
+) -> float:
+    """Calculate the minimum distance between two polygons.
+
+    This considers all edges of both polygons and finds the minimum distance
+    between any pair of edges. Useful for calculating proper gutter spacing
+    between non-rectangular panels.
+
+    Args:
+        polygon1: Array of (x, y) points defining the first polygon.
+        polygon2: Array of (x, y) points defining the second polygon.
+
+    Returns:
+        The minimum distance between any edges of the two polygons.
+        Returns 0.0 if either polygon is empty or has less than 2 points.
+    """
+    if len(polygon1) < 2 or len(polygon2) < 2:
+        return 0.0
+
+    min_dist = float("inf")
+
+    n1 = len(polygon1)
+    n2 = len(polygon2)
+
+    for i in range(n1):
+        p1_start = (float(polygon1[i][0]), float(polygon1[i][1]))
+        p1_end = (float(polygon1[(i + 1) % n1][0]), float(polygon1[(i + 1) % n1][1]))
+
+        for j in range(n2):
+            p2_start = (float(polygon2[j][0]), float(polygon2[j][1]))
+            p2_end = (float(polygon2[(j + 1) % n2][0]), float(polygon2[(j + 1) % n2][1]))
+
+            dist = segment_to_segment_distance(p1_start, p1_end, p2_start, p2_end)
+            min_dist = min(min_dist, dist)
+
+    return min_dist if min_dist != float("inf") else 0.0
+
+
+def calculate_gutter_adjustment(
+    polygon1: NDArray[np.float64],
+    polygon2: NDArray[np.float64],
+    desired_gutter: float,
+    axis: str = "horizontal",
+) -> float:
+    """Calculate the position adjustment needed to achieve desired gutter spacing.
+
+    For non-rectangular panels, the bounding box edges may not represent the
+    actual panel edges. This function calculates how much to adjust the position
+    of polygon2 to achieve the desired gutter spacing from polygon1.
+
+    Args:
+        polygon1: Array of (x, y) points for the first (stationary) polygon.
+        polygon2: Array of (x, y) points for the second (to be moved) polygon.
+        desired_gutter: The desired minimum distance between polygon edges.
+        axis: "horizontal" to adjust along x-axis, "vertical" for y-axis.
+
+    Returns:
+        The additional offset needed beyond bounding box placement.
+        Positive values mean polygon2 should move further away from polygon1.
+    """
+    if len(polygon1) < 2 or len(polygon2) < 2:
+        return 0.0
+
+    current_distance = polygon_to_polygon_distance(polygon1, polygon2)
+
+    adjustment = desired_gutter - current_distance
+
+    return max(0.0, adjustment)

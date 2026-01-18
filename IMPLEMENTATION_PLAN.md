@@ -86,7 +86,6 @@ Potential improvements for core features:
 
 1. **Additional Character Styles**: New character classes (e.g., DetailedFace, RealisticStyle)
 2. **More Templates**: Additional page layout templates
-3. **Automatic Gutter Spacing**: Gutter calculations for non-rectangular panels (from panel-shapes.md)
 
 ## Known Issues
 
@@ -98,9 +97,17 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.78)
+## Note: Stable Release (v0.1.79)
 
-All systems stable with 1935 tests passing (+ 30 skipped = 1965 collected). Version numbers synchronized across all files.
+All systems stable with 1967 tests passing (+ 30 skipped = 1997 collected). Version numbers synchronized across all files.
+
+v0.1.79 changes:
+- Added automatic gutter spacing calculations for non-rectangular panels
+- New geometry utilities: `point_to_segment_distance`, `segment_to_segment_distance`, `polygon_to_polygon_distance`, `calculate_gutter_adjustment`
+- New Panel methods: `get_world_polygon()`, `distance_to_panel()`, `calculate_gutter_offset()`
+- Enables precise positioning of DiagonalPanel, TrapezoidPanel, IrregularPanel, etc. with exact gutter spacing
+- Added 32 new tests for gutter spacing functionality
+- Updated panel-shapes.md spec to mark automatic gutter spacing as complete
 
 v0.1.78 changes:
 - Added preset panel shapes: StarburstPanel, CloudPanel, ExplosionPanel

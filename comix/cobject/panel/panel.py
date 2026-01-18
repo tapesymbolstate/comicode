@@ -235,6 +235,109 @@ class Panel(CObject):
         )
         return data
 
+    def get_world_polygon(self) -> np.ndarray:
+        """Get the panel polygon points in world (page) coordinates.
+
+        Transforms the local polygon points by adding the panel's center position.
+        Useful for calculating actual distances between panels for gutter spacing.
+
+        Returns:
+            Array of (x, y) points in world coordinates.
+        """
+        center = self.get_center()
+        if hasattr(self, "_points") and len(self._points) > 0:
+            return self._points + center
+        return np.array([], dtype=np.float64)
+
+    def distance_to_panel(self, other: "Panel") -> float:
+        """Calculate the minimum distance between this panel and another.
+
+        For non-rectangular panels (DiagonalPanel, TrapezoidPanel, IrregularPanel),
+        this calculates the actual minimum distance between polygon edges,
+        not just the bounding box distance.
+
+        Args:
+            other: Another Panel to measure distance to.
+
+        Returns:
+            The minimum distance between the panel edges.
+            Returns 0.0 if panels overlap or if either has no polygon points.
+        """
+        from comix.utils.geometry import polygon_to_polygon_distance
+
+        poly1 = self.get_world_polygon()
+        poly2 = other.get_world_polygon()
+
+        if len(poly1) < 2 or len(poly2) < 2:
+            return 0.0
+
+        return polygon_to_polygon_distance(poly1, poly2)
+
+    @staticmethod
+    def calculate_gutter_offset(
+        panel1: "Panel",
+        panel2: "Panel",
+        desired_gutter: float,
+        direction: str = "right",
+    ) -> tuple[float, float]:
+        """Calculate the position offset needed for panel2 to have proper gutter from panel1.
+
+        For non-rectangular panels, standard bounding box positioning may result
+        in overlapping edges or excessive gaps. This method calculates the exact
+        offset needed to achieve the desired gutter spacing between panel edges.
+
+        Args:
+            panel1: The reference (stationary) panel.
+            panel2: The panel to be positioned.
+            desired_gutter: The desired minimum distance between panel edges.
+            direction: Direction to place panel2 relative to panel1.
+                "right": panel2 to the right of panel1
+                "left": panel2 to the left of panel1
+                "below": panel2 below panel1
+                "above": panel2 above panel1
+
+        Returns:
+            A tuple (dx, dy) representing the offset to apply to panel2's
+            position after standard bounding box placement.
+
+        Example:
+            >>> panel1 = DiagonalPanel(width=200, height=200, direction="top-right")
+            >>> panel2 = DiagonalPanel(width=200, height=200, direction="top-left")
+            >>> panel1.move_to((200, 200))
+            >>>
+            >>> # Standard bounding box placement
+            >>> panel2.move_to((200 + 200 + 10, 200))  # 10px gutter
+            >>>
+            >>> # Calculate adjustment for actual panel shapes
+            >>> dx, dy = Panel.calculate_gutter_offset(panel1, panel2, 10, "right")
+            >>> panel2.shift((dx, dy))  # Now panels have exactly 10px gutter
+        """
+        from comix.utils.geometry import polygon_to_polygon_distance
+
+        poly1 = panel1.get_world_polygon()
+        poly2 = panel2.get_world_polygon()
+
+        if len(poly1) < 2 or len(poly2) < 2:
+            return (0.0, 0.0)
+
+        current_distance = polygon_to_polygon_distance(poly1, poly2)
+
+        if current_distance >= desired_gutter:
+            return (0.0, 0.0)
+
+        adjustment = desired_gutter - current_distance
+
+        if direction == "right":
+            return (adjustment, 0.0)
+        elif direction == "left":
+            return (-adjustment, 0.0)
+        elif direction == "below":
+            return (0.0, -adjustment)
+        elif direction == "above":
+            return (0.0, adjustment)
+        else:
+            return (adjustment, 0.0)
+
     def split_diagonal(
         self,
         angle: float = 45.0,

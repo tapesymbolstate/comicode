@@ -19,6 +19,10 @@ from comix.utils.geometry import (
     normalize_angle,
     angle_between,
     bounding_box,
+    point_to_segment_distance,
+    segment_to_segment_distance,
+    polygon_to_polygon_distance,
+    calculate_gutter_adjustment,
 )
 
 
@@ -817,6 +821,118 @@ class TestSmoothTailPoints:
         x_range = np.ptp(tail[:, 0])
         y_range = np.ptp(tail[:, 1])
         assert x_range > 0 or y_range > 0
+
+
+class TestPolygonDistanceFunctions:
+    """Tests for polygon distance calculation functions used for gutter spacing."""
+
+    def test_point_to_segment_distance_on_segment(self):
+        """Test distance from point on segment is zero."""
+        dist = point_to_segment_distance((0.5, 0), (0, 0), (1, 0))
+        assert dist == 0.0
+
+    def test_point_to_segment_distance_endpoint(self):
+        """Test distance from segment endpoint."""
+        dist = point_to_segment_distance((0, 0), (0, 0), (1, 0))
+        assert dist == 0.0
+
+    def test_point_to_segment_distance_perpendicular(self):
+        """Test distance perpendicular to segment."""
+        dist = point_to_segment_distance((0.5, 1), (0, 0), (1, 0))
+        assert abs(dist - 1.0) < 1e-10
+
+    def test_point_to_segment_distance_beyond_endpoint(self):
+        """Test distance from point beyond segment endpoint."""
+        # Point is at (2, 0), segment is (0,0) to (1,0)
+        # Distance should be to endpoint (1, 0), which is 1.0
+        dist = point_to_segment_distance((2, 0), (0, 0), (1, 0))
+        assert abs(dist - 1.0) < 1e-10
+
+    def test_point_to_segment_distance_degenerate(self):
+        """Test distance from point to degenerate segment (single point)."""
+        dist = point_to_segment_distance((3, 4), (0, 0), (0, 0))
+        assert abs(dist - 5.0) < 1e-10  # Distance to origin
+
+    def test_segment_to_segment_distance_parallel(self):
+        """Test distance between parallel segments."""
+        dist = segment_to_segment_distance((0, 0), (1, 0), (0, 1), (1, 1))
+        assert abs(dist - 1.0) < 1e-10
+
+    def test_segment_to_segment_distance_touching(self):
+        """Test distance between touching segments is zero."""
+        dist = segment_to_segment_distance((0, 0), (1, 0), (1, 0), (2, 0))
+        assert dist == 0.0
+
+    def test_segment_to_segment_distance_perpendicular(self):
+        """Test distance between perpendicular non-touching segments."""
+        # Vertical segment and horizontal segment with gap
+        dist = segment_to_segment_distance((0, 0), (0, 1), (1, 0.5), (2, 0.5))
+        assert abs(dist - 1.0) < 1e-10
+
+    def test_polygon_to_polygon_distance_same_position(self):
+        """Test distance between overlapping polygons is zero."""
+        square1 = np.array([[-50, -50], [50, -50], [50, 50], [-50, 50]])
+        square2 = np.array([[-50, -50], [50, -50], [50, 50], [-50, 50]])
+        dist = polygon_to_polygon_distance(square1, square2)
+        assert dist == 0.0
+
+    def test_polygon_to_polygon_distance_separated(self):
+        """Test distance between separated polygons."""
+        square1 = np.array([[0, 0], [100, 0], [100, 100], [0, 100]])
+        square2 = np.array([[200, 0], [300, 0], [300, 100], [200, 100]])
+        dist = polygon_to_polygon_distance(square1, square2)
+        assert abs(dist - 100.0) < 1e-10
+
+    def test_polygon_to_polygon_distance_touching(self):
+        """Test distance between touching polygons is zero."""
+        square1 = np.array([[0, 0], [100, 0], [100, 100], [0, 100]])
+        square2 = np.array([[100, 0], [200, 0], [200, 100], [100, 100]])
+        dist = polygon_to_polygon_distance(square1, square2)
+        assert dist == 0.0
+
+    def test_polygon_to_polygon_distance_triangles(self):
+        """Test distance between triangular polygons."""
+        tri1 = np.array([[0, 0], [50, 100], [100, 0]])
+        tri2 = np.array([[200, 0], [250, 100], [300, 0]])
+        dist = polygon_to_polygon_distance(tri1, tri2)
+        assert dist > 0  # Should have positive distance
+
+    def test_polygon_to_polygon_distance_empty(self):
+        """Test distance with empty polygon returns zero."""
+        square = np.array([[0, 0], [100, 0], [100, 100], [0, 100]])
+        empty = np.array([])
+        dist = polygon_to_polygon_distance(square, empty)
+        assert dist == 0.0
+
+    def test_polygon_to_polygon_distance_single_point(self):
+        """Test distance with single-point polygon returns zero."""
+        square = np.array([[0, 0], [100, 0], [100, 100], [0, 100]])
+        point = np.array([[50, 50]])
+        dist = polygon_to_polygon_distance(square, point)
+        assert dist == 0.0
+
+    def test_calculate_gutter_adjustment_sufficient_spacing(self):
+        """Test gutter adjustment when spacing is already sufficient."""
+        poly1 = np.array([[0, 0], [100, 0], [100, 100], [0, 100]])
+        poly2 = np.array([[200, 0], [300, 0], [300, 100], [200, 100]])
+        # 100px apart, want 10px gutter
+        adjustment = calculate_gutter_adjustment(poly1, poly2, 10.0)
+        assert adjustment == 0.0
+
+    def test_calculate_gutter_adjustment_needed(self):
+        """Test gutter adjustment when more spacing is needed."""
+        poly1 = np.array([[0, 0], [100, 0], [100, 100], [0, 100]])
+        poly2 = np.array([[105, 0], [205, 0], [205, 100], [105, 100]])
+        # 5px apart, want 20px gutter
+        adjustment = calculate_gutter_adjustment(poly1, poly2, 20.0)
+        assert abs(adjustment - 15.0) < 1e-10
+
+    def test_calculate_gutter_adjustment_empty_polygon(self):
+        """Test gutter adjustment with empty polygon returns zero."""
+        poly1 = np.array([])
+        poly2 = np.array([[0, 0], [100, 0], [100, 100], [0, 100]])
+        adjustment = calculate_gutter_adjustment(poly1, poly2, 10.0)
+        assert adjustment == 0.0
 
 
 class TestMinimalTailPoints:

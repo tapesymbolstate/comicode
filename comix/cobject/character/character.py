@@ -374,6 +374,7 @@ class Stickman(Character):
         arm_ratio: float | None = None,
         leg_ratio: float | None = None,
         head_squash: float = 0.0,
+        line_width: float = 2.0,
         **kwargs: Any,
     ) -> None:
         # Get preset proportions
@@ -397,6 +398,9 @@ class Stickman(Character):
 
         # Clamp head_squash to valid range (-1.0 to 1.0)
         self.head_squash = max(-1.0, min(1.0, head_squash))
+
+        # Store line_width with minimum value of 0.5
+        self.line_width = max(0.5, line_width)
 
         kwargs.setdefault("style", "stickman")
         super().__init__(name=name, **kwargs)
@@ -513,6 +517,7 @@ class Stickman(Character):
             "arm_ratio": self.arm_ratio,
             "leg_ratio": self.leg_ratio,
             "head_squash": self.head_squash,
+            "line_width": self.line_width,
         })
         return data
 

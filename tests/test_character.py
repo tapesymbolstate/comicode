@@ -536,6 +536,68 @@ class TestStickmanHeadSquash:
                 assert shapes[i] != shapes[j], f"Shapes at indices {i} and {j} are identical"
 
 
+class TestStickmanLineWidth:
+    """Tests for Stickman line_width parameter."""
+
+    def test_default_line_width(self):
+        """Test default line_width is 2.0."""
+        stickman = Stickman()
+        assert stickman.line_width == 2.0
+
+    def test_custom_line_width(self):
+        """Test custom line_width is stored correctly."""
+        stickman = Stickman(line_width=3.0)
+        assert stickman.line_width == 3.0
+
+    def test_line_width_minimum_clamped(self):
+        """Test line_width is clamped to minimum 0.5."""
+        stickman = Stickman(line_width=0.1)
+        assert stickman.line_width == 0.5
+
+    def test_line_width_zero_clamped(self):
+        """Test line_width of 0 is clamped to 0.5."""
+        stickman = Stickman(line_width=0)
+        assert stickman.line_width == 0.5
+
+    def test_line_width_negative_clamped(self):
+        """Test negative line_width is clamped to 0.5."""
+        stickman = Stickman(line_width=-1.0)
+        assert stickman.line_width == 0.5
+
+    def test_line_width_in_render_data(self):
+        """Test line_width is included in render data."""
+        stickman = Stickman(line_width=4.0)
+        data = stickman.get_render_data()
+        assert "line_width" in data
+        assert data["line_width"] == 4.0
+
+    def test_line_width_with_proportion_style(self):
+        """Test line_width works with proportion_style."""
+        for style in ["classic", "xkcd", "tall", "child"]:
+            stickman = Stickman(proportion_style=style, line_width=3.5)
+            assert stickman.line_width == 3.5
+            assert stickman.proportion_style == style
+
+    def test_line_width_with_head_squash(self):
+        """Test line_width works with head_squash."""
+        stickman = Stickman(line_width=2.5, head_squash=0.5)
+        assert stickman.line_width == 2.5
+        assert stickman.head_squash == 0.5
+
+    def test_line_width_various_values(self):
+        """Test various line_width values."""
+        test_values = [0.5, 1.0, 2.0, 3.0, 5.0, 10.0]
+        for value in test_values:
+            stickman = Stickman(line_width=value)
+            assert stickman.line_width == value
+
+    def test_line_width_preserved_in_chaining(self):
+        """Test line_width is preserved when using method chaining."""
+        stickman = Stickman(line_width=3.0)
+        stickman.move_to((100, 100)).set_expression("happy").set_pose("waving")
+        assert stickman.line_width == 3.0
+
+
 class TestSimpleFace:
     """Tests for SimpleFace class."""
 

@@ -29,7 +29,7 @@ Without reference-based design, our stickman characters may look "off" or "weird
 - [x] Elbow positioned at waist level when arms down (anatomical accuracy)
 - [x] Knees at midpoint of legs
 - [x] Slight curve/roundness option for head (not perfectly circular) - `head_squash` parameter
-- [ ] Line width consistency across all body parts
+- [x] Line width consistency across all body parts - `line_width` parameter (default: 2.0)
 
 ### Won't Have (This Iteration)
 - [ ] Detailed anatomy (muscles, facial features beyond simple dots/lines)

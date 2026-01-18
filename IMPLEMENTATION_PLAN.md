@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.76**
+**Current Git Tag: v0.1.77**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -88,7 +88,6 @@ Potential improvements for core features:
 2. **More Templates**: Additional page layout templates
 3. **Preset Panel Shapes**: Starburst, cloud, explosion panel presets (from panel-shapes.md)
 4. **Automatic Gutter Spacing**: Gutter calculations for non-rectangular panels (from panel-shapes.md)
-5. **Line Width Consistency**: Consistent line widths across all Stickman body parts (from stickman-reference-based.md)
 
 ## Known Issues
 
@@ -100,9 +99,16 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.76)
+## Note: Stable Release (v0.1.77)
 
-All systems stable with 1865 tests passing (+ 30 skipped = 1895 collected). Version numbers synchronized across all files.
+All systems stable with 1878 tests passing (+ 30 skipped = 1908 collected). Version numbers synchronized across all files.
+
+v0.1.77 changes:
+- Added `line_width` parameter to Stickman for customizable stroke width
+- Default line_width is 2.0 (backward compatible), minimum is 0.5
+- Line width is now consistent across head outline and all body parts
+- Added 13 new tests for line_width functionality (10 in test_character.py, 3 in test_renderer.py)
+- Updated stickman-reference-based.md spec to mark line width consistency as complete
 
 v0.1.76 changes:
 - Added `head_squash` parameter to Stickman for head shape customization (ellipse/oval heads)

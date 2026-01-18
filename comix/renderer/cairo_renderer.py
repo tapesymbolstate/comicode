@@ -549,7 +549,7 @@ class CairoRenderer:
 
         points = data.get("points", [])
         color = data.get("color", "#000000")
-        stroke_width = 2
+        stroke_width = data.get("line_width", 2)
 
         if len(points) < 2:
             return

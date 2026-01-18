@@ -119,6 +119,45 @@ class TestSVGRenderer:
             assert "<line" in content  # Body lines
             Path(output_path).unlink()
 
+    def test_render_stickman_with_custom_line_width(self):
+        """Test rendering a stickman with custom line_width."""
+        page = Page(width=400, height=300)
+        char = Stickman(name="Thick", line_width=4.0).move_to((200, 150))
+        page.add(char)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            # Check that stroke-width="4" or "4.0" appears in the SVG
+            assert 'stroke-width="4"' in content or 'stroke-width="4.0"' in content
+            Path(output_path).unlink()
+
+    def test_render_stickman_with_thin_line_width(self):
+        """Test rendering a stickman with thin line_width."""
+        page = Page(width=400, height=300)
+        char = Stickman(name="Thin", line_width=1.0).move_to((200, 150))
+        page.add(char)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            # Check that stroke-width="1" or "1.0" appears in the SVG
+            assert 'stroke-width="1"' in content or 'stroke-width="1.0"' in content
+            Path(output_path).unlink()
+
+    def test_render_stickman_line_width_default(self):
+        """Test that default stickman uses stroke-width 2."""
+        page = Page(width=400, height=300)
+        char = Stickman(name="Default").move_to((200, 150))
+        page.add(char)
+
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            output_path = page.render(f.name)
+            content = Path(output_path).read_text()
+            # Default line_width is 2.0
+            assert 'stroke-width="2"' in content
+            Path(output_path).unlink()
+
     def test_render_simple_face(self):
         """Test rendering a simple face character."""
         page = Page(width=400, height=300)

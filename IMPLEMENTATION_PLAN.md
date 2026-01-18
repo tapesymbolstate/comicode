@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Animation Export + Video Export + Multi-Page Parser
 
-**Current Git Tag: v0.1.49**
+**Current Git Tag: v0.1.50**
 
 All 8 phases have been implemented with **1743 tests** (1739 pass + 4 skip), ruff clean, and mypy passing.
 
@@ -63,6 +63,6 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.49)
+## Note: Stable Release (v0.1.50)
 
-All systems stable with 1743 tests (1739 pass + 4 skip). Documentation synchronized with version v0.1.49.
+All systems stable with 1739 tests passing (4 skip). VERSION constant now synchronized with pyproject.toml.

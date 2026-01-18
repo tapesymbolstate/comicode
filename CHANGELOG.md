@@ -2,10 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
-## [v0.1.49] - 2026-01-18
+## [v0.1.50] - 2026-01-18
 
 ### Bug Fixes
-- Synced VERSION constant in constants.py to match pyproject.toml (0.1.49)
+- Synced VERSION constant in constants.py to match pyproject.toml
+- Updated CLI tests to use VERSION constant instead of hardcoded version strings
+
+### Documentation
+- Added missing CHANGELOG entries for v0.1.40 through v0.1.49
+- Updated IMPLEMENTATION_PLAN.md to v0.1.50
+
+## [v0.1.49] - 2026-01-18
 
 ### Documentation
 - Updated all spec files to v0.1.49

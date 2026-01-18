@@ -44,6 +44,12 @@ Without working examples, developers struggle to bridge the gap from API documen
 - [x] Example 15: Video export (MP4/WebM) with quality settings
 - [x] Example 16: Character types showcase (all 8 character styles)
 - [x] Example 17: AI image generation (OpenAI DALL-E, Replicate providers)
+- [x] Example 18: FlowLayout for responsive positioning
+- [x] Example 19: ConstraintLayout for precise, relational positioning
+- [x] Example 20: Themes and Styles for consistent comic styling
+- [x] Example 21: Text and Narration (StyledText, SFX, NarratorBubble)
+- [x] Example 22: Advanced Templates (ThreeRowLayout, MangaPage)
+- [x] Example 23: Preview Server for live development
 
 ### Won't Have (This Iteration)
 - [ ] Complex multi-page stories (defer to tutorials)
@@ -68,34 +74,45 @@ Without working examples, developers struggle to bridge the gap from API documen
 
 ```
 examples/
-├── README.md                 # How to run examples
-├── 01_simple_dialogue.py      # Two characters talking
-├── 02_four_panel_comic.py     # 4koma story
-├── 03_group_scene.py          # Multiple characters in one panel
-├── 04_expressions.py          # Show all expression types
-├── 05_bubble_types.py         # Speech, thought, shout, whisper
-├── 06_multi_page_pdf.py       # Using Book class
-├── 07_custom_layout.py        # Grid positioning
-├── 08_manual_positioning.py   # Precise control
-├── 09_using_templates.py      # FourKoma, TwoByTwo
-├── 10_error_handling.py       # Graceful degradation
-├── 11_html_export.py          # Interactive HTML export
-├── 12_parser_dsl.py           # Parser/DSL markup
-├── 13_visual_effects.py       # Visual effects
-├── 14_animation_export.py     # GIF animation export
-├── 15_video_export.py         # MP4/WebM video export
-├── 16_character_types.py      # All 8 character type showcase
-├── 17_ai_image_generation.py  # AI image generation with DALL-E and Replicate
-└── output/                    # Generated files
+├── README.md                   # How to run examples
+├── 01_simple_dialogue.py       # Two characters talking
+├── 02_four_panel_comic.py      # 4koma story
+├── 03_group_scene.py           # Multiple characters in one panel
+├── 04_expressions.py           # Show all expression types
+├── 05_bubble_types.py          # Speech, thought, shout, whisper
+├── 06_multi_page_pdf.py        # Using Book class
+├── 07_custom_layout.py         # Grid positioning
+├── 08_manual_positioning.py    # Precise control
+├── 09_using_templates.py       # FourKoma, TwoByTwo, ActionPage, WebComic
+├── 10_error_handling.py        # Graceful degradation
+├── 11_html_export.py           # Interactive HTML export
+├── 12_parser_dsl.py            # Parser/DSL markup
+├── 13_visual_effects.py        # Visual effects
+├── 14_animation_export.py      # GIF animation export
+├── 15_video_export.py          # MP4/WebM video export
+├── 16_character_types.py       # All 8 character type showcase
+├── 17_ai_image_generation.py   # AI image generation with DALL-E and Replicate
+├── 18_flow_layout.py           # FlowLayout responsive positioning
+├── 19_constraint_layout.py     # ConstraintLayout relational positioning
+├── 20_themes_and_styles.py     # Themes and Styles system
+├── 21_text_and_narration.py    # StyledText, SFX, NarratorBubble
+├── 22_advanced_templates.py    # ThreeRowLayout, MangaPage templates
+├── 23_preview_server.py        # Preview Server for live development
+└── output/                     # Generated files
     ├── 01_simple_dialogue.png
     ├── 02_four_panel_comic.png
     ├── ...
-    ├── 11_html_*.html         # HTML export variants
-    ├── 12_parser_*.png        # Parser DSL outputs
-    ├── 13_effect_*.png        # Visual effects outputs
-    ├── 14_anim_*.gif          # Animation GIF outputs
-    ├── 15_video_*.mp4/webm    # Video outputs
-    └── 16_*.png               # Character type outputs
+    ├── 11_html_*.html          # HTML export variants
+    ├── 12_parser_*.png         # Parser DSL outputs
+    ├── 13_effect_*.png         # Visual effects outputs
+    ├── 14_anim_*.gif           # Animation GIF outputs
+    ├── 15_video_*.mp4/webm     # Video outputs
+    ├── 16_*.png                # Character type outputs
+    ├── 18_*.png                # FlowLayout outputs
+    ├── 19_*.png                # ConstraintLayout outputs
+    ├── 20_*.png                # Themes/Styles outputs
+    ├── 21_*.png                # Text/Narration outputs
+    └── 22_*.png                # Advanced template outputs
 ```
 
 ### Related Specs
@@ -315,7 +332,7 @@ Generated PNG files will be saved to `examples/output/`.
 6. **06_multi_page_pdf.py** - Creating multi-page PDF comics with Book class
 7. **07_custom_layout.py** - Custom grid layouts (3x2, 2x3, etc.)
 8. **08_manual_positioning.py** - Precise manual positioning of elements
-9. **09_using_templates.py** - Using built-in templates (FourKoma, TwoByTwo, etc.)
+9. **09_using_templates.py** - Using built-in templates (FourKoma, TwoByTwo, ActionPage, WebComic)
 10. **10_error_handling.py** - Graceful error handling and fallbacks
 11. **11_html_export.py** - Interactive HTML export with zoom, pan, dark/light themes
 12. **12_parser_dsl.py** - Parser/DSL markup for rapid comic creation
@@ -323,6 +340,13 @@ Generated PNG files will be saved to `examples/output/`.
 14. **14_animation_export.py** - GIF animation export with Timeline and easing
 15. **15_video_export.py** - MP4/WebM video export with quality settings
 16. **16_character_types.py** - All 8 character types with expressions and poses
+17. **17_ai_image_generation.py** - AI image generation with DALL-E and Replicate
+18. **18_flow_layout.py** - FlowLayout for responsive positioning
+19. **19_constraint_layout.py** - ConstraintLayout for precise, relational positioning
+20. **20_themes_and_styles.py** - Themes and Styles for consistent comic styling
+21. **21_text_and_narration.py** - StyledText, SFX, NarratorBubble
+22. **22_advanced_templates.py** - ThreeRowLayout, MangaPage templates
+23. **23_preview_server.py** - Preview Server for live development
 
 ## Requirements
 
@@ -394,7 +418,7 @@ Feel free to modify these examples to experiment:
 ## Success Metrics
 
 **This spec is successful when:**
-1. All 17 examples execute without errors
+1. All 23 examples execute without errors
 2. All examples produce correct visual output
 3. A new developer can run examples within 5 minutes
 4. Examples serve as effective templates for custom comics

@@ -1,7 +1,7 @@
 # Examples Maintenance - 예제 정리 및 관리 기준
 
 > **Note**: This document contains **process guidelines** for future maintenance.
-> All 16 examples (01-16) are currently working correctly as of v0.1.51.
+> All 23 examples (01-23) are currently working correctly as of v0.1.59.
 
 ## What
 examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 예제만 유지**하고, 버그가 있는 예제는 명확히 표시하거나 임시 제거한다.
@@ -10,7 +10,7 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 **망가진 예제가 있으면 사용자가 혼란스럽다.**
 
 현재 상황 (2026-01-18):
-- ✅ 01-10 예제 파일 모두 존재
+- ✅ 01-23 예제 파일 모두 존재
 - ✅ 모든 예제가 정상 작동
 - ✅ 시각적 출력 검증 완료
 
@@ -34,7 +34,7 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 
 ## Current Examples Status
 
-**All 16 examples are working.** As of 2026-01-18, all examples execute successfully and produce correct output.
+**All 23 examples are working.** As of 2026-01-18, all examples execute successfully and produce correct output.
 
 | Example | Status |
 |---------|--------|
@@ -54,6 +54,13 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 | 14_animation_export.py | ✅ Working |
 | 15_video_export.py | ✅ Working |
 | 16_character_types.py | ✅ Working |
+| 17_ai_image_generation.py | ✅ Working |
+| 18_flow_layout.py | ✅ Working |
+| 19_constraint_layout.py | ✅ Working |
+| 20_themes_and_styles.py | ✅ Working |
+| 21_text_and_narration.py | ✅ Working |
+| 22_advanced_templates.py | ✅ Working |
+| 23_preview_server.py | ✅ Working |
 
 ## Immediate Action Plan
 

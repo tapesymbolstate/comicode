@@ -5,7 +5,7 @@
 ## 현재 상황 (2026-01-18 업데이트)
 
 - ✅ 코드는 에러 없이 실행됨
-- ✅ 테스트는 통과 (1982 passed + 30 skipped = 2012 collected)
+- ✅ 테스트는 통과 (2015 passed + 30 skipped = 2045 collected)
 - ✅ **v0.1.62에서 주요 시각적 버그가 수정됨**
 - ✅ mypy: no issues found in 50 source files
 - ✅ ruff: all checks passed
@@ -414,8 +414,8 @@ uv run python examples/04_expressions.py
 6. ✅ 다른 예제들도 여전히 작동함 (회귀 테스트)
 
 **모든 버그가 완료되면:**
-- [x] 전체 테스트 스위트 실행 (1982 passed + 30 skipped)
-- [x] 모든 24개 예제 실행
+- [x] 전체 테스트 스위트 실행 (2015 passed + 30 skipped)
+- [x] 모든 25개 예제 실행
 - [x] 모든 PNG/PDF 시각적 확인
 - [x] IMPLEMENTATION_PLAN.md 업데이트
 - [x] 이 문서를 "COMPLETED"로 표시

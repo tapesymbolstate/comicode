@@ -2,6 +2,27 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.95] - 2026-01-18
+
+### Documentation
+- Fixed documentation inconsistencies: Updated test counts in specs/visual-validation-requirements.md and specs/CRITICAL-BUGS-AND-FIXES.md (1982/2014 → 2015)
+- Added missing CHANGELOG entry for v0.1.94
+- Version numbers synchronized across pyproject.toml, comix/constants.py, specs/README.md, and IMPLEMENTATION_PLAN.md
+
+## [v0.1.94] - 2026-01-18
+
+### Features
+- **Realistic proportion style for Stickman**: Added `proportion_style="realistic"` for ideal 8-head figure drawing proportions
+  - Uses balanced proportions: head_ratio=0.125, torso_ratio=0.375, arm_ratio=0.375, leg_ratio=0.50
+  - Stickman now supports 5 proportion styles: classic, xkcd, tall, realistic, child
+
+### Tests
+- Added 1 new test for realistic proportion style
+- Test count: 2015 passed, 30 skipped (2045 collected)
+
+### Documentation
+- Updated stickman-reference-based.md spec to mark "realistic" style decision as complete
+
 ## [v0.1.93] - 2026-01-18
 
 ### Documentation

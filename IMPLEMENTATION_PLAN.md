@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Animation Export + Video Export + Multi-Page Parser
 
-**Current Git Tag: v0.1.53**
+**Current Git Tag: v0.1.54**
 
 All 8 phases have been implemented with **1743 tests** passing, ruff clean, and mypy passing.
 
@@ -34,7 +34,7 @@ All 8 phases have been implemented with **1743 tests** passing, ruff clean, and 
 - **Preview Server**: Hot reload web preview with file watching
 - **Templates**: 7 page templates (FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage)
 - **Interactive HTML Export**: Standalone HTML files with zoom, pan, dark/light themes, fullscreen, keyboard shortcuts, and multi-page navigation
-- **16 Working Examples**: Complete example scripts in examples/ directory including parser DSL, visual effects, animation export, video export, and character types showcase
+- **17 Working Examples**: Complete example scripts in examples/ directory including parser DSL, visual effects, animation export, video export, character types showcase, and AI image generation
 
 ### Technical Stack
 
@@ -63,6 +63,6 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.53)
+## Note: Stable Release (v0.1.54)
 
-All systems stable with 1743 tests passing. Fixed mypy errors in preview server watchdog handling. Documentation synced to reflect 16 working examples and current version status.
+All systems stable with 1743 tests passing. Added example 17 for AI image generation (AIImage with OpenAI DALL-E and Replicate providers). Documentation synced to reflect 17 working examples.

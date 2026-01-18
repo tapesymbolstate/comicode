@@ -1439,8 +1439,8 @@ page.render("output.png")
 
 ## 6. 개발 로드맵
 
-> **Note**: All 8 phases are complete as of v0.1.51. See IMPLEMENTATION_PLAN.md for details.
-> Current status: 1739 tests (1739 pass + 4 skip), mypy clean, ruff clean, 16 working examples.
+> **Note**: All 8 phases are complete as of v0.1.54. See IMPLEMENTATION_PLAN.md for details.
+> Current status: 1743 tests passing, mypy clean, ruff clean, 17 working examples.
 
 ### Phase 1: 코어 (MVP) ✅
 - [x] CObject 기본 클래스 (위치, 크기, 회전, 불투명도, z-index)

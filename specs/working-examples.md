@@ -43,11 +43,11 @@ Without working examples, developers struggle to bridge the gap from API documen
 - [x] Example 14: Animation export (GIF) with Timeline and easing functions
 - [x] Example 15: Video export (MP4/WebM) with quality settings
 - [x] Example 16: Character types showcase (all 8 character styles)
+- [x] Example 17: AI image generation (OpenAI DALL-E, Replicate providers)
 
 ### Won't Have (This Iteration)
 - [ ] Complex multi-page stories (defer to tutorials)
 - [ ] Advanced styling and theming (defer to advanced docs)
-- [ ] AI image generation examples (defer to ai-images.md)
 - [ ] Video tutorials (defer to future)
 
 ## Context
@@ -85,6 +85,7 @@ examples/
 ├── 14_animation_export.py     # GIF animation export
 ├── 15_video_export.py         # MP4/WebM video export
 ├── 16_character_types.py      # All 8 character type showcase
+├── 17_ai_image_generation.py  # AI image generation with DALL-E and Replicate
 └── output/                    # Generated files
     ├── 01_simple_dialogue.png
     ├── 02_four_panel_comic.png
@@ -393,7 +394,7 @@ Feel free to modify these examples to experiment:
 ## Success Metrics
 
 **This spec is successful when:**
-1. All 16 examples execute without errors
+1. All 17 examples execute without errors
 2. All examples produce correct visual output
 3. A new developer can run examples within 5 minutes
 4. Examples serve as effective templates for custom comics

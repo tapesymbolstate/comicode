@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.85**
+**Current Git Tag: v0.1.86**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,16 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.85)
+## Note: Stable Release (v0.1.86)
 
 All systems stable with 2014 tests passing (+ 30 skipped = 2044 collected). Version numbers synchronized across all files.
+
+v0.1.86 changes:
+- Fixed documentation inconsistencies: Updated character count from 8 to 9 (AnimalStyle added in v0.1.83)
+- Updated page template count from 7 to 9 (NewspaperStrip and Widescreen added in v0.1.72)
+- Fixed example count from 15/23 to 24 across all documentation
+- Updated specs/working-examples.md: Marked all visual bugs as fixed (v0.1.85)
+- Added AnimalStyle to README.md examples and documentation
 
 v0.1.85 changes:
 - Fixed example 03 (group_scene) bubble positioning - bubbles no longer overlap with characters

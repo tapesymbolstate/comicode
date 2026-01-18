@@ -1,8 +1,6 @@
 # Working Examples - Executable Comic Creation Examples
 
-> **⚠️ CRITICAL (2026-01-18)**: All examples execute without errors, but **visual bugs exist in the output**. See CRITICAL-BUGS-AND-FIXES.md for details.
->
-> **Known issues**: Bubble overlapping (example 03), GridLayout coordinate bugs (examples 02, 04, 07), and possibly others.
+> **Status (2026-01-18)**: All 24 examples execute without errors and produce correct visual output. Visual bugs from earlier versions have been fixed (v0.1.85).
 
 ## What
 A collection of complete, runnable Python scripts that demonstrate common comic creation workflows and serve as templates for developers.
@@ -21,12 +19,12 @@ Without working examples, developers struggle to bridge the gap from API documen
 
 ### Must Have
 - [x] Example 1: Two-panel dialogue (2 stick figures talking) - ✅ Visual output OK
-- [x] Example 2: Four-panel comic (4koma style story) - ⚠️ Possible GridLayout bugs
-- [x] Example 3: Single panel with multiple characters - 🔴 **Bubble overlapping confirmed**
-- [x] Example 4: Character expressions showcase (happy, sad, angry, etc.) - ⚠️ GridLayout bugs possible
+- [x] Example 2: Four-panel comic (4koma style story) - ✅ Working
+- [x] Example 3: Single panel with multiple characters - ✅ Fixed in v0.1.85
+- [x] Example 4: Character expressions showcase (happy, sad, angry, etc.) - ✅ Working
 - [x] Example 5: Different bubble types (speech, thought, shout) - ✅ Working
 - [x] All examples execute without errors using `uv run python example_name.py`
-- [ ] All examples produce visible PNG output showing complete comic - ⚠️ **PARTIALLY MET**: Examples execute but visual bugs exist
+- [x] All examples produce visible PNG output showing complete comic - ✅ All visual bugs fixed (v0.1.85)
 - [x] Basic examples (01-04, 07) are under 50 lines; complex examples may be longer for comprehensiveness
 - [x] Each example has clear comments explaining each step
 
@@ -46,7 +44,7 @@ Without working examples, developers struggle to bridge the gap from API documen
 - [x] Example 13: Visual effects (shake, zoom, motion, focus, impact)
 - [x] Example 14: Animation export (GIF) with Timeline and easing functions
 - [x] Example 15: Video export (MP4/WebM) with quality settings
-- [x] Example 16: Character types showcase (all 8 character styles)
+- [x] Example 16: Character types showcase (all 9 character styles)
 - [x] Example 17: AI image generation (OpenAI DALL-E, Replicate providers)
 - [x] Example 18: FlowLayout for responsive positioning
 - [x] Example 19: ConstraintLayout for precise, relational positioning
@@ -54,6 +52,7 @@ Without working examples, developers struggle to bridge the gap from API documen
 - [x] Example 21: Text and Narration (StyledText, SFX, NarratorBubble)
 - [x] Example 22: Advanced Templates (ThreeRowLayout, MangaPage)
 - [x] Example 23: Preview Server for live development
+- [x] Example 24: New Templates (NewspaperStrip, Widescreen)
 
 ### Won't Have (This Iteration)
 - [ ] Complex multi-page stories (defer to tutorials)
@@ -94,7 +93,7 @@ examples/
 ├── 13_visual_effects.py        # Visual effects
 ├── 14_animation_export.py      # GIF animation export
 ├── 15_video_export.py          # MP4/WebM video export
-├── 16_character_types.py       # All 8 character type showcase
+├── 16_character_types.py       # All 9 character type showcase
 ├── 17_ai_image_generation.py   # AI image generation with DALL-E and Replicate
 ├── 18_flow_layout.py           # FlowLayout responsive positioning
 ├── 19_constraint_layout.py     # ConstraintLayout relational positioning
@@ -102,6 +101,7 @@ examples/
 ├── 21_text_and_narration.py    # StyledText, SFX, NarratorBubble
 ├── 22_advanced_templates.py    # ThreeRowLayout, MangaPage templates
 ├── 23_preview_server.py        # Preview Server for live development
+├── 24_new_templates.py         # NewspaperStrip, Widescreen templates
 └── output/                     # Generated files
     ├── 01_simple_dialogue.png
     ├── 02_four_panel_comic.png

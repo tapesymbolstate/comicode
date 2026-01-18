@@ -37,7 +37,7 @@ Generated PNG files will be saved to `examples/output/`.
 13. **13_visual_effects.py** - Manga-style visual effects (shake, zoom, motion, focus, impact)
 14. **14_animation_export.py** - GIF animation export with Timeline and easing functions
 15. **15_video_export.py** - MP4/WebM video export with quality settings
-16. **16_character_types.py** - Showcase of all 8 character types with expressions and poses
+16. **16_character_types.py** - Showcase of all 9 character types with expressions and poses
 17. **17_ai_image_generation.py** - AI image generation with DALL-E and Replicate
 
 ### Layout & Styling Examples (18-20)
@@ -74,13 +74,17 @@ Generated PNG files will be saved to `examples/output/`.
     - Custom row heights and proportions
     - Dramatic layout variations
 
-### Development Workflow (23)
+### Development Workflow (23-24)
 
 23. **23_preview_server.py** - Preview Server for live development
     - Hot-reload capability for rapid iteration
     - CLI usage: `uv run comix serve script.py`
     - Creating preview-friendly scripts
     - One-shot preview mode
+
+24. **24_new_templates.py** - NewspaperStrip and Widescreen templates
+    - NewspaperStrip for classic 3-4 horizontal panel comics
+    - Widescreen for cinematic 16:9 or 21:9 aspect ratio layouts
 
 ## Requirements
 
@@ -133,6 +137,7 @@ Beyond Stickman, you can also try:
 - `Anime` - Natural proportion anime character
 - `Superhero` - Heroic character with costume
 - `Cartoon` - Classic Western cartoon style
+- `AnimalStyle` - Anthropomorphic animal characters (cat, dog, rabbit, fox, bear, bird, wolf)
 
 ## Layout Systems
 

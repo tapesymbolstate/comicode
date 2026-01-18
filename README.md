@@ -4,11 +4,11 @@ A code-based comic creation framework inspired by [Manim](https://www.manim.comm
 
 ## Features
 
-- **8 Character Types**: Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon
+- **9 Character Types**: Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon, AnimalStyle
 - **11 Expressions**: neutral, happy, sad, angry, surprised, confused, sleepy, excited, scared, smirk, crying
 - **12 Poses**: standing, sitting, waving, pointing, walking, running, jumping, dancing, lying, kneeling, cheering, thinking
 - **5 Bubble Types**: Speech, Thought, Shout, Whisper, Narrator
-- **7 Page Templates**: FourKoma, TwoByTwo, SplashPage, WebComic, ThreeRowLayout, MangaPage, ActionPage
+- **9 Page Templates**: FourKoma, TwoByTwo, SplashPage, WebComic, ThreeRowLayout, MangaPage, ActionPage, NewspaperStrip, Widescreen
 - **6 Visual Effects**: AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect
 - **Multiple Output Formats**: SVG (always available), PNG/PDF (with optional Cairo)
 
@@ -112,7 +112,7 @@ comic.render("4koma.png")
 ## Character Types
 
 ```python
-from comix import Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon
+from comix import Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon, AnimalStyle
 
 # Basic stick figure
 stickman = Stickman(name="Bob", height=100)
@@ -137,6 +137,9 @@ hero = Superhero(name="Captain", height=120, cape=True, emblem="star")
 
 # Classic cartoon style
 toon = Cartoon(name="Toony", height=100, body_shape="pear", gloves=True)
+
+# Anthropomorphic animal character
+animal = AnimalStyle(name="Felix", height=100, species="cat", fur_color="#FF9800")
 ```
 
 ## Expressions and Poses
@@ -208,7 +211,7 @@ comix compile page1.py page2.py -o book.pdf
 
 ## Examples
 
-See the `examples/` directory for 15 working examples:
+See the `examples/` directory for 24 working examples:
 
 ```bash
 # Run an example

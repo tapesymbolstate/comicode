@@ -1,6 +1,6 @@
 # Examples Maintenance - 예제 정리 및 관리 기준
 
-> **⚠️ CRITICAL UPDATE (2026-01-18)**: While all 23 examples execute without errors, **visual bugs exist in the output**. See CRITICAL-BUGS-AND-FIXES.md for details.
+> **Status (v0.1.101)**: All 26 examples execute without errors and produce correct visual output. All visual bugs have been fixed (v0.1.85).
 
 ## What
 examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 예제만 유지**하고, 버그가 있는 예제는 명확히 표시하거나 임시 제거한다.
@@ -8,10 +8,10 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 ## Why
 **망가진 예제가 있으면 사용자가 혼란스럽다.**
 
-현재 상황 (2026-01-18):
-- ✅ 01-23 예제 파일 모두 존재
+현재 상황 (v0.1.101):
+- ✅ 01-26 예제 파일 모두 존재
 - ✅ 모든 예제가 에러 없이 실행됨 (no exceptions)
-- ❌ **시각적 출력에 버그 존재** (bubble overlapping, layout issues)
+- ✅ **시각적 출력 정상** (모든 버그 수정 완료)
 
 **참고**: 코드 실행 성공 ≠ 시각적 품질 OK. PNG 파일을 육안으로 확인해야 함.
 
@@ -33,14 +33,14 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 
 ## Current Examples Status
 
-**All 23 examples execute without errors**, but visual bugs exist. See CRITICAL-BUGS-AND-FIXES.md.
+**All 26 examples execute without errors** and produce correct visual output. All visual bugs have been fixed (v0.1.85).
 
 | Example | Status |
 |---------|--------|
-| 01_simple_dialogue.py | ✅ Executes correctly, visual output OK |
-| 02_four_panel_comic.py | ⚠️ Executes, possible layout issues |
-| 03_group_scene.py | 🔴 **Executes, bubble overlapping confirmed** |
-| 04_expressions.py | ⚠️ Executes, GridLayout bugs possible |
+| 01_simple_dialogue.py | ✅ Working |
+| 02_four_panel_comic.py | ✅ Working |
+| 03_group_scene.py | ✅ Working (fixed in v0.1.85) |
+| 04_expressions.py | ✅ Working |
 | 05_bubble_types.py | ✅ Working |
 | 06_multi_page_pdf.py | ✅ Working |
 | 07_custom_layout.py | ✅ Working |
@@ -60,11 +60,14 @@ examples/ 디렉토리를 주기적으로 정리하여 **실제로 작동하는 
 | 21_text_and_narration.py | ✅ Working |
 | 22_advanced_templates.py | ✅ Working |
 | 23_preview_server.py | ✅ Working |
+| 24_new_templates.py | ✅ Working |
+| 25_panel_shapes.py | ✅ Working |
+| 26_stickman_articulation.py | ✅ Working |
 
 ## Maintenance Process (For Future Use)
 
 > **Note**: This section describes what to do IF examples break in the future.
-> Currently all 23 examples are working correctly.
+> Currently all 26 examples are working correctly.
 
 ### If An Example Breaks
 

@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Animation Export + Video Export + Multi-Page Parser
 
-**Current Git Tag: v0.1.55**
+**Current Git Tag: v0.1.56**
 
 All 8 phases have been implemented with **1743 tests** passing, ruff clean, and mypy passing.
 
@@ -34,7 +34,7 @@ All 8 phases have been implemented with **1743 tests** passing, ruff clean, and 
 - **Preview Server**: Hot reload web preview with file watching
 - **Templates**: 7 page templates (FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage)
 - **Interactive HTML Export**: Standalone HTML files with zoom, pan, dark/light themes, fullscreen, keyboard shortcuts, and multi-page navigation
-- **17 Working Examples**: Complete example scripts in examples/ directory including parser DSL, visual effects, animation export, video export, character types showcase, and AI image generation
+- **23 Working Examples**: Complete example scripts in examples/ directory including parser DSL, visual effects, animation export, video export, character types showcase, AI image generation, FlowLayout, ConstraintLayout, themes/styles, text/narration, advanced templates, and preview server usage
 
 ### Technical Stack
 
@@ -63,6 +63,12 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.55)
+## Note: Stable Release (v0.1.56)
 
-All systems stable with 1743 tests passing. Fixed ruff lint errors (extraneous f-string prefixes) in example 17.
+All systems stable with 1743 tests passing. Added 6 new examples (18-23) demonstrating previously undocumented features:
+- Example 18: FlowLayout for responsive, content-aware positioning
+- Example 19: ConstraintLayout for precise, relational positioning
+- Example 20: Themes and Styles for consistent comic styling
+- Example 21: StyledText, SFX, and NarratorBubble for enhanced storytelling
+- Example 22: ThreeRowLayout and MangaPage advanced templates
+- Example 23: Preview Server for live development workflow

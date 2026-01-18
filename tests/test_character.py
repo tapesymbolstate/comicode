@@ -429,6 +429,113 @@ class TestStickmanProportions:
             assert stickman.proportion_style == preset
 
 
+class TestStickmanHeadSquash:
+    """Tests for Stickman head_squash feature (head curve/roundness)."""
+
+    def test_default_head_squash_is_zero(self):
+        """Test that default head_squash is 0 (perfect circle)."""
+        stickman = Stickman()
+        assert stickman.head_squash == 0.0
+
+    def test_head_squash_positive_flattens_head(self):
+        """Test that positive head_squash makes head wider than tall."""
+        stickman = Stickman(head_squash=0.5)
+        assert stickman.head_squash == 0.5
+        # Head points are first 16 points
+        head_points = stickman._points[:16]
+        head_width = head_points[:, 0].max() - head_points[:, 0].min()
+        head_height = head_points[:, 1].max() - head_points[:, 1].min()
+        # Flattened head should be wider than tall
+        assert head_width > head_height
+
+    def test_head_squash_negative_elongates_head(self):
+        """Test that negative head_squash makes head taller than wide."""
+        stickman = Stickman(head_squash=-0.5)
+        assert stickman.head_squash == -0.5
+        # Head points are first 16 points
+        head_points = stickman._points[:16]
+        head_width = head_points[:, 0].max() - head_points[:, 0].min()
+        head_height = head_points[:, 1].max() - head_points[:, 1].min()
+        # Elongated head should be taller than wide
+        assert head_height > head_width
+
+    def test_head_squash_zero_creates_circle(self):
+        """Test that head_squash=0 creates a circular head (equal width and height)."""
+        stickman = Stickman(head_squash=0.0)
+        # Head points are first 16 points
+        head_points = stickman._points[:16]
+        head_width = head_points[:, 0].max() - head_points[:, 0].min()
+        head_height = head_points[:, 1].max() - head_points[:, 1].min()
+        # Circle should have approximately equal width and height
+        # Due to 16-point discretization, allow 1% tolerance
+        assert abs(head_width - head_height) / head_height < 0.01
+
+    def test_head_squash_clamped_to_max(self):
+        """Test that head_squash is clamped to maximum 1.0."""
+        stickman = Stickman(head_squash=2.0)
+        assert stickman.head_squash == 1.0
+
+    def test_head_squash_clamped_to_min(self):
+        """Test that head_squash is clamped to minimum -1.0."""
+        stickman = Stickman(head_squash=-2.0)
+        assert stickman.head_squash == -1.0
+
+    def test_head_squash_at_boundary_values(self):
+        """Test head_squash at boundary values (1.0 and -1.0)."""
+        flat = Stickman(head_squash=1.0)
+        elongated = Stickman(head_squash=-1.0)
+        assert flat.head_squash == 1.0
+        assert elongated.head_squash == -1.0
+        # Both should generate valid points
+        assert len(flat._points) > 0
+        assert len(elongated._points) > 0
+
+    def test_head_squash_in_render_data(self):
+        """Test that head_squash is included in render data."""
+        stickman = Stickman(head_squash=0.3)
+        data = stickman.get_render_data()
+        assert "head_squash" in data
+        assert data["head_squash"] == 0.3
+
+    def test_head_squash_with_proportion_style(self):
+        """Test head_squash works with different proportion styles."""
+        styles = ["classic", "xkcd", "tall", "child"]
+        for style in styles:
+            stickman = Stickman(proportion_style=style, head_squash=0.2)
+            assert stickman.head_squash == 0.2
+            assert stickman.proportion_style == style
+            # Head should be flattened
+            head_points = stickman._points[:16]
+            head_width = head_points[:, 0].max() - head_points[:, 0].min()
+            head_height = head_points[:, 1].max() - head_points[:, 1].min()
+            assert head_width > head_height, f"Failed for style: {style}"
+
+    def test_head_squash_with_facing_left(self):
+        """Test head_squash is correctly applied when facing left."""
+        right = Stickman(head_squash=0.4, facing="right")
+        left = Stickman(head_squash=0.4, facing="left")
+        # Head dimensions should be same (facing just flips x-axis)
+        right_head = right._points[:16]
+        left_head = left._points[:16]
+        right_width = right_head[:, 0].max() - right_head[:, 0].min()
+        left_width = left_head[:, 0].max() - left_head[:, 0].min()
+        np.testing.assert_almost_equal(right_width, left_width)
+
+    def test_head_squash_range_produces_different_shapes(self):
+        """Test that different head_squash values produce different shapes."""
+        shapes = []
+        for squash in [-0.5, -0.25, 0.0, 0.25, 0.5]:
+            stickman = Stickman(head_squash=squash)
+            head_points = stickman._points[:16]
+            width = head_points[:, 0].max() - head_points[:, 0].min()
+            height = head_points[:, 1].max() - head_points[:, 1].min()
+            shapes.append((width, height))
+        # All shapes should be different
+        for i in range(len(shapes)):
+            for j in range(i + 1, len(shapes)):
+                assert shapes[i] != shapes[j], f"Shapes at indices {i} and {j} are identical"
+
+
 class TestSimpleFace:
     """Tests for SimpleFace class."""
 

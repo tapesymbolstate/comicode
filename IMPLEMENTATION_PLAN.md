@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.75**
+**Current Git Tag: v0.1.76**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -88,8 +88,7 @@ Potential improvements for core features:
 2. **More Templates**: Additional page layout templates
 3. **Preset Panel Shapes**: Starburst, cloud, explosion panel presets (from panel-shapes.md)
 4. **Automatic Gutter Spacing**: Gutter calculations for non-rectangular panels (from panel-shapes.md)
-5. **Stickman Head Options**: Slight curve/roundness option for head (from stickman-reference-based.md)
-6. **Line Width Consistency**: Consistent line widths across all Stickman body parts (from stickman-reference-based.md)
+5. **Line Width Consistency**: Consistent line widths across all Stickman body parts (from stickman-reference-based.md)
 
 ## Known Issues
 
@@ -101,9 +100,16 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.75)
+## Note: Stable Release (v0.1.76)
 
-All systems stable with 1854 tests passing (+ 30 skipped = 1884 collected). Version numbers synchronized across all files.
+All systems stable with 1865 tests passing (+ 30 skipped = 1895 collected). Version numbers synchronized across all files.
+
+v0.1.76 changes:
+- Added `head_squash` parameter to Stickman for head shape customization (ellipse/oval heads)
+- Positive values flatten head (wider than tall), negative values elongate (taller than wide)
+- Default 0.0 maintains perfect circle for backward compatibility
+- Added 11 new tests for head_squash functionality
+- Updated stickman-reference-based.md spec to mark head curve/roundness as complete
 
 v0.1.75 changes:
 - Updated documentation version numbers and test counts

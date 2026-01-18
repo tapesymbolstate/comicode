@@ -28,7 +28,7 @@ Without reference-based design, our stickman characters may look "off" or "weird
 - [x] Configurable head_ratio parameter (default: 0.133 for ~7.5 heads height)
 - [x] Elbow positioned at waist level when arms down (anatomical accuracy)
 - [x] Knees at midpoint of legs
-- [ ] Slight curve/roundness option for head (not perfectly circular)
+- [x] Slight curve/roundness option for head (not perfectly circular) - `head_squash` parameter
 - [ ] Line width consistency across all body parts
 
 ### Won't Have (This Iteration)

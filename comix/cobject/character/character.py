@@ -318,6 +318,9 @@ class Stickman(Character):
         torso_ratio: Override torso length as ratio of total height.
         arm_ratio: Override arm length as ratio of total height.
         leg_ratio: Override leg length as ratio of total height.
+        head_squash: Head shape modifier (-1.0 to 1.0). Positive values flatten
+            the head (wider than tall), negative values elongate it (taller than
+            wide). Default 0.0 creates a perfect circle.
         **kwargs: Additional Character parameters.
 
     Example:
@@ -329,6 +332,9 @@ class Stickman(Character):
         >>>
         >>> # Custom proportions
         >>> char = Stickman(height=150, head_ratio=0.2, leg_ratio=0.45)
+        >>>
+        >>> # Slightly flattened head for cute look
+        >>> char = Stickman(height=150, head_squash=0.15)
     """
 
     # Reference-based proportion presets
@@ -367,6 +373,7 @@ class Stickman(Character):
         torso_ratio: float | None = None,
         arm_ratio: float | None = None,
         leg_ratio: float | None = None,
+        head_squash: float = 0.0,
         **kwargs: Any,
     ) -> None:
         # Get preset proportions
@@ -387,6 +394,9 @@ class Stickman(Character):
         self.torso_ratio = torso_ratio if torso_ratio is not None else preset["torso_ratio"]
         self.arm_ratio = arm_ratio if arm_ratio is not None else preset["arm_ratio"]
         self.leg_ratio = leg_ratio if leg_ratio is not None else preset["leg_ratio"]
+
+        # Clamp head_squash to valid range (-1.0 to 1.0)
+        self.head_squash = max(-1.0, min(1.0, head_squash))
 
         kwargs.setdefault("style", "stickman")
         super().__init__(name=name, **kwargs)
@@ -409,11 +419,24 @@ class Stickman(Character):
         neck_y = head_top - 2 * head_radius  # Head bottom = neck start
         hip_y = neck_y - torso_length  # Hip level
 
-        # Head circle (16 points)
+        # Head ellipse (16 points) - uses head_squash to modify shape
+        # Positive head_squash: flatten (wider than tall)
+        # Negative head_squash: elongate (taller than wide)
+        # The squash factor applies a scaling multiplier to the axis
+        squash_factor = 1.0 + abs(self.head_squash) * 0.3  # Max 30% distortion
+        if self.head_squash >= 0:
+            # Flatten: increase width, decrease height
+            head_radius_x = head_radius * squash_factor
+            head_radius_y = head_radius / squash_factor
+        else:
+            # Elongate: decrease width, increase height
+            head_radius_x = head_radius / squash_factor
+            head_radius_y = head_radius * squash_factor
+
         for angle in np.linspace(0, 2 * np.pi, 16):
             points.append([
-                head_radius * np.cos(angle),
-                head_center_y + head_radius * np.sin(angle)
+                head_radius_x * np.cos(angle),
+                head_center_y + head_radius_y * np.sin(angle)
             ])
 
         # Torso line (neck to hips)
@@ -489,6 +512,7 @@ class Stickman(Character):
             "torso_ratio": self.torso_ratio,
             "arm_ratio": self.arm_ratio,
             "leg_ratio": self.leg_ratio,
+            "head_squash": self.head_squash,
         })
         return data
 

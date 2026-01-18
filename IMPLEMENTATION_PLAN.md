@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Animation Export + Video Export + Multi-Page Parser
 
-**Current Git Tag: v0.1.60**
+**Current Git Tag: v0.1.61**
 
 All 8 phases have been implemented with **1743 tests** passing, ruff clean, and mypy passing.
 
@@ -63,14 +63,17 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.60)
+## Note: Stable Release (v0.1.61)
 
 All systems stable with 1743 tests passing. Version numbers synchronized across all files.
-Specs updated to accurately reflect 23 working examples.
+
+v0.1.61 changes:
+- Fixed panel child positioning with transform-based coordinate system
+- SVG/Cairo renderers now use translate transforms so child coordinates are relative to panel center
+- Example 16 updated to use relative positioning within panels
+
+Previous release (v0.1.60):
+- Specs updated to accurately reflect 23 working examples
 
 Previous release (v0.1.59):
 - Version numbers synchronized across all files
-
-Previous release (v0.1.57):
-- Added 6 new examples (18-23) demonstrating advanced features
-- FlowLayout, ConstraintLayout, Themes/Styles, Text/Narration, Advanced Templates, Preview Server

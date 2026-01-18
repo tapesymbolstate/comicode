@@ -110,7 +110,7 @@ getting-started.md
          └─> working-examples.md (examples 01-05 implemented)
 ```
 
-All acceptance criteria are met. The library is feature-complete for v0.1.60 with all 8 phases implemented.
+All acceptance criteria are met. The library is feature-complete for v0.1.61 with all 8 phases implemented.
 
 ## How to Use These Specs
 

@@ -39,6 +39,36 @@ Without reference-based design, our stickman characters may look "off" or "weird
 
 ## Context
 
+### Critical Bug Fix: Upside-Down Stickman
+
+**Problem Identified**: The original implementation had stickman drawn **upside-down** (head at bottom, feet at top) due to incorrect Y-axis coordinate calculations.
+
+**Root Cause**: Graphics coordinate systems use a **top-left origin** where:
+- Small Y values = top of screen
+- Large Y values = bottom of screen
+
+The original code was **subtracting** from Y to move down the body:
+```python
+# WRONG - subtracting Y moves UP, not down!
+head_top = h / 2        # Result: y=50
+neck_y = head_top - 2 * head_radius  # Result: y=23 (ABOVE head_top!)
+hip_y = neck_y - torso_length        # Result: y=-17 (ABOVE neck!)
+```
+
+This caused head (large Y) to render at bottom, feet (small Y) to render at top.
+
+**Solution**: **Add** to Y coordinates to move down:
+```python
+# CORRECT - adding Y moves DOWN
+head_top = -h / 2                # Start at top (y=-50)
+neck_y = head_top + 2 * head_radius  # y=-23 (BELOW head)
+hip_y = neck_y + torso_length        # y=17 (BELOW neck)
+```
+
+**Verification**:
+- Before fix: Min Y = -69.60 (feet), Max Y = 49.93 (head) ❌
+- After fix: Min Y = -49.93 (head), Max Y = 69.60 (feet) ✅
+
 ### Reference Analysis from Web Research
 
 Based on web search findings about professional stick figure design:
@@ -246,6 +276,8 @@ child = Stickman(
 
 ### Corrected Stickman Proportions
 
+**CRITICAL**: All Y-coordinate calculations must ADD to move down (not subtract).
+
 ```python
 class Stickman(Character):
     # Reference-based proportion presets
@@ -313,11 +345,12 @@ class Stickman(Character):
         points = []
 
         # Calculate vertical positions (top to bottom)
-        head_top = h / 2
-        head_center_y = head_top - head_radius
-        head_bottom = head_top - 2 * head_radius  # Neck start
-        torso_bottom = head_bottom - torso_length  # Hip level
-        foot_level = torso_bottom - leg_length
+        # CRITICAL: In graphics coords, Y increases downward (top-left origin)
+        # So we ADD to move down, SUBTRACT to move up
+        head_top = -h / 2  # Start at top (negative = upward from center)
+        head_center_y = head_top + head_radius  # Head center (below top)
+        neck_y = head_top + 2 * head_radius  # Neck start (below head)
+        hip_y = neck_y + torso_length  # Hip level (below neck)
 
         # Head circle (16 points)
         for angle in np.linspace(0, 2 * np.pi, 16):
@@ -327,32 +360,32 @@ class Stickman(Character):
             ])
 
         # Torso line (neck to hips)
-        points.append([0, head_bottom])  # Neck
-        points.append([0, torso_bottom])  # Hips
+        points.append([0, neck_y])  # Neck
+        points.append([0, hip_y])  # Hips
 
         # Arms (shoulders to elbows to hands)
-        arm_attachment_y = head_bottom - torso_length * 0.1  # Just below neck
+        arm_y = neck_y + torso_length * 0.1  # Just below neck (ADD = down)
         left_arm_angle = np.radians(self._pose.left_arm)
         right_arm_angle = np.radians(self._pose.right_arm)
 
         # Left arm (shoulder → elbow → hand)
         elbow_left_x = -arm_length * 0.5 * np.cos(left_arm_angle)
-        elbow_left_y = arm_attachment_y - arm_length * 0.5 * np.sin(left_arm_angle)
+        elbow_left_y = arm_y + arm_length * 0.5 * np.sin(left_arm_angle)  # ADD = down
         hand_left_x = -arm_length * np.cos(left_arm_angle)
-        hand_left_y = arm_attachment_y - arm_length * np.sin(left_arm_angle)
+        hand_left_y = arm_y + arm_length * np.sin(left_arm_angle)  # ADD = down
 
-        points.append([0, arm_attachment_y])  # Shoulder (center)
+        points.append([0, arm_y])  # Shoulder (center)
         points.append([elbow_left_x, elbow_left_y])  # Elbow
         points.append([elbow_left_x, elbow_left_y])  # Elbow (repeat for line segment)
         points.append([hand_left_x, hand_left_y])  # Hand
 
         # Right arm
         elbow_right_x = arm_length * 0.5 * np.cos(right_arm_angle)
-        elbow_right_y = arm_attachment_y - arm_length * 0.5 * np.sin(right_arm_angle)
+        elbow_right_y = arm_y + arm_length * 0.5 * np.sin(right_arm_angle)  # ADD = down
         hand_right_x = arm_length * np.cos(right_arm_angle)
-        hand_right_y = arm_attachment_y - arm_length * np.sin(right_arm_angle)
+        hand_right_y = arm_y + arm_length * np.sin(right_arm_angle)  # ADD = down
 
-        points.append([0, arm_attachment_y])  # Shoulder (center)
+        points.append([0, arm_y])  # Shoulder (center)
         points.append([elbow_right_x, elbow_right_y])  # Elbow
         points.append([elbow_right_x, elbow_right_y])  # Elbow (repeat)
         points.append([hand_right_x, hand_right_y])  # Hand
@@ -363,22 +396,22 @@ class Stickman(Character):
 
         # Left leg
         knee_left_x = -leg_length * 0.5 * np.cos(left_leg_angle)
-        knee_left_y = torso_bottom - leg_length * 0.5 * np.sin(left_leg_angle)
+        knee_left_y = hip_y + leg_length * 0.5 * np.sin(left_leg_angle)  # ADD = down
         foot_left_x = -leg_length * np.cos(left_leg_angle)
-        foot_left_y = torso_bottom - leg_length * np.sin(left_leg_angle)
+        foot_left_y = hip_y + leg_length * np.sin(left_leg_angle)  # ADD = down
 
-        points.append([0, torso_bottom])  # Hip
+        points.append([0, hip_y])  # Hip
         points.append([knee_left_x, knee_left_y])  # Knee
         points.append([knee_left_x, knee_left_y])  # Knee (repeat)
         points.append([foot_left_x, foot_left_y])  # Foot
 
         # Right leg
         knee_right_x = leg_length * 0.5 * np.cos(right_leg_angle)
-        knee_right_y = torso_bottom - leg_length * 0.5 * np.sin(right_leg_angle)
+        knee_right_y = hip_y + leg_length * 0.5 * np.sin(right_leg_angle)  # ADD = down
         foot_right_x = leg_length * np.cos(right_leg_angle)
-        foot_right_y = torso_bottom - leg_length * np.sin(right_leg_angle)
+        foot_right_y = hip_y + leg_length * np.sin(right_leg_angle)  # ADD = down
 
-        points.append([0, torso_bottom])  # Hip
+        points.append([0, hip_y])  # Hip
         points.append([knee_right_x, knee_right_y])  # Knee
         points.append([knee_right_x, knee_right_y])  # Knee (repeat)
         points.append([foot_right_x, foot_right_y])  # Foot

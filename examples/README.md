@@ -31,12 +31,13 @@ Generated PNG files will be saved to `examples/output/`.
 10. **10_error_handling.py** - Graceful error handling and fallbacks
 11. **11_html_export.py** - Interactive HTML export with zoom, pan, dark/light themes
 
-### Extended Examples (12-15)
+### Extended Examples (12-16)
 
 12. **12_parser_dsl.py** - Create comics from markup text using the DSL parser
 13. **13_visual_effects.py** - Manga-style visual effects (shake, zoom, motion, focus, impact)
 14. **14_animation_export.py** - GIF animation export with Timeline and easing functions
 15. **15_video_export.py** - MP4/WebM video export with quality settings
+16. **16_character_types.py** - Showcase of all 8 character types with expressions and poses
 
 ## Requirements
 

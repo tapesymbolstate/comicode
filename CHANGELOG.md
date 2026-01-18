@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.51] - 2026-01-18
+
+### Examples
+- Added example 16: Character Types showcase (`16_character_types.py`)
+  - Demonstrates all 8 character types (Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Cartoon, Superhero)
+  - Shows expression comparison across different character types
+  - Shows pose demonstration with various character types
+  - Creates 3 output files: character showcase, expression comparison, and pose showcase
+
+### Documentation
+- Updated examples/README.md with new example listing
+- Updated IMPLEMENTATION_PLAN.md to v0.1.51 and 16 examples
+
 ## [v0.1.50] - 2026-01-18
 
 ### Bug Fixes

@@ -2,9 +2,9 @@
 
 ## Status: All Phases Complete + Animation Export + Video Export + Multi-Page Parser
 
-**Current Git Tag: v0.1.50**
+**Current Git Tag: v0.1.51**
 
-All 8 phases have been implemented with **1743 tests** (1739 pass + 4 skip), ruff clean, and mypy passing.
+All 8 phases have been implemented with **1739 tests** (1739 pass + 4 skip), ruff clean, and mypy passing.
 
 ### Completed Phases Summary
 
@@ -34,7 +34,7 @@ All 8 phases have been implemented with **1743 tests** (1739 pass + 4 skip), ruf
 - **Preview Server**: Hot reload web preview with file watching
 - **Templates**: 7 page templates (FourKoma, SplashPage, TwoByTwo, WebComic, ThreeRowLayout, MangaPage, ActionPage)
 - **Interactive HTML Export**: Standalone HTML files with zoom, pan, dark/light themes, fullscreen, keyboard shortcuts, and multi-page navigation
-- **15 Working Examples**: Complete example scripts in examples/ directory including parser DSL, visual effects, animation export, and video export
+- **16 Working Examples**: Complete example scripts in examples/ directory including parser DSL, visual effects, animation export, video export, and character types showcase
 
 ### Technical Stack
 
@@ -63,6 +63,6 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.50)
+## Note: Stable Release (v0.1.51)
 
-All systems stable with 1739 tests passing (4 skip). VERSION constant now synchronized with pyproject.toml.
+All systems stable with 1739 tests passing (4 skip). Added example 16: Character Types showcase demonstrating all 8 character types with expressions and poses.

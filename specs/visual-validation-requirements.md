@@ -2,7 +2,7 @@
 
 > This document contains **mandatory process guidelines** for all development work.
 >
-> **Status (v0.1.101)**: All visual bugs have been fixed. All 26 examples produce correct visual output.
+> **Status (v0.1.105)**: All visual bugs have been fixed. All 26 examples produce correct visual output.
 
 ## What
 모든 구현 작업은 반드시 실제 렌더링 결과물을 육안으로 확인하고 검증해야 한다.
@@ -10,7 +10,7 @@
 ## Why
 **코드가 에러 없이 실행되고 테스트가 통과해도 실제 결과물이 엉망일 수 있다.**
 
-현재 상황 (v0.1.101):
+현재 상황 (v0.1.105):
 - ✅ 2087개 테스트 통과 (+ 30 skipped = 2117 collected)
 - ✅ 코드 에러 없음
 - ✅ **시각적 버그 수정 완료 (v0.1.85)**
@@ -93,7 +93,7 @@
 
 ## Current Known Issues (실제 결과물 검증 결과)
 
-**No known issues.** As of v0.1.101, all 2087 tests pass (+ 30 skipped = 2117 collected), all 26 examples (01-26) execute successfully and produce correct output, and mypy/ruff pass.
+**No known issues.** As of v0.1.105, all 2087 tests pass (+ 30 skipped = 2117 collected), all 26 examples (01-26) execute successfully and produce correct output, and mypy/ruff pass.
 
 ## Implementation Strategy
 

@@ -359,6 +359,7 @@ Generated PNG files will be saved to `examples/output/`.
 23. **23_preview_server.py** - Preview Server for live development
 24. **24_new_templates.py** - NewspaperStrip, Widescreen templates
 25. **25_panel_shapes.py** - Advanced panel types (DiagonalPanel, TrapezoidPanel, StarburstPanel, CloudPanel, ExplosionPanel, split_diagonal, split_curve)
+26. **26_stickman_articulation.py** - Stickman articulation (joint-level control, hand gestures, point_at helper)
 
 ## Requirements
 

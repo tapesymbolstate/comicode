@@ -27,7 +27,7 @@ Users need a clear, working starting point to understand how to use the Comix li
 
 ### Implemented Beyond Original Scope
 - [x] Complex layouts: GridLayout, FlowLayout, ConstraintLayout
-- [x] 8 character styles: Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon
+- [x] 9 character styles: Stickman, SimpleFace, ChubbyStickman, Robot, Chibi, Anime, Superhero, Cartoon, AnimalStyle
 - [x] 6 effect types: AppearEffect, ShakeEffect, ZoomEffect, MotionLines, FocusLines, ImpactEffect
 - [x] Full parser for DSL markup syntax
 

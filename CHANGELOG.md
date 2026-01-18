@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.68] - 2026-01-18
+
+### Features
+- **Non-rectangular panel shapes**: Added DiagonalPanel, TrapezoidPanel, IrregularPanel for creative layouts
+- **Stickman reference-based proportions**: Redesigned with 4 presets (classic, xkcd, tall, child)
+- **Bubble tail improvements**: Added tail_mode (auto/fixed/none), smart_attach_to(), auto tail length calculation
+
+### Tests
+- Added 48 new tests covering all new features
+- Test count: 1761 passed, 30 skipped
+
+### Documentation
+- Added spec files: panel-shapes.md, stickman-reference-based.md, bubble-tail-improvements.md
+
 ## [v0.1.67] - 2026-01-18
 
 ### Documentation

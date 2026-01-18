@@ -2,7 +2,7 @@
 
 ## Status: Core Features Complete (Phases 1-5) + Simplified Focus
 
-**Current Git Tag: v0.1.65**
+**Current Git Tag: v0.1.66**
 
 프로젝트를 **정적 만화 제작**에 집중하기 위해 간소화했습니다.
 Core phases (1-5) 구현 완료. Advanced features (phases 6-8)는 보류.
@@ -97,9 +97,14 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.65)
+## Note: Stable Release (v0.1.66)
 
 All systems stable with 1713 tests passing. Version numbers synchronized across all files.
+
+v0.1.66 changes:
+- Fixed version inconsistency in specs/README.md (0.1.64 → 0.1.65)
+- Fixed test count in specs/README.md (1743 → 1713)
+- Added missing CHANGELOG entries for v0.1.54-v0.1.65
 
 v0.1.65 changes:
 - Fixed mypy type-check errors in optional dependency modules (video_renderer.py, preview/server.py)

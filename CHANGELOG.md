@@ -2,6 +2,89 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.66] - 2026-01-18
+
+### Documentation
+- Fixed version inconsistency in specs/README.md (0.1.64 → 0.1.65)
+- Fixed test count in specs/README.md (1743 → 1713)
+- Added missing CHANGELOG entries for v0.1.54-v0.1.65
+
+## [v0.1.65] - 2026-01-18
+
+### Bug Fixes
+- Fixed mypy type-check errors in optional dependency modules
+  - video_renderer.py: Fixed type annotations for optional imageio dependency
+  - preview/server.py: Fixed type annotations for optional watchdog dependency
+- Improved type safety for optional dependencies (watchdog, imageio)
+
+## [v0.1.64] - 2026-01-18
+
+### Documentation
+- Synchronized version numbers to v0.1.64 across pyproject.toml, comix/constants.py, specs/README.md
+
+## [v0.1.63] - 2026-01-18
+
+### Bug Fixes
+- Fixed example 07 bubble clipping by adjusting text and positions
+
+### Documentation
+- Updated specs/README.md to reflect that all bugs are fixed
+
+## [v0.1.62] - 2026-01-18
+
+### Bug Fixes
+- Fixed bubble overlapping bug: Panel.add_content() now automatically repositions bubbles to avoid collisions
+- Fixed Cairo/SVG renderer regression: Reverted transform-based coordinate system that broke rendering
+- Panel children now use global coordinates (not panel-relative), matching the original design
+- Example 16 updated to use global coordinates
+
+## [v0.1.61] - 2026-01-18
+
+### Changes
+- Attempted transform-based coordinate system (reverted in v0.1.62 due to visual bugs)
+
+## [v0.1.60] - 2026-01-18
+
+### Documentation
+- Updated documentation to reflect visual bug fixes
+
+## [v0.1.59] - 2026-01-18
+
+### Maintenance
+- Code cleanup and documentation updates
+
+## [v0.1.58] - 2026-01-18
+
+### Documentation
+- Version synchronization across all files
+
+## [v0.1.57] - 2026-01-18
+
+### Documentation
+- Updated example documentation
+
+## [v0.1.56] - 2026-01-18
+
+### Documentation
+- Updated IMPLEMENTATION_PLAN.md
+
+## [v0.1.55] - 2026-01-18
+
+### Examples
+- Added examples 17-23 demonstrating advanced features
+  - 17_ai_image_generation.py: AI-generated images
+  - 18_flow_layout.py: FlowLayout system
+  - 19_constraint_layout.py: ConstraintLayout system
+  - 20_themes_and_styles.py: Theme and style system
+  - 21_text_and_narration.py: Text and narration features
+  - 22_advanced_templates.py: Advanced page templates
+  - 23_preview_server.py: Live preview server
+
+## [v0.1.54] - 2026-01-18
+
+### Documentation
+- Documentation cleanup and version updates
+
 ## [v0.1.53] - 2026-01-18
 
 ### Bug Fixes

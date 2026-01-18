@@ -6,7 +6,7 @@ This directory contains specifications for the Comix comic creation library, wri
 
 Comix is a Python library for creating comics programmatically, inspired by Manim's API design but focused on comic/manga creation instead of mathematical animations.
 
-**Current Status**: All 8 phases implemented and working. 1743 tests passing, all 17 examples working, mypy and ruff pass.
+**Current Status**: All 8 phases implemented and working. 1743 tests passing, all 23 examples working, mypy and ruff pass.
 
 ## Active Specs
 
@@ -40,7 +40,7 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 | Character Basics | ✅ Complete |
 | Speech Bubbles | ✅ Complete |
 | Page Rendering | ✅ Complete |
-| Working Examples | ✅ All 17 examples working |
+| Working Examples | ✅ All 23 examples working |
 | Effect System | ✅ Complete |
 | Parser DSL | ✅ Complete |
 | AI Images | ✅ Complete |
@@ -51,7 +51,7 @@ Comix is a Python library for creating comics programmatically, inspired by Mani
 
 ### Examples Status (examples/output/)
 
-All 17 examples (01-17) execute successfully and produce correct output.
+All 23 examples (01-23) execute successfully and produce correct output.
 
 ## Features
 
@@ -110,7 +110,7 @@ getting-started.md
          └─> working-examples.md (examples 01-05 implemented)
 ```
 
-All acceptance criteria are met. The library is feature-complete for v0.1.54 with all 8 phases implemented.
+All acceptance criteria are met. The library is feature-complete for v0.1.56 with all 8 phases implemented.
 
 ## How to Use These Specs
 
@@ -190,6 +190,6 @@ See `IMPLEMENTATION_PLAN.md` for current implementation status.
 
 ---
 
-**Version**: 0.1.54 (as of 2026-01-18)
+**Version**: 0.1.56 (as of 2026-01-18)
 **Last Updated**: 2026-01-18
 **Maintainer**: Claude Code Ralph Agent

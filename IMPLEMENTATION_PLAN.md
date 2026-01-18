@@ -97,9 +97,16 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.67)
+## Note: Stable Release (v0.1.68)
 
-All systems stable with 1713 tests passing. Version numbers synchronized across all files.
+All systems stable with 1761 tests passing. Version numbers synchronized across all files.
+
+v0.1.68 changes:
+- Added non-rectangular panel shapes: DiagonalPanel, TrapezoidPanel, IrregularPanel
+- Implemented Stickman reference-based proportions with 4 presets (classic, xkcd, tall, child)
+- Added bubble tail improvements: tail_mode (auto/fixed/none), smart_attach_to(), auto tail length calculation
+- Added 48 new tests covering all new features
+- Spec files implemented: panel-shapes.md, stickman-reference-based.md, bubble-tail-improvements.md
 
 v0.1.67 changes:
 - Fixed test count inconsistencies in documentation (1713 passed + 30 skipped = 1743 collected)

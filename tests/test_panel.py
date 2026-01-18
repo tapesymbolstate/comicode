@@ -1,9 +1,16 @@
 """Tests for Panel class."""
 
+import logging
 import numpy as np
 import pytest
 
-from comix.cobject.panel.panel import Panel, Border
+from comix.cobject.panel.panel import (
+    Border,
+    DiagonalPanel,
+    IrregularPanel,
+    Panel,
+    TrapezoidPanel,
+)
 from comix.cobject.cobject import CObject
 
 
@@ -158,3 +165,191 @@ class TestPanel:
 
         data = panel.get_render_data()
         assert data["background_description"] == "A rainy cityscape at night"
+
+
+class TestDiagonalPanel:
+    """Tests for DiagonalPanel class."""
+
+    def test_default_init(self):
+        """Test default initialization."""
+        panel = DiagonalPanel()
+        assert panel.width == 300.0
+        assert panel.height == 300.0
+        assert panel.diagonal_angle == 45.0
+        assert panel.direction == "top-left"
+
+    def test_custom_init(self):
+        """Test custom initialization."""
+        panel = DiagonalPanel(
+            width=400,
+            height=500,
+            diagonal_angle=30,
+            direction="bottom-right",
+        )
+        assert panel.width == 400
+        assert panel.height == 500
+        assert panel.diagonal_angle == 30
+        assert panel.direction == "bottom-right"
+
+    def test_invalid_direction_logs_warning(self, caplog: pytest.LogCaptureFixture):
+        """Test that invalid direction logs warning and defaults to top-left."""
+        with caplog.at_level(logging.WARNING, logger="comix.cobject.panel.panel"):
+            panel = DiagonalPanel(direction="invalid")
+        assert "Invalid diagonal direction" in caplog.text
+        assert panel.direction == "top-left"
+
+    def test_angle_clamping(self):
+        """Test that diagonal angle is clamped to valid range."""
+        # Too low
+        panel1 = DiagonalPanel(diagonal_angle=2)
+        assert panel1.diagonal_angle == 5.0
+
+        # Too high
+        panel2 = DiagonalPanel(diagonal_angle=90)
+        assert panel2.diagonal_angle == 85.0
+
+    def test_generate_points_top_left(self):
+        """Test point generation for top-left cut."""
+        panel = DiagonalPanel(width=200, height=200, direction="top-left")
+        # Should have 6 points (5 corners + closing point)
+        assert len(panel._points) == 6
+
+    def test_generate_points_all_directions(self):
+        """Test point generation for all directions."""
+        directions = ["top-left", "top-right", "bottom-left", "bottom-right"]
+        for direction in directions:
+            panel = DiagonalPanel(direction=direction)
+            assert len(panel._points) == 6, f"Failed for direction: {direction}"
+
+    def test_get_render_data(self):
+        """Test get_render_data method."""
+        panel = DiagonalPanel(width=300, height=200, diagonal_angle=35)
+        data = panel.get_render_data()
+
+        assert data["shape"] == "diagonal"
+        assert data["diagonal_angle"] == 35
+        assert data["diagonal_direction"] == "top-left"
+
+
+class TestTrapezoidPanel:
+    """Tests for TrapezoidPanel class."""
+
+    def test_default_init(self):
+        """Test default initialization."""
+        panel = TrapezoidPanel()
+        assert panel.top_width == 300.0
+        assert panel.bottom_width == 200.0
+        assert panel.height == 300.0
+        # Width should be max of top/bottom
+        assert panel.width == 300.0
+
+    def test_custom_init(self):
+        """Test custom initialization."""
+        panel = TrapezoidPanel(
+            top_width=100,
+            bottom_width=400,
+            height=500,
+        )
+        assert panel.top_width == 100
+        assert panel.bottom_width == 400
+        assert panel.height == 500
+        assert panel.width == 400  # Max of widths
+
+    def test_invalid_widths(self):
+        """Test that invalid widths raise ValueError."""
+        with pytest.raises(ValueError, match="top_width must be positive"):
+            TrapezoidPanel(top_width=-1)
+
+        with pytest.raises(ValueError, match="bottom_width must be positive"):
+            TrapezoidPanel(bottom_width=0)
+
+        with pytest.raises(ValueError, match="height must be positive"):
+            TrapezoidPanel(height=-10)
+
+    def test_generate_points(self):
+        """Test point generation creates valid trapezoid."""
+        panel = TrapezoidPanel(top_width=200, bottom_width=100, height=300)
+        # Should have 5 points (4 corners + closing point)
+        assert len(panel._points) == 5
+
+        # Verify top is wider than bottom
+        top_left = panel._points[0]
+        top_right = panel._points[1]
+        bottom_right = panel._points[2]
+        bottom_left = panel._points[3]
+
+        top_width = top_right[0] - top_left[0]
+        bottom_width = bottom_right[0] - bottom_left[0]
+        assert top_width > bottom_width
+
+    def test_get_render_data(self):
+        """Test get_render_data method."""
+        panel = TrapezoidPanel(top_width=250, bottom_width=150, height=400)
+        data = panel.get_render_data()
+
+        assert data["shape"] == "trapezoid"
+        assert data["top_width"] == 250
+        assert data["bottom_width"] == 150
+
+
+class TestIrregularPanel:
+    """Tests for IrregularPanel class."""
+
+    def test_basic_triangle(self):
+        """Test creating a triangular panel."""
+        points = [(0, 100), (100, -50), (-100, -50)]
+        panel = IrregularPanel(points=points)
+        assert len(panel.polygon_points) == 3
+
+    def test_star_shape(self):
+        """Test creating a star-shaped panel."""
+        star_points = [
+            (0, 100), (30, 30), (100, 0), (30, -30),
+            (0, -100), (-30, -30), (-100, 0), (-30, 30),
+        ]
+        panel = IrregularPanel(points=star_points)
+        assert len(panel.polygon_points) == 8
+
+    def test_minimum_points_validation(self):
+        """Test that at least 3 points are required."""
+        with pytest.raises(ValueError, match="at least 3 points"):
+            IrregularPanel(points=[(0, 0), (1, 1)])
+
+    def test_complex_polygon_warning(self, caplog: pytest.LogCaptureFixture):
+        """Test that complex polygons log a warning."""
+        points = [(i, i**2 % 100) for i in range(150)]
+        with caplog.at_level(logging.WARNING, logger="comix.cobject.panel.panel"):
+            IrregularPanel(points=points)
+        assert "may slow rendering" in caplog.text
+
+    def test_self_intersecting_warning(self, caplog: pytest.LogCaptureFixture):
+        """Test that self-intersecting polygons log a warning."""
+        # Create a bowtie shape (self-intersecting)
+        bowtie = [(0, 0), (100, 100), (100, 0), (0, 100)]
+        with caplog.at_level(logging.WARNING, logger="comix.cobject.panel.panel"):
+            IrregularPanel(points=bowtie)
+        assert "self-intersecting" in caplog.text
+
+    def test_width_height_calculation(self):
+        """Test that width/height are calculated from points."""
+        points = [(0, 0), (100, 0), (100, 200), (0, 200)]
+        panel = IrregularPanel(points=points)
+        assert panel.width == 100
+        assert panel.height == 200
+
+    def test_generate_points_centers_polygon(self):
+        """Test that polygon is centered around origin."""
+        points = [(100, 100), (200, 100), (200, 200), (100, 200)]
+        panel = IrregularPanel(points=points)
+        # Center should be offset from original points
+        center = panel.get_center()
+        assert np.allclose(center, [0, 0])
+
+    def test_get_render_data(self):
+        """Test get_render_data method."""
+        points = [(0, 50), (50, 0), (0, -50), (-50, 0)]
+        panel = IrregularPanel(points=points)
+        data = panel.get_render_data()
+
+        assert data["shape"] == "irregular"
+        assert data["polygon_points"] == points

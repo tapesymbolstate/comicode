@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any, Self
 
 import numpy as np
@@ -11,13 +12,77 @@ from comix.style.font import calculate_text_width_with_cjk
 from comix.utils.bezier import create_bubble_path, create_tail_points
 
 if TYPE_CHECKING:
+    from comix.cobject.panel.panel import Panel
     from comix.style.style import Style
+
+logger = logging.getLogger(__name__)
+
+
+def _calculate_auto_tail_length(
+    bubble_pos: tuple[float, float],
+    target_pos: tuple[float, float],
+    min_length: float = 15.0,
+    max_length: float = 50.0,
+    distance_threshold: float = 20.0,
+    length_ratio: float = 0.4,
+) -> float:
+    """Calculate automatic tail length based on bubble-target distance.
+
+    Args:
+        bubble_pos: Bubble center position.
+        target_pos: Target (character) center position.
+        min_length: Minimum tail length in pixels.
+        max_length: Maximum tail length in pixels.
+        distance_threshold: Distance below which tail is disabled.
+        length_ratio: Ratio of distance to use as tail length (0.4 = 40%).
+
+    Returns:
+        Calculated tail length, or 0 if disabled.
+    """
+    distance = float(np.linalg.norm(
+        np.array(bubble_pos) - np.array(target_pos)
+    ))
+
+    # Disable tail if very close
+    if distance < distance_threshold:
+        return 0.0
+
+    # Calculate proportional length
+    auto_length = distance * length_ratio
+
+    # Clamp to min/max range
+    return float(np.clip(auto_length, min_length, max_length))
 
 
 class Bubble(CObject):
     """Base class for speech bubbles.
 
     Bubbles contain dialogue text and have a tail pointing to the speaker.
+
+    Tail Modes:
+        - "auto": Automatically calculates tail length based on distance to target.
+            When bubble is very close to character (< 20px), tail is disabled.
+            When far away, tail is capped at max_tail_length (default 50px).
+        - "fixed": Uses the specified tail_length value regardless of distance.
+        - "none": No tail is rendered (useful for narrator boxes).
+
+    Args:
+        tail_mode: Tail length mode ("auto", "fixed", "none"). Default "auto".
+        tail_style: Tail visual style ("classic", "smooth", "minimal"). Default "classic".
+        min_tail_length: Minimum tail length when tail_mode="auto".
+        max_tail_length: Maximum tail length when tail_mode="auto".
+        tail_distance_threshold: Distance below which auto tail is disabled.
+
+    Example:
+        >>> # Auto-length tail (default)
+        >>> bubble = SpeechBubble(text="Hello!")
+        >>> bubble.attach_to(character)
+        >>>
+        >>> # Fixed length tail
+        >>> bubble = SpeechBubble(text="Fixed!", tail_mode="fixed", tail_length=40)
+        >>>
+        >>> # No tail (narrator)
+        >>> bubble = SpeechBubble(text="Meanwhile...", tail_mode="none")
     """
 
     SPEECH = "speech"
@@ -25,6 +90,10 @@ class Bubble(CObject):
     SHOUT = "shout"
     WHISPER = "whisper"
     NARRATOR = "narrator"
+
+    # Valid tail modes
+    TAIL_MODES = ("auto", "fixed", "none")
+    TAIL_STYLES = ("classic", "smooth", "minimal")
 
     def __init__(
         self,
@@ -39,6 +108,11 @@ class Bubble(CObject):
         tail_length: float = 30.0,
         tail_width: float = 20.0,
         tail_target: CObject | tuple[float, float] | None = None,
+        tail_mode: str = "auto",
+        tail_style: str = "classic",
+        min_tail_length: float = 15.0,
+        max_tail_length: float = 50.0,
+        tail_distance_threshold: float = 20.0,
         border_color: str = "#000000",
         border_width: float = 2.0,
         border_style: str = "solid",
@@ -70,6 +144,33 @@ class Bubble(CObject):
         self.tail_length = tail_length
         self.tail_width = tail_width
         self.tail_target = tail_target
+
+        # Validate and store tail mode
+        if tail_mode not in self.TAIL_MODES:
+            logger.warning(
+                "Unknown tail_mode '%s', falling back to 'auto'. "
+                "Valid modes: %s",
+                tail_mode,
+                ", ".join(self.TAIL_MODES),
+            )
+            tail_mode = "auto"
+        self.tail_mode = tail_mode
+
+        # Validate and store tail style
+        if tail_style not in self.TAIL_STYLES:
+            logger.warning(
+                "Unknown tail_style '%s', falling back to 'classic'. "
+                "Valid styles: %s",
+                tail_style,
+                ", ".join(self.TAIL_STYLES),
+            )
+            tail_style = "classic"
+        self.tail_style = tail_style
+
+        # Auto-tail parameters
+        self.min_tail_length = min_tail_length
+        self.max_tail_length = max_tail_length
+        self.tail_distance_threshold = tail_distance_threshold
 
         self.border_color = border_color
         self.border_width = border_width
@@ -135,11 +236,40 @@ class Bubble(CObject):
             wobble_mode=self.wobble_mode,
         )
 
+        # Generate tail based on tail_mode
+        self._generate_tail()
+
+    def _generate_tail(self) -> None:
+        """Generate tail points based on tail_mode."""
+        # No tail for "none" mode
+        if self.tail_mode == "none":
+            self._tail_points = np.zeros((0, 2), dtype=np.float64)
+            return
+
+        # Determine effective tail length
+        effective_length = self.tail_length  # Default for "fixed" mode
+
+        if self.tail_mode == "auto" and self.tail_target is not None:
+            bubble_pos = tuple(self.get_center())
+            if isinstance(self.tail_target, CObject):
+                target_pos = tuple(self.tail_target.get_center())
+            else:
+                target_pos = self.tail_target
+
+            effective_length = _calculate_auto_tail_length(
+                bubble_pos,
+                target_pos,
+                self.min_tail_length,
+                self.max_tail_length,
+                self.tail_distance_threshold,
+            )
+
+        # Generate tail points with calculated length
         tail_points = create_tail_points(
             width=self._width,
             height=self._height,
             direction=self.tail_direction,
-            length=self.tail_length,
+            length=effective_length,
             tip_width=self.tail_width,
         )
 
@@ -147,6 +277,37 @@ class Bubble(CObject):
             self._tail_points = tail_points
         else:
             self._tail_points = np.zeros((0, 2), dtype=np.float64)
+
+    def get_effective_tail_length(self) -> float:
+        """Get the effective tail length after auto-calculation.
+
+        Returns:
+            The current effective tail length in pixels.
+            Returns 0 if tail_mode is "none" or tail is disabled due to distance.
+        """
+        if self.tail_mode == "none":
+            return 0.0
+
+        if self.tail_mode == "fixed":
+            return self.tail_length
+
+        # Auto mode: calculate based on target distance
+        if self.tail_target is None:
+            return self.tail_length
+
+        bubble_pos = tuple(self.get_center())
+        if isinstance(self.tail_target, CObject):
+            target_pos = tuple(self.tail_target.get_center())
+        else:
+            target_pos = self.tail_target
+
+        return _calculate_auto_tail_length(
+            bubble_pos,
+            target_pos,
+            self.min_tail_length,
+            self.max_tail_length,
+            self.tail_distance_threshold,
+        )
 
     def set_text(self, text: str) -> Self:
         """Update the bubble text."""
@@ -336,6 +497,98 @@ class Bubble(CObject):
         self.attach_to(character, anchor=preferred_anchors[0], buffer=buffer)
         return self
 
+    def smart_attach_to(
+        self,
+        character: CObject,
+        panel: Panel | None = None,
+        preferred_positions: list[str] | None = None,
+        buffer: float = 20.0,
+    ) -> Self:
+        """Attach bubble to character with intelligent positioning and automatic tail.
+
+        Combines optimal positioning with automatic tail configuration.
+        This method:
+        1. Positions the bubble to avoid overlap (like auto_attach_to)
+        2. Sets tail_mode to "auto" for distance-based tail length
+        3. Automatically determines the best tail direction
+
+        Args:
+            character: The character to attach to.
+            panel: Optional panel to constrain positioning within.
+            preferred_positions: Preferred position order. Defaults to
+                ["top", "top-left", "top-right", "left", "right"].
+            buffer: Space between character and bubble.
+
+        Returns:
+            Self for method chaining.
+
+        Example:
+            >>> panel = Panel(width=600, height=400)
+            >>> char = Stickman(height=100)
+            >>> char.move_to((300, 250))
+            >>> bubble = SpeechBubble(text="Smart positioning!")
+            >>> bubble.smart_attach_to(char, panel)
+        """
+        if preferred_positions is None:
+            preferred_positions = ["top", "top-left", "top-right", "left", "right"]
+
+        # Calculate panel bounds if panel provided
+        bounds = None
+        if panel is not None:
+            panel_pos = panel.get_center()
+            half_w = panel.width / 2 - panel.padding
+            half_h = panel.height / 2 - panel.padding
+            bounds = (
+                panel_pos[0] - half_w,
+                panel_pos[1] - half_h,
+                panel_pos[0] + half_w,
+                panel_pos[1] + half_h,
+            )
+
+        # Enable auto tail mode
+        self.tail_mode = "auto"
+
+        # Use auto_attach_to for collision-aware positioning
+        self.auto_attach_to(
+            character,
+            avoid_bubbles=[],
+            bounds=bounds,
+            preferred_anchors=preferred_positions,
+            buffer=buffer,
+        )
+
+        return self
+
+    def _auto_determine_tail_direction(self, character: CObject) -> str:
+        """Automatically determine the best tail direction based on bubble position.
+
+        Args:
+            character: The character the bubble is attached to.
+
+        Returns:
+            Optimal tail direction string.
+        """
+        bubble_center = self.get_center()
+        char_center = character.get_center()
+
+        # Calculate relative position
+        dx = char_center[0] - bubble_center[0]
+        dy = char_center[1] - bubble_center[1]
+
+        # Determine direction based on where character is relative to bubble
+        if abs(dy) > abs(dx):
+            # Character is more above or below
+            if dy > 0:
+                return "top"
+            else:
+                return "bottom"
+        else:
+            # Character is more to the side
+            if dx > 0:
+                return "right"
+            else:
+                return "left"
+
     def apply_style(self, style: Style) -> Self:
         """Apply style properties to this bubble.
 
@@ -396,6 +649,12 @@ class Bubble(CObject):
                 "tail_width": self.tail_width,
                 "tail_target": tail_target_pos,
                 "tail_points": self._tail_points.tolist() if hasattr(self, "_tail_points") else [],
+                "tail_mode": self.tail_mode,
+                "tail_style": self.tail_style,
+                "effective_tail_length": self.get_effective_tail_length(),
+                "min_tail_length": self.min_tail_length,
+                "max_tail_length": self.max_tail_length,
+                "tail_distance_threshold": self.tail_distance_threshold,
                 "border_color": self.border_color,
                 "border_width": self.border_width,
                 "border_style": self.border_style,
@@ -457,6 +716,7 @@ class NarratorBubble(Bubble):
     def __init__(self, text: str = "", **kwargs: Any) -> None:
         kwargs.setdefault("bubble_type", Bubble.NARRATOR)
         kwargs.setdefault("corner_radius", 0.0)
+        kwargs.setdefault("tail_mode", "none")  # Narrator bubbles have no tail
         kwargs.setdefault("tail_length", 0.0)
         super().__init__(text=text, **kwargs)
 

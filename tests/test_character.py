@@ -1,5 +1,6 @@
 """Tests for Character classes."""
 
+import logging
 import numpy as np
 import pytest
 
@@ -336,6 +337,96 @@ class TestStickman:
         for expr_name in expressions:
             stickman = Stickman(expression=expr_name)
             assert stickman._expression.name == expr_name
+
+
+class TestStickmanProportions:
+    """Tests for Stickman reference-based proportions."""
+
+    def test_default_proportion_style(self):
+        """Test default proportion style is classic."""
+        stickman = Stickman()
+        assert stickman.proportion_style == "classic"
+        assert stickman.head_ratio == 0.133
+        assert stickman.torso_ratio == 0.40
+        assert stickman.arm_ratio == 0.38
+        assert stickman.leg_ratio == 0.53
+
+    def test_xkcd_proportion_style(self):
+        """Test xkcd proportion style."""
+        stickman = Stickman(proportion_style="xkcd")
+        assert stickman.proportion_style == "xkcd"
+        assert stickman.head_ratio == 0.12
+        assert stickman.torso_ratio == 0.42
+        assert stickman.arm_ratio == 0.40
+        assert stickman.leg_ratio == 0.54
+
+    def test_tall_proportion_style(self):
+        """Test tall proportion style (heroic proportions)."""
+        stickman = Stickman(proportion_style="tall")
+        assert stickman.proportion_style == "tall"
+        assert stickman.head_ratio == 0.125  # 8 heads
+        assert stickman.leg_ratio == 0.55
+
+    def test_child_proportion_style(self):
+        """Test child proportion style (larger head)."""
+        stickman = Stickman(proportion_style="child")
+        assert stickman.proportion_style == "child"
+        assert stickman.head_ratio == 0.25  # 4 heads (larger head)
+        assert stickman.leg_ratio == 0.45
+
+    def test_invalid_proportion_style_fallback(self, caplog: pytest.LogCaptureFixture):
+        """Test that invalid proportion style falls back to classic."""
+        with caplog.at_level(logging.WARNING, logger="comix.cobject.character.character"):
+            stickman = Stickman(proportion_style="invalid")
+        assert "Unknown proportion_style" in caplog.text
+        assert stickman.proportion_style == "classic"
+
+    def test_custom_head_ratio_override(self):
+        """Test that custom head_ratio overrides preset."""
+        stickman = Stickman(proportion_style="classic", head_ratio=0.2)
+        assert stickman.proportion_style == "classic"
+        assert stickman.head_ratio == 0.2  # Custom override
+        assert stickman.torso_ratio == 0.40  # Preset value
+
+    def test_custom_all_ratios_override(self):
+        """Test that all ratios can be custom overridden."""
+        stickman = Stickman(
+            head_ratio=0.15,
+            torso_ratio=0.35,
+            arm_ratio=0.30,
+            leg_ratio=0.50,
+        )
+        assert stickman.head_ratio == 0.15
+        assert stickman.torso_ratio == 0.35
+        assert stickman.arm_ratio == 0.30
+        assert stickman.leg_ratio == 0.50
+
+    def test_proportion_affects_points(self):
+        """Test that different proportions generate different points."""
+        classic = Stickman(proportion_style="classic")
+        child = Stickman(proportion_style="child")
+
+        # Child should have larger head (different points)
+        assert not np.array_equal(classic._points, child._points)
+
+    def test_get_render_data_includes_proportions(self):
+        """Test that render data includes proportion info."""
+        stickman = Stickman(proportion_style="xkcd")
+        data = stickman.get_render_data()
+
+        assert data["proportion_style"] == "xkcd"
+        assert data["head_ratio"] == 0.12
+        assert data["torso_ratio"] == 0.42
+        assert data["arm_ratio"] == 0.40
+        assert data["leg_ratio"] == 0.54
+
+    def test_all_proportion_presets(self):
+        """Test that all proportion presets create valid stickmen."""
+        presets = ["classic", "xkcd", "tall", "child"]
+        for preset in presets:
+            stickman = Stickman(proportion_style=preset)
+            assert len(stickman._points) > 0, f"Failed for preset: {preset}"
+            assert stickman.proportion_style == preset
 
 
 class TestSimpleFace:

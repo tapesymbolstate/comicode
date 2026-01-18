@@ -301,65 +301,196 @@ class Character(CObject):
 
 
 class Stickman(Character):
-    """Simple stick figure character."""
+    """Simple stick figure character with reference-based proportions.
 
-    def __init__(self, name: str = "Stickman", **kwargs: Any) -> None:
+    Proportions are based on professional stick figure standards (xkcd, etc.)
+    with configurable presets for different styles:
+
+    - "classic": Standard ~7.5 head heights for adults
+    - "xkcd": Minimalist style with slightly smaller head
+    - "tall": Heroic proportions (~8 head heights)
+    - "child": Larger head ratio (~4 head heights)
+
+    Args:
+        name: Character name.
+        proportion_style: Preset proportion style ("classic", "xkcd", "tall", "child").
+        head_ratio: Override head size as ratio of total height (0.0-1.0).
+        torso_ratio: Override torso length as ratio of total height.
+        arm_ratio: Override arm length as ratio of total height.
+        leg_ratio: Override leg length as ratio of total height.
+        **kwargs: Additional Character parameters.
+
+    Example:
+        >>> # Default classic proportions
+        >>> char = Stickman(height=150)
+        >>>
+        >>> # xkcd-style minimalist
+        >>> char = Stickman(height=150, proportion_style="xkcd")
+        >>>
+        >>> # Custom proportions
+        >>> char = Stickman(height=150, head_ratio=0.2, leg_ratio=0.45)
+    """
+
+    # Reference-based proportion presets
+    PROPORTION_PRESETS: dict[str, dict[str, float]] = {
+        "classic": {
+            "head_ratio": 0.133,  # ~7.5 heads (100/7.5)
+            "torso_ratio": 0.40,  # ~3 heads
+            "arm_ratio": 0.38,    # Arms reach mid-thigh
+            "leg_ratio": 0.53,    # ~4 heads
+        },
+        "xkcd": {
+            "head_ratio": 0.12,   # Slightly smaller head
+            "torso_ratio": 0.42,
+            "arm_ratio": 0.40,
+            "leg_ratio": 0.54,
+        },
+        "tall": {
+            "head_ratio": 0.125,  # 8 heads
+            "torso_ratio": 0.42,
+            "arm_ratio": 0.40,
+            "leg_ratio": 0.55,
+        },
+        "child": {
+            "head_ratio": 0.25,   # 4 heads (larger head)
+            "torso_ratio": 0.30,
+            "arm_ratio": 0.28,
+            "leg_ratio": 0.45,
+        },
+    }
+
+    def __init__(
+        self,
+        name: str = "Stickman",
+        proportion_style: str = "classic",
+        head_ratio: float | None = None,
+        torso_ratio: float | None = None,
+        arm_ratio: float | None = None,
+        leg_ratio: float | None = None,
+        **kwargs: Any,
+    ) -> None:
+        # Get preset proportions
+        if proportion_style not in self.PROPORTION_PRESETS:
+            logger.warning(
+                "Unknown proportion_style '%s', falling back to 'classic'. "
+                "Valid styles: %s",
+                proportion_style,
+                ", ".join(sorted(self.PROPORTION_PRESETS.keys())),
+            )
+            proportion_style = "classic"
+
+        preset = self.PROPORTION_PRESETS[proportion_style]
+
+        # Use custom ratios if provided, otherwise use preset
+        self.proportion_style = proportion_style
+        self.head_ratio = head_ratio if head_ratio is not None else preset["head_ratio"]
+        self.torso_ratio = torso_ratio if torso_ratio is not None else preset["torso_ratio"]
+        self.arm_ratio = arm_ratio if arm_ratio is not None else preset["arm_ratio"]
+        self.leg_ratio = leg_ratio if leg_ratio is not None else preset["leg_ratio"]
+
         kwargs.setdefault("style", "stickman")
         super().__init__(name=name, **kwargs)
 
     def generate_points(self) -> None:
-        """Generate stickman figure points."""
+        """Generate stickman figure points with reference-based proportions."""
         h = self.character_height
 
-        head_radius = h * 0.15
-        body_length = h * 0.35
-        limb_length = h * 0.25
+        # Calculate component sizes from ratios
+        head_radius = h * self.head_ratio
+        torso_length = h * self.torso_ratio
+        arm_length = h * self.arm_ratio
+        leg_length = h * self.leg_ratio
 
         points = []
 
-        head_y = h / 2 - head_radius
-        neck_y = head_y - head_radius
-        hip_y = neck_y - body_length
+        # Calculate vertical positions (top to bottom)
+        head_top = h / 2
+        head_center_y = head_top - head_radius
+        neck_y = head_top - 2 * head_radius  # Head bottom = neck start
+        hip_y = neck_y - torso_length  # Hip level
 
+        # Head circle (16 points)
         for angle in np.linspace(0, 2 * np.pi, 16):
-            points.append([head_radius * np.cos(angle), head_y + head_radius * np.sin(angle)])
+            points.append([
+                head_radius * np.cos(angle),
+                head_center_y + head_radius * np.sin(angle)
+            ])
 
+        # Torso line (neck to hips)
         points.append([0, neck_y])
         points.append([0, hip_y])
 
-        arm_y = neck_y - body_length * 0.2
+        # Arm attachment point (just below neck, about 10% into torso)
+        arm_y = neck_y - torso_length * 0.1
+
+        # Arms with elbow (each arm has: shoulder, elbow, hand)
         left_arm_angle = np.radians(self._pose.left_arm)
         right_arm_angle = np.radians(self._pose.right_arm)
 
-        points.append([0, arm_y])
-        points.append([
-            -limb_length * np.cos(left_arm_angle),
-            arm_y - limb_length * np.sin(left_arm_angle),
-        ])
-        points.append([0, arm_y])
-        points.append([
-            limb_length * np.cos(right_arm_angle),
-            arm_y - limb_length * np.sin(right_arm_angle),
-        ])
+        # Left arm: shoulder -> elbow -> hand
+        elbow_left_x = -arm_length * 0.5 * np.cos(left_arm_angle)
+        elbow_left_y = arm_y - arm_length * 0.5 * np.sin(left_arm_angle)
+        hand_left_x = -arm_length * np.cos(left_arm_angle)
+        hand_left_y = arm_y - arm_length * np.sin(left_arm_angle)
 
+        points.append([0, arm_y])  # Shoulder (center)
+        points.append([elbow_left_x, elbow_left_y])  # Elbow
+        points.append([elbow_left_x, elbow_left_y])  # Elbow (repeat for line segment)
+        points.append([hand_left_x, hand_left_y])  # Hand
+
+        # Right arm: shoulder -> elbow -> hand
+        elbow_right_x = arm_length * 0.5 * np.cos(right_arm_angle)
+        elbow_right_y = arm_y - arm_length * 0.5 * np.sin(right_arm_angle)
+        hand_right_x = arm_length * np.cos(right_arm_angle)
+        hand_right_y = arm_y - arm_length * np.sin(right_arm_angle)
+
+        points.append([0, arm_y])  # Shoulder (center)
+        points.append([elbow_right_x, elbow_right_y])  # Elbow
+        points.append([elbow_right_x, elbow_right_y])  # Elbow (repeat)
+        points.append([hand_right_x, hand_right_y])  # Hand
+
+        # Legs with knees (hips -> knees -> feet)
         left_leg_angle = np.radians(90 + self._pose.left_leg)
         right_leg_angle = np.radians(90 + self._pose.right_leg)
 
-        points.append([0, hip_y])
-        points.append([
-            -limb_length * np.cos(left_leg_angle),
-            hip_y - limb_length * np.sin(left_leg_angle),
-        ])
-        points.append([0, hip_y])
-        points.append([
-            limb_length * np.cos(right_leg_angle),
-            hip_y - limb_length * np.sin(right_leg_angle),
-        ])
+        # Left leg: hip -> knee -> foot
+        knee_left_x = -leg_length * 0.5 * np.cos(left_leg_angle)
+        knee_left_y = hip_y - leg_length * 0.5 * np.sin(left_leg_angle)
+        foot_left_x = -leg_length * np.cos(left_leg_angle)
+        foot_left_y = hip_y - leg_length * np.sin(left_leg_angle)
+
+        points.append([0, hip_y])  # Hip
+        points.append([knee_left_x, knee_left_y])  # Knee
+        points.append([knee_left_x, knee_left_y])  # Knee (repeat)
+        points.append([foot_left_x, foot_left_y])  # Foot
+
+        # Right leg: hip -> knee -> foot
+        knee_right_x = leg_length * 0.5 * np.cos(right_leg_angle)
+        knee_right_y = hip_y - leg_length * 0.5 * np.sin(right_leg_angle)
+        foot_right_x = leg_length * np.cos(right_leg_angle)
+        foot_right_y = hip_y - leg_length * np.sin(right_leg_angle)
+
+        points.append([0, hip_y])  # Hip
+        points.append([knee_right_x, knee_right_y])  # Knee
+        points.append([knee_right_x, knee_right_y])  # Knee (repeat)
+        points.append([foot_right_x, foot_right_y])  # Foot
 
         self._points = np.array(points, dtype=np.float64)
 
         if self.facing == "left":
             self._points[:, 0] *= -1
+
+    def get_render_data(self) -> dict[str, Any]:
+        """Get data for rendering."""
+        data = super().get_render_data()
+        data.update({
+            "proportion_style": self.proportion_style,
+            "head_ratio": self.head_ratio,
+            "torso_ratio": self.torso_ratio,
+            "arm_ratio": self.arm_ratio,
+            "leg_ratio": self.leg_ratio,
+        })
+        return data
 
 
 class SimpleFace(Character):

@@ -16,20 +16,20 @@ Without support for non-rectangular panels, the library cannot create authentic 
 ## Acceptance Criteria
 
 ### Must Have
-- [ ] Panel class supports custom polygon shapes (not just rectangles)
-- [ ] DiagonalPanel class with adjustable diagonal cut angle
-- [ ] TrapezoidPanel class with configurable top/bottom widths
-- [ ] IrregularPanel class accepting arbitrary polygon points
-- [ ] Panel borders render correctly along diagonal/irregular edges
-- [ ] Content (characters, bubbles) clipped to irregular panel boundaries
-- [ ] Z-index ordering works correctly for overlapping irregular panels
+- [x] Panel class supports custom polygon shapes (not just rectangles)
+- [x] DiagonalPanel class with adjustable diagonal cut angle
+- [x] TrapezoidPanel class with configurable top/bottom widths
+- [x] IrregularPanel class accepting arbitrary polygon points
+- [x] Panel borders render correctly along diagonal/irregular edges
+- [x] Content (characters, bubbles) clipped to irregular panel boundaries
+- [x] Z-index ordering works correctly for overlapping irregular panels
 
 ### Should Have
-- [ ] Helper functions to create common diagonal cuts (top-left, top-right, bottom-left, bottom-right)
+- [x] Helper functions to create common diagonal cuts (top-left, top-right, bottom-left, bottom-right)
 - [ ] `split_diagonal(angle, direction)` method to divide existing panel along diagonal
 - [ ] `split_curve(control_points)` for curved panel divisions
 - [ ] Automatic gutter spacing calculations for non-rectangular panels
-- [ ] Visual validation that diagonal panels render correctly
+- [x] Visual validation that diagonal panels render correctly (via unit tests)
 
 ### Won't Have (This Iteration)
 - [ ] Automatic content repositioning when panel shape changes

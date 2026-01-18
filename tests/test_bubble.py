@@ -1,5 +1,7 @@
 """Tests for Bubble classes."""
 
+import logging
+import pytest
 
 from comix.cobject.bubble.bubble import (
     Bubble,
@@ -9,8 +11,10 @@ from comix.cobject.bubble.bubble import (
     WhisperBubble,
     NarratorBubble,
     auto_position_bubbles,
+    _calculate_auto_tail_length,
 )
 from comix.cobject.character.character import Stickman
+from comix.cobject.panel.panel import Panel
 from comix.style.style import Style, MANGA_STYLE, COMIC_STYLE
 
 
@@ -660,3 +664,186 @@ class TestBubblePositioningFallbacks:
         data = bubble.get_render_data()
 
         assert data["tail_target"] is None
+
+
+class TestBubbleTailModes:
+    """Tests for bubble tail mode feature."""
+
+    def test_default_tail_mode_is_auto(self):
+        """Test that default tail_mode is auto."""
+        bubble = Bubble(text="Hello")
+        assert bubble.tail_mode == "auto"
+
+    def test_tail_mode_fixed(self):
+        """Test tail_mode fixed uses specified length."""
+        bubble = Bubble(text="Hello", tail_mode="fixed", tail_length=40)
+        assert bubble.tail_mode == "fixed"
+        assert bubble.get_effective_tail_length() == 40
+
+    def test_tail_mode_none(self):
+        """Test tail_mode none produces no tail."""
+        bubble = Bubble(text="Hello", tail_mode="none")
+        assert bubble.tail_mode == "none"
+        assert bubble.get_effective_tail_length() == 0
+        assert len(bubble._tail_points) == 0
+
+    def test_invalid_tail_mode_fallback(self, caplog: pytest.LogCaptureFixture):
+        """Test invalid tail_mode falls back to auto."""
+        with caplog.at_level(logging.WARNING, logger="comix.cobject.bubble.bubble"):
+            bubble = Bubble(text="Hello", tail_mode="invalid")
+        assert "Unknown tail_mode" in caplog.text
+        assert bubble.tail_mode == "auto"
+
+    def test_tail_style_default(self):
+        """Test default tail_style is classic."""
+        bubble = Bubble(text="Hello")
+        assert bubble.tail_style == "classic"
+
+    def test_invalid_tail_style_fallback(self, caplog: pytest.LogCaptureFixture):
+        """Test invalid tail_style falls back to classic."""
+        with caplog.at_level(logging.WARNING, logger="comix.cobject.bubble.bubble"):
+            bubble = Bubble(text="Hello", tail_style="invalid")
+        assert "Unknown tail_style" in caplog.text
+        assert bubble.tail_style == "classic"
+
+    def test_narrator_bubble_default_tail_mode_none(self):
+        """Test that NarratorBubble defaults to tail_mode='none'."""
+        bubble = NarratorBubble(text="Meanwhile...")
+        assert bubble.tail_mode == "none"
+        assert len(bubble._tail_points) == 0
+
+
+class TestAutoTailLength:
+    """Tests for auto tail length calculation."""
+
+    def test_calculate_auto_tail_length_basic(self):
+        """Test basic auto tail length calculation."""
+        result = _calculate_auto_tail_length(
+            bubble_pos=(100, 200),
+            target_pos=(100, 100),
+            min_length=15,
+            max_length=50,
+        )
+        # Distance is 100, 40% = 40
+        assert result == 40.0
+
+    def test_auto_tail_disabled_when_close(self):
+        """Test tail is disabled when very close."""
+        result = _calculate_auto_tail_length(
+            bubble_pos=(100, 100),
+            target_pos=(100, 110),  # Only 10 pixels apart
+            distance_threshold=20,
+        )
+        assert result == 0.0
+
+    def test_auto_tail_clamped_to_max(self):
+        """Test tail is clamped to max_length."""
+        result = _calculate_auto_tail_length(
+            bubble_pos=(0, 0),
+            target_pos=(500, 0),  # 500 pixels apart
+            max_length=50,
+        )
+        assert result == 50.0
+
+    def test_auto_tail_clamped_to_min(self):
+        """Test tail is clamped to min_length."""
+        result = _calculate_auto_tail_length(
+            bubble_pos=(0, 0),
+            target_pos=(50, 0),  # 50 pixels apart
+            min_length=15,
+            length_ratio=0.1,  # 10% = 5, but min is 15
+            distance_threshold=5,
+        )
+        assert result == 15.0
+
+    def test_auto_tail_with_bubble_and_character(self):
+        """Test auto tail calculation with actual bubble and character."""
+        char = Stickman(height=100)
+        char.move_to((300, 200))
+
+        bubble = SpeechBubble(text="Hello!", tail_mode="auto")
+        bubble.move_to((300, 350))  # 150 pixels above character
+        bubble.point_to(char)
+        bubble.generate_points()
+
+        # Should calculate auto length based on distance
+        effective = bubble.get_effective_tail_length()
+        assert 15 <= effective <= 50
+
+
+class TestSmartAttachTo:
+    """Tests for smart_attach_to method."""
+
+    def test_smart_attach_to_basic(self):
+        """Test basic smart_attach_to functionality."""
+        char = Stickman(height=100)
+        char.move_to((200, 200))
+
+        bubble = SpeechBubble(text="Hello!")
+        bubble.smart_attach_to(char)
+
+        # Should be attached to character
+        assert bubble.tail_target is char
+        # Should have auto tail mode enabled
+        assert bubble.tail_mode == "auto"
+
+    def test_smart_attach_to_with_panel(self):
+        """Test smart_attach_to respects panel bounds."""
+        panel = Panel(width=600, height=400)
+        panel.move_to((300, 200))
+
+        char = Stickman(height=100)
+        char.move_to((300, 200))
+
+        bubble = SpeechBubble(text="Hello!")
+        bubble.smart_attach_to(char, panel=panel)
+
+        # Bubble should be within panel bounds
+        bbox = bubble.get_bounding_box()
+        panel_half_w = panel.width / 2 - panel.padding
+        # Bubble should be roughly within panel
+        assert bbox[0][0] >= -panel_half_w - 50  # Some tolerance
+
+    def test_smart_attach_to_custom_positions(self):
+        """Test smart_attach_to with custom preferred positions."""
+        char = Stickman(height=100)
+        char.move_to((200, 200))
+
+        bubble = SpeechBubble(text="Hello!")
+        bubble.smart_attach_to(char, preferred_positions=["left", "right"])
+
+        # Should be attached
+        assert bubble.tail_target is char
+
+
+class TestBubbleRenderDataTailFields:
+    """Tests for new tail fields in render data."""
+
+    def test_render_data_includes_tail_mode(self):
+        """Test that render data includes tail_mode."""
+        bubble = SpeechBubble(text="Hello!", tail_mode="fixed")
+        data = bubble.get_render_data()
+
+        assert data["tail_mode"] == "fixed"
+        assert data["tail_style"] == "classic"
+
+    def test_render_data_includes_effective_tail_length(self):
+        """Test that render data includes effective_tail_length."""
+        bubble = SpeechBubble(text="Hello!", tail_mode="fixed", tail_length=35)
+        data = bubble.get_render_data()
+
+        assert data["effective_tail_length"] == 35
+
+    def test_render_data_includes_auto_tail_params(self):
+        """Test that render data includes auto tail parameters."""
+        bubble = SpeechBubble(
+            text="Hello!",
+            min_tail_length=20,
+            max_tail_length=60,
+            tail_distance_threshold=25,
+        )
+        data = bubble.get_render_data()
+
+        assert data["min_tail_length"] == 20
+        assert data["max_tail_length"] == 60
+        assert data["tail_distance_threshold"] == 25

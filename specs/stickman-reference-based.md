@@ -15,19 +15,19 @@ Without reference-based design, our stickman characters may look "off" or "weird
 ## Acceptance Criteria
 
 ### Must Have
-- [ ] Head size follows webcomic standards (proportional to body)
-- [ ] Body (torso) length matches real stick figure proportions
-- [ ] Limb lengths match human proportions (arms reach mid-thigh when standing)
-- [ ] Clean, simple lines (no over-complication)
-- [ ] Recognizable as "stick figure" at first glance
-- [ ] Joints (elbows, knees) positioned anatomically correctly
-- [ ] Standing pose looks natural and balanced
+- [x] Head size follows webcomic standards (proportional to body)
+- [x] Body (torso) length matches real stick figure proportions
+- [x] Limb lengths match human proportions (arms reach mid-thigh when standing)
+- [x] Clean, simple lines (no over-complication)
+- [x] Recognizable as "stick figure" at first glance
+- [x] Joints (elbows, knees) positioned anatomically correctly
+- [x] Standing pose looks natural and balanced
 
 ### Should Have
-- [ ] Reference-based ratio presets: "xkcd", "classic", "tall", "chibi-stick"
-- [ ] Configurable head_ratio parameter (default: 0.13 for ~7.5 heads height)
-- [ ] Elbow positioned at waist level when arms down (anatomical accuracy)
-- [ ] Knees at midpoint of legs
+- [x] Reference-based ratio presets: "xkcd", "classic", "tall", "child" (was "chibi-stick")
+- [x] Configurable head_ratio parameter (default: 0.133 for ~7.5 heads height)
+- [x] Elbow positioned at waist level when arms down (anatomical accuracy)
+- [x] Knees at midpoint of legs
 - [ ] Slight curve/roundness option for head (not perfectly circular)
 - [ ] Line width consistency across all body parts
 

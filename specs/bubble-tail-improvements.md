@@ -15,20 +15,20 @@ Professional comics use short, clean tail indicators that subtly show who's spea
 ## Acceptance Criteria
 
 ### Must Have
-- [ ] Auto-calculate tail length based on bubble-to-character distance
-- [ ] Maximum tail length limit (default: 50px) to prevent excessive lines
-- [ ] Minimum tail length (default: 15px) for visibility
-- [ ] `tail_mode="auto"` (default) calculates length automatically
-- [ ] `tail_mode="fixed"` uses specified tail_length
-- [ ] `tail_mode="none"` disables tail completely
-- [ ] Tail points toward character's center (or custom target point)
+- [x] Auto-calculate tail length based on bubble-to-character distance
+- [x] Maximum tail length limit (default: 50px) to prevent excessive lines
+- [x] Minimum tail length (default: 15px) for visibility
+- [x] `tail_mode="auto"` (default) calculates length automatically
+- [x] `tail_mode="fixed"` uses specified tail_length
+- [x] `tail_mode="none"` disables tail completely
+- [x] Tail points toward character's center (or custom target point)
 
 ### Should Have
 - [ ] Curved/bezier tail option for softer appearance
-- [ ] `smart_attach_to()` method positions bubble optimally AND sets appropriate tail
+- [x] `smart_attach_to()` method positions bubble optimally AND sets appropriate tail
 - [ ] Tail width scales with distance (closer = wider, farther = narrower)
-- [ ] Multiple tail style presets: "classic" (triangle), "smooth" (curved), "minimal" (small nub)
-- [ ] Automatic tail omission if bubble is very close to character (< 20px)
+- [x] Multiple tail style presets: "classic" (triangle), "smooth" (curved), "minimal" (small nub)
+- [x] Automatic tail omission if bubble is very close to character (< 20px)
 
 ### Won't Have (This Iteration)
 - [ ] Tail that wraps around obstacles

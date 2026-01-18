@@ -34,7 +34,7 @@ comicode/
 │   └── utils/                # Geometry, bezier utilities
 ├── specs/                    # PRD and specifications
 │   └── PRD.md                # Full architecture design
-├── tests/                    # Test files (27 test modules)
+├── tests/                    # Test files (29 test modules)
 ├── examples/                 # 15 working examples
 ├── main.py                   # Entry point
 └── pyproject.toml            # Project config

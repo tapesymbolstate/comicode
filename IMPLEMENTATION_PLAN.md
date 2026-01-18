@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Animation Export + Video Export + Multi-Page Parser
 
-**Current Git Tag: v0.1.57**
+**Current Git Tag: v0.1.58**
 
 All 8 phases have been implemented with **1743 tests** passing, ruff clean, and mypy passing.
 
@@ -63,12 +63,10 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.57)
+## Note: Stable Release (v0.1.58)
 
-All systems stable with 1743 tests passing. Added 6 new examples (18-23) demonstrating previously undocumented features:
-- Example 18: FlowLayout for responsive, content-aware positioning
-- Example 19: ConstraintLayout for precise, relational positioning
-- Example 20: Themes and Styles for consistent comic styling
-- Example 21: StyledText, SFX, and NarratorBubble for enhanced storytelling
-- Example 22: ThreeRowLayout and MangaPage advanced templates
-- Example 23: Preview Server for live development workflow
+All systems stable with 1743 tests passing. Version numbers synchronized across all files.
+
+Previous release (v0.1.57):
+- Added 6 new examples (18-23) demonstrating advanced features
+- FlowLayout, ConstraintLayout, Themes/Styles, Text/Narration, Advanced Templates, Preview Server

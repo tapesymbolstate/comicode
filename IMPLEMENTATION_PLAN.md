@@ -97,9 +97,14 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.99)
+## Note: Stable Release (v0.1.100)
 
 All systems stable with 2087 tests passing (+ 30 skipped = 2117 collected). Version numbers synchronized across all files.
+
+v0.1.100 changes:
+- Updated documentation to reflect 26 examples (was 25)
+- Added example 26 (Stickman Articulation) to specs/working-examples.md
+- Version numbers synchronized across all files
 
 v0.1.99 changes:
 - Fixed 6 mypy type errors in character.py: ArmController.set_preset() now properly casts preset values

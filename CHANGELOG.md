@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.69] - 2026-01-18
+
+### Documentation
+- Fixed version inconsistencies across documentation files
+- Synchronized version to v0.1.69 across pyproject.toml, constants.py, specs/README.md, IMPLEMENTATION_PLAN.md
+- Added missing v0.1.68 changelog entry
+
 ## [v0.1.68] - 2026-01-18
 
 ### Features

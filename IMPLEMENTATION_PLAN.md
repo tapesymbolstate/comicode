@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Animation Export + Video Export + Multi-Page Parser
 
-**Current Git Tag: v0.1.51**
+**Current Git Tag: v0.1.52**
 
 All 8 phases have been implemented with **1739 tests** (1739 pass + 4 skip), ruff clean, and mypy passing.
 
@@ -63,6 +63,6 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.51)
+## Note: Stable Release (v0.1.52)
 
-All systems stable with 1739 tests passing (4 skip). Added example 16: Character Types showcase demonstrating all 8 character types with expressions and poses.
+All systems stable with 1739 tests passing (4 skip). Documentation synced to reflect 16 working examples and current version status.

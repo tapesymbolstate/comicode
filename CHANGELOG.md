@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [v0.1.52] - 2026-01-18
+
+### Documentation
+- Synced all documentation files to v0.1.51 with accurate version references
+- Updated PRD.md, README.md, working-examples.md, examples-maintenance.md to reflect 16 examples
+- Corrected test count to 1739 (1739 pass + 4 skip)
+
 ## [v0.1.51] - 2026-01-18
 
 ### Examples

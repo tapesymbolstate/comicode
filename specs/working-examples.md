@@ -42,6 +42,7 @@ Without working examples, developers struggle to bridge the gap from API documen
 - [x] Example 13: Visual effects (shake, zoom, motion, focus, impact)
 - [x] Example 14: Animation export (GIF) with Timeline and easing functions
 - [x] Example 15: Video export (MP4/WebM) with quality settings
+- [x] Example 16: Character types showcase (all 8 character styles)
 
 ### Won't Have (This Iteration)
 - [ ] Complex multi-page stories (defer to tutorials)
@@ -83,6 +84,7 @@ examples/
 ├── 13_visual_effects.py       # Visual effects
 ├── 14_animation_export.py     # GIF animation export
 ├── 15_video_export.py         # MP4/WebM video export
+├── 16_character_types.py      # All 8 character type showcase
 └── output/                    # Generated files
     ├── 01_simple_dialogue.png
     ├── 02_four_panel_comic.png
@@ -91,7 +93,8 @@ examples/
     ├── 12_parser_*.png        # Parser DSL outputs
     ├── 13_effect_*.png        # Visual effects outputs
     ├── 14_anim_*.gif          # Animation GIF outputs
-    └── 15_video_*.mp4/webm    # Video outputs
+    ├── 15_video_*.mp4/webm    # Video outputs
+    └── 16_*.png               # Character type outputs
 ```
 
 ### Related Specs
@@ -318,6 +321,7 @@ Generated PNG files will be saved to `examples/output/`.
 13. **13_visual_effects.py** - Visual effects (shake, zoom, motion, focus, impact)
 14. **14_animation_export.py** - GIF animation export with Timeline and easing
 15. **15_video_export.py** - MP4/WebM video export with quality settings
+16. **16_character_types.py** - All 8 character types with expressions and poses
 
 ## Requirements
 
@@ -389,7 +393,7 @@ Feel free to modify these examples to experiment:
 ## Success Metrics
 
 **This spec is successful when:**
-1. All 15 examples execute without errors
+1. All 16 examples execute without errors
 2. All examples produce correct visual output
 3. A new developer can run examples within 5 minutes
 4. Examples serve as effective templates for custom comics

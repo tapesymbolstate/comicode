@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Animation Export + Video Export + Multi-Page Parser
 
-**Current Git Tag: v0.1.54**
+**Current Git Tag: v0.1.55**
 
 All 8 phases have been implemented with **1743 tests** passing, ruff clean, and mypy passing.
 
@@ -63,6 +63,6 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.54)
+## Note: Stable Release (v0.1.55)
 
-All systems stable with 1743 tests passing. Added example 17 for AI image generation (AIImage with OpenAI DALL-E and Replicate providers). Documentation synced to reflect 17 working examples.
+All systems stable with 1743 tests passing. Fixed ruff lint errors (extraneous f-string prefixes) in example 17.

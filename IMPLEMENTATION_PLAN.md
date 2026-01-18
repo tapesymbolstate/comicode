@@ -2,7 +2,7 @@
 
 ## Status: All Phases Complete + Animation Export + Video Export + Multi-Page Parser
 
-**Current Git Tag: v0.1.61**
+**Current Git Tag: v0.1.62**
 
 All 8 phases have been implemented with **1743 tests** passing, ruff clean, and mypy passing.
 
@@ -63,14 +63,18 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ---
 
-## Note: Stable Release (v0.1.61)
+## Note: Stable Release (v0.1.62)
 
 All systems stable with 1743 tests passing. Version numbers synchronized across all files.
 
-v0.1.61 changes:
-- Fixed panel child positioning with transform-based coordinate system
-- SVG/Cairo renderers now use translate transforms so child coordinates are relative to panel center
-- Example 16 updated to use relative positioning within panels
+v0.1.62 changes:
+- Fixed bubble overlapping bug: Panel.add_content() now automatically repositions bubbles to avoid collisions
+- Fixed Cairo/SVG renderer regression: Reverted transform-based coordinate system that broke rendering
+- Panel children now use global coordinates (not panel-relative), matching the original design
+- Example 16 updated to use global coordinates
+
+Previous release (v0.1.61):
+- Attempted transform-based coordinate system (reverted in v0.1.62 due to visual bugs)
 
 Previous release (v0.1.60):
 - Specs updated to accurately reflect 23 working examples

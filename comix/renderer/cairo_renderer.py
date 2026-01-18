@@ -226,13 +226,9 @@ class CairoRenderer:
 
         if obj_type == "Panel":
             self._render_panel(data)
-            # Apply transform for panel content - makes child coordinates relative to panel center
-            pos = data.get("position", [0, 0])
-            ctx.save()
-            ctx.translate(pos[0], pos[1])
+            # Render panel children - they use global coordinates
             for child in cobject.submobjects:
                 self._render_cobject(child)
-            ctx.restore()
         elif obj_type in (
             "Bubble",
             "SpeechBubble",

@@ -179,13 +179,9 @@ class SVGRenderer:
 
         if obj_type == "Panel":
             self._render_panel(data, group)
-            # Create a child group with transform for panel content
-            # This makes child coordinates relative to the panel's center
-            pos = data.get("position", [0, 0])
-            content_group = self._dwg.g(transform=f"translate({pos[0]}, {pos[1]})")
+            # Render panel children - they use global coordinates
             for child in cobject.submobjects:
-                self._render_cobject(child, content_group)
-            group.add(content_group)
+                self._render_cobject(child, group)
         elif obj_type in ("Bubble", "SpeechBubble", "ThoughtBubble", "ShoutBubble", "WhisperBubble", "NarratorBubble"):
             self._render_bubble(data, group)
             for child in cobject.submobjects:

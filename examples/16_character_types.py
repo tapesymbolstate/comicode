@@ -46,6 +46,15 @@ def create_character_showcase() -> None:
         (Superhero, "Superhero", "#3498DB", "Heroic proportions"),
     ]
 
+    # Panel positions for 2x4 grid on 1000x1200 page
+    # Columns at x=257.5, 742.5; Rows at y=161.25, 453.75, 746.25, 1038.75
+    panel_positions = [
+        (257.5, 161.25), (742.5, 161.25),
+        (257.5, 453.75), (742.5, 453.75),
+        (257.5, 746.25), (742.5, 746.25),
+        (257.5, 1038.75), (742.5, 1038.75),
+    ]
+
     for i, (char_class, name, color, description) in enumerate(character_types):
         panel = Panel()
 
@@ -72,9 +81,8 @@ def create_character_showcase() -> None:
             # Stickman and ChubbyStickman use default parameters
             char = char_class(name=name, height=100, color=color)
 
-        # Position character relative to panel center (0, 0)
-        # Characters are positioned slightly below center to leave room for bubble above
-        char.move_to((0, 30))
+        # Position character using global coordinates
+        char.move_to(panel_positions[i])
 
         # Set a happy expression to show personality
         char.set_expression("happy")
@@ -103,6 +111,12 @@ def create_expression_comparison() -> None:
         (Robot, "Robot", "#7F8C8D"),
     ]
 
+    # Panel positions for 4x1 grid on 1200x400 page
+    # Columns at x=161.25, 453.75, 746.25, 1038.75; Row at y=200
+    panel_positions = [
+        (161.25, 200), (453.75, 200), (746.25, 200), (1038.75, 200),
+    ]
+
     for i, (char_class, name, color) in enumerate(types_to_compare):
         panel = Panel()
 
@@ -113,7 +127,7 @@ def create_expression_comparison() -> None:
         else:
             char = char_class(name=name, height=100, color=color)
 
-        char.move_to((0, 30))
+        char.move_to(panel_positions[i])
         char.set_expression("surprised")
 
         bubble = char.say("Surprised!")
@@ -140,6 +154,13 @@ def create_pose_showcase() -> None:
         (Robot, "walking", "#7F8C8D"),
     ]
 
+    # Panel positions for 3x2 grid on 1200x800 page
+    # Columns at x=210, 600, 990; Rows at y=207.5, 592.5
+    panel_positions = [
+        (210, 207.5), (600, 207.5), (990, 207.5),
+        (210, 592.5), (600, 592.5), (990, 592.5),
+    ]
+
     for i, (char_class, pose, color) in enumerate(pose_demos):
         panel = Panel()
 
@@ -154,7 +175,7 @@ def create_pose_showcase() -> None:
         else:
             char = char_class(height=100, color=color)
 
-        char.move_to((0, 30))
+        char.move_to(panel_positions[i])
         char.set_pose(pose)
 
         bubble = char.say(f"{pose.title()}!")

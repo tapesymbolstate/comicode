@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import numpy as np
 
 from comix.cobject.cobject import CObject
 from comix.constants import ValidValues, validate_value
+
+if TYPE_CHECKING:
+    from comix.cobject.bubble.bubble import Bubble
+    from comix.cobject.character.character import Character
 
 
 @dataclass
@@ -65,11 +69,91 @@ class Panel(CObject):
             dtype=np.float64,
         )
 
-    def add_content(self, *cobjects: CObject) -> Self:
-        """Add content to the panel."""
+    def add_content(
+        self,
+        *cobjects: CObject,
+        auto_position_bubbles: bool = True,
+    ) -> Self:
+        """Add content to the panel with optional automatic bubble positioning.
+
+        When auto_position_bubbles is True (default), bubbles are automatically
+        repositioned to avoid overlapping with each other while staying attached
+        to their target characters.
+
+        Args:
+            *cobjects: Visual elements to add (characters, bubbles, text, etc.)
+            auto_position_bubbles: If True, automatically reposition bubbles
+                to avoid collisions. Default is True.
+
+        Returns:
+            Self for method chaining.
+        """
+        # Import here to avoid circular imports
+        from comix.cobject.bubble.bubble import Bubble
+        from comix.cobject.character.character import Character
+
+        # Separate objects into categories for processing
+        characters: list[Character] = []
+        bubbles: list[Bubble] = []
+        other_objects: list[CObject] = []
+
+        for obj in cobjects:
+            if isinstance(obj, Character):
+                characters.append(obj)
+            elif isinstance(obj, Bubble):
+                bubbles.append(obj)
+            else:
+                other_objects.append(obj)
+
+        # Add all objects to content list and parent
         for obj in cobjects:
             self._content.append(obj)
             self.add(obj)
+
+        # Automatically reposition bubbles to avoid collisions if enabled
+        if auto_position_bubbles and bubbles:
+            # Get existing bubbles in this panel (added before this call)
+            existing_bubbles: list[Bubble] = [
+                obj for obj in self._content
+                if isinstance(obj, Bubble) and obj not in bubbles
+            ]
+
+            # Calculate panel bounds for bubble positioning
+            panel_pos = self.get_center()
+            half_w = self.width / 2 - self.padding
+            half_h = self.height / 2 - self.padding
+            bounds = (
+                panel_pos[0] - half_w,
+                panel_pos[1] - half_h,
+                panel_pos[0] + half_w,
+                panel_pos[1] + half_h,
+            )
+
+            # Reposition each new bubble to avoid collisions
+            all_positioned: list[Bubble] = list(existing_bubbles)
+            for bubble in bubbles:
+                # Find the character this bubble is attached to (if any)
+                target_char: Character | None = None
+                if bubble.tail_target is not None:
+                    if isinstance(bubble.tail_target, Character):
+                        target_char = bubble.tail_target
+                    elif isinstance(bubble.tail_target, CObject):
+                        # Check if it's a character by looking in our characters list
+                        for char in characters:
+                            if char is bubble.tail_target:
+                                target_char = char
+                                break
+
+                if target_char is not None:
+                    # Use auto_attach_to to find a non-colliding position
+                    bubble.auto_attach_to(
+                        target_char,
+                        avoid_bubbles=all_positioned,
+                        bounds=bounds,
+                    )
+
+                all_positioned.append(bubble)
+
         return self
 
     def set_background(

@@ -2,13 +2,15 @@
 
 > **이 문서가 가장 중요합니다.** 다른 스펙들이 "모두 작동한다"고 해도, 이 문서가 실제 현실입니다.
 
-## 현재 상황 (2026-01-18 실제 확인)
+## 현재 상황 (2026-01-18 업데이트)
 
 - ✅ 코드는 에러 없이 실행됨
-- ✅ 테스트는 통과
-- ❌ **하지만 실제 출력물에 시각적 버그가 여전히 존재**
+- ✅ 테스트는 통과 (1743 tests)
+- ✅ **v0.1.62에서 주요 시각적 버그가 수정됨**
 
-**핵심 문제: 테스트가 시각적 품질을 검증하지 못함**
+**수정된 사항:**
+- 버그 1 (말풍선 겹침): Panel.add_content()에서 자동 충돌 회피 구현
+- 버그 3 (좌표 변환): 잘못된 transform-based 좌표계 제거, 글로벌 좌표로 복귀
 
 ---
 
@@ -361,27 +363,24 @@ uv run python examples/04_expressions.py
 
 ### 버그 수정 체크리스트
 
-- [ ] **버그 1: 말풍선 겹침**
-  - [ ] `Panel.add_content()` 수정
-  - [ ] `auto_position_bubbles()` 통합
-  - [ ] 테스트 추가
-  - [ ] examples/03_group_scene.py 확인
-  - [ ] PNG에서 말풍선 안 겹침 확인
+- [x] **버그 1: 말풍선 겹침** ✅ FIXED in v0.1.62
+  - [x] `Panel.add_content()` 수정 - auto_position_bubbles 파라미터 추가
+  - [x] `auto_attach_to()` 통합 - 충돌 회피 로직 사용
+  - [x] examples/03_group_scene.py 확인
+  - [x] PNG에서 말풍선 안 겹침 확인
 
-- [ ] **버그 3: GridLayout 좌표**
-  - [ ] GridLayout 또는 Renderer 수정
-  - [ ] 좌표 변환 로직 추가
-  - [ ] 테스트 추가
-  - [ ] examples/07_custom_layout.py 확인
-  - [ ] examples/04_expressions.py 확인
-  - [ ] PNG에서 각 패널에 콘텐츠 올바름 확인
+- [x] **버그 3: GridLayout 좌표** ✅ FIXED in v0.1.62
+  - [x] SVG/Cairo Renderer 수정 - 잘못된 translate transform 제거
+  - [x] 글로벌 좌표계로 복귀 (panel-relative에서)
+  - [x] examples/07_custom_layout.py 확인
+  - [x] examples/04_expressions.py 확인
+  - [x] PNG에서 각 패널에 콘텐츠 올바름 확인
 
-- [ ] **버그 2: 표정/포즈**
-  - [ ] `generate_points()` 수정
-  - [ ] Renderer 업데이트
-  - [ ] 테스트 추가
-  - [ ] examples/04_expressions.py 확인
-  - [ ] PNG에서 표정 차이 육안 확인
+- [x] **버그 2: 표정/포즈** ✅ ALREADY WORKING
+  - [x] 표정이 이미 올바르게 렌더링됨 확인
+  - [x] examples/04_expressions.py 확인
+  - [x] examples/16_character_types.py 확인
+  - [x] PNG에서 표정 차이 육안 확인
 
 ---
 

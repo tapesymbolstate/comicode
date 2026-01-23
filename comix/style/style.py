@@ -34,6 +34,10 @@ class Style:
     shadow_offset: tuple[float, float] = (2.0, 2.0)
     shadow_blur: float = 4.0
 
+    hand_drawn: bool = False
+    hand_drawn_roughness: float = 1.0
+    hand_drawn_seed: int | None = None
+
     def merge_with(self, other: Style) -> Style:
         """Merge with another style, with other taking precedence."""
         merged_data = {}
@@ -66,6 +70,9 @@ class Style:
             "shadow_color": self.shadow_color,
             "shadow_offset": self.shadow_offset,
             "shadow_blur": self.shadow_blur,
+            "hand_drawn": self.hand_drawn,
+            "hand_drawn_roughness": self.hand_drawn_roughness,
+            "hand_drawn_seed": self.hand_drawn_seed,
         }
 
     @classmethod

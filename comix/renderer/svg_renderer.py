@@ -245,25 +245,47 @@ class SVGRenderer:
         x = pos[0] - width / 2
         y = pos[1] - height / 2
 
-        # Draw background color first
-        rect = Rect(
-            insert=(x, y),
-            size=(width, height),
-            fill=data.get("background_color", "#FFFFFF"),
-            stroke=border.get("color", "#000000"),
-            stroke_width=border.get("width", 2),
-        )
+        style = data.get("style", {})
+        is_hand_drawn = isinstance(style, dict) and style.get("hand_drawn")
 
-        if border.get("radius", 0) > 0:
-            rect["rx"] = border["radius"]
-            rect["ry"] = border["radius"]
+        if is_hand_drawn:
+            # Convert rectangle to polygon for hand-drawn effect
+            rect_points = [
+                (x, y),
+                (x + width, y),
+                (x + width, y + height),
+                (x, y + height),
+                (x, y)
+            ]
+            jittered_points = self._apply_hand_drawn_if_enabled(rect_points, data)
 
-        if border.get("style") == "dashed":
-            rect["stroke-dasharray"] = "5,5"
-        elif border.get("style") == "dotted":
-            rect["stroke-dasharray"] = "2,2"
+            rect_polygon = Polygon(
+                points=jittered_points,
+                fill=data.get("background_color", "#FFFFFF"),
+                stroke=border.get("color", "#000000"),
+                stroke_width=border.get("width", 2),
+            )
+            group.add(rect_polygon)
+        else:
+            # Draw background color first
+            rect = Rect(
+                insert=(x, y),
+                size=(width, height),
+                fill=data.get("background_color", "#FFFFFF"),
+                stroke=border.get("color", "#000000"),
+                stroke_width=border.get("width", 2),
+            )
 
-        group.add(rect)
+            if border.get("radius", 0) > 0:
+                rect["rx"] = border["radius"]
+                rect["ry"] = border["radius"]
+
+            if border.get("style") == "dashed":
+                rect["stroke-dasharray"] = "5,5"
+            elif border.get("style") == "dotted":
+                rect["stroke-dasharray"] = "2,2"
+
+            group.add(rect)
 
         # Render background image if present
         background_image = data.get("background_image")
@@ -291,6 +313,7 @@ class SVGRenderer:
         """
         # Transform local polygon points to world coordinates
         world_points = [(pos[0] + pt[0], pos[1] + pt[1]) for pt in clip_path]
+        world_points = self._apply_hand_drawn_if_enabled(world_points, data)
 
         # Create polygon for the panel shape
         polygon = Polygon(
@@ -397,6 +420,7 @@ class SVGRenderer:
         if points:
             # Points already include position from _get_transformed_points()
             translated_points = [(p[0], p[1]) for p in points]
+            translated_points = self._apply_hand_drawn_if_enabled(translated_points, data)
 
             stroke_dasharray = None
             if data.get("border_style") == "dashed":
@@ -439,6 +463,7 @@ class SVGRenderer:
             translated_tail = [
                 (p[0] + pos[0], p[1] + pos[1]) for p in tail_points
             ]
+            translated_tail = self._apply_hand_drawn_if_enabled(translated_tail, data)
 
             # Add shadow for tail if emphasis is enabled
             if emphasis:
@@ -565,8 +590,11 @@ class SVGRenderer:
 
         head_points = points[:16]
         if head_points:
+            head_pts_tuples = [(p[0], p[1]) for p in head_points]
+            jittered_head = self._apply_hand_drawn_if_enabled(head_pts_tuples, data)
+
             head = Polygon(
-                points=head_points,
+                points=jittered_head,
                 fill="none",
                 stroke=color,
                 stroke_width=stroke_width,
@@ -600,17 +628,33 @@ class SVGRenderer:
 
         body_points = points[16:]
         if body_points:
+            style = data.get("style", {})
+            is_hand_drawn = isinstance(style, dict) and style.get("hand_drawn")
+
             for i in range(0, len(body_points) - 1, 2):
                 if i + 1 < len(body_points):
                     p1 = body_points[i]
                     p2 = body_points[i + 1]
-                    line = SVGLine(
-                        start=(p1[0], p1[1]),
-                        end=(p2[0], p2[1]),
-                        stroke=color,
-                        stroke_width=stroke_width,
-                    )
-                    group.add(line)
+
+                    if is_hand_drawn:
+                        line_pts = [(p1[0], p1[1]), (p2[0], p2[1])]
+                        jittered_line = self._apply_hand_drawn_if_enabled(line_pts, data)
+                        if len(jittered_line) > 1:
+                            polyline = Polyline(
+                                points=jittered_line,
+                                stroke=color,
+                                stroke_width=stroke_width,
+                                fill="none",
+                            )
+                            group.add(polyline)
+                    else:
+                        line = SVGLine(
+                            start=(p1[0], p1[1]),
+                            end=(p2[0], p2[1]),
+                            stroke=color,
+                            stroke_width=stroke_width,
+                        )
+                        group.add(line)
 
     def _render_chubby_stickman(
         self, data: dict[str, Any], group: Group, pos: list[float], points: list[list[float]]
@@ -1929,22 +1973,40 @@ class SVGRenderer:
     def _render_circle(self, data: dict[str, Any], group: Group) -> None:
         """Render a circle."""
         pos = data.get("position", [0, 0])
+        radius = data.get("radius", 50)
 
-        circle = SVGCircle(
-            center=(pos[0], pos[1]),
-            r=data.get("radius", 50),
-            fill=data.get("fill_color", "#FFFFFF"),
-            stroke=data.get("stroke_color", "#000000"),
-            stroke_width=data.get("stroke_width", 2),
-        )
+        style = data.get("style", {})
+        is_hand_drawn = isinstance(style, dict) and style.get("hand_drawn")
 
-        stroke_style = data.get("stroke_style", "solid")
-        if stroke_style == "dashed":
-            circle["stroke-dasharray"] = "5,5"
-        elif stroke_style == "dotted":
-            circle["stroke-dasharray"] = "2,2"
+        if is_hand_drawn:
+            from comix.utils.sketchy import circle_to_polygon
+            num_segments = 48 if radius > 30 else 32
+            circle_points = circle_to_polygon((pos[0], pos[1]), radius, num_segments)
+            jittered_points = self._apply_hand_drawn_if_enabled(circle_points, data)
 
-        group.add(circle)
+            polygon = Polygon(
+                points=jittered_points,
+                fill=data.get("fill_color", "#FFFFFF"),
+                stroke=data.get("stroke_color", "#000000"),
+                stroke_width=data.get("stroke_width", 2),
+            )
+            group.add(polygon)
+        else:
+            circle = SVGCircle(
+                center=(pos[0], pos[1]),
+                r=radius,
+                fill=data.get("fill_color", "#FFFFFF"),
+                stroke=data.get("stroke_color", "#000000"),
+                stroke_width=data.get("stroke_width", 2),
+            )
+
+            stroke_style = data.get("stroke_style", "solid")
+            if stroke_style == "dashed":
+                circle["stroke-dasharray"] = "5,5"
+            elif stroke_style == "dotted":
+                circle["stroke-dasharray"] = "2,2"
+
+            group.add(circle)
 
     def _render_line(self, data: dict[str, Any], group: Group) -> None:
         """Render a line."""
@@ -1952,19 +2014,38 @@ class SVGRenderer:
         start = data.get("start", [0, 0])
         end = data.get("end", [100, 0])
 
-        line = SVGLine(
-            start=(start[0] + pos[0], start[1] + pos[1]),
-            end=(end[0] + pos[0], end[1] + pos[1]),
-            stroke=data.get("stroke_color", "#000000"),
-            stroke_width=data.get("stroke_width", 2),
-        )
+        style = data.get("style", {})
+        is_hand_drawn = isinstance(style, dict) and style.get("hand_drawn")
 
-        if data.get("stroke_style") == "dashed":
-            line["stroke-dasharray"] = "5,5"
-        elif data.get("stroke_style") == "dotted":
-            line["stroke-dasharray"] = "2,2"
+        if is_hand_drawn:
+            line_points = [
+                (start[0] + pos[0], start[1] + pos[1]),
+                (end[0] + pos[0], end[1] + pos[1])
+            ]
+            jittered_points = self._apply_hand_drawn_if_enabled(line_points, data)
 
-        group.add(line)
+            if len(jittered_points) > 1:
+                polyline = Polyline(
+                    points=jittered_points,
+                    stroke=data.get("stroke_color", "#000000"),
+                    stroke_width=data.get("stroke_width", 2),
+                    fill="none",
+                )
+                group.add(polyline)
+        else:
+            line = SVGLine(
+                start=(start[0] + pos[0], start[1] + pos[1]),
+                end=(end[0] + pos[0], end[1] + pos[1]),
+                stroke=data.get("stroke_color", "#000000"),
+                stroke_width=data.get("stroke_width", 2),
+            )
+
+            if data.get("stroke_style") == "dashed":
+                line["stroke-dasharray"] = "5,5"
+            elif data.get("stroke_style") == "dotted":
+                line["stroke-dasharray"] = "2,2"
+
+            group.add(line)
 
     def _render_image(self, data: dict[str, Any], group: Group) -> None:
         """Render an image element."""
@@ -3184,3 +3265,25 @@ class SVGRenderer:
                 stroke_width=stroke_width,
             )
             group.add(end_shape)
+
+    def _apply_hand_drawn_if_enabled(
+        self,
+        points: list[tuple[float, float]],
+        data: dict[str, Any],
+    ) -> list[tuple[float, float]]:
+        """Check style and apply hand-drawn effect if enabled.
+
+        Args:
+            points: Original points
+            data: Render data containing style info
+
+        Returns:
+            Jittered points if hand_drawn is enabled, otherwise original points
+        """
+        style = data.get("style", {})
+        if isinstance(style, dict) and style.get("hand_drawn"):
+            from comix.utils.sketchy import apply_hand_drawn_effect
+            roughness = style.get("hand_drawn_roughness", 1.0)
+            seed = style.get("hand_drawn_seed")
+            return apply_hand_drawn_effect(points, roughness, seed=seed)
+        return points

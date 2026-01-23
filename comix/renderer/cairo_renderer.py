@@ -405,8 +405,22 @@ class CairoRenderer:
         y = pos[1] - height / 2
         radius = border.get("radius", 0)
 
-        # Draw rounded rectangle path
-        self._rounded_rect_path(x, y, width, height, radius)
+        style = data.get("style", {})
+        is_hand_drawn = isinstance(style, dict) and style.get("hand_drawn")
+
+        if is_hand_drawn:
+            # Convert rectangle to polygon for hand-drawn effect
+            rect_points = [
+                (x, y),
+                (x + width, y),
+                (x + width, y + height),
+                (x, y + height),
+            ]
+            jittered_points = self._apply_hand_drawn_if_enabled(rect_points, data)
+            self._polygon_path(jittered_points)
+        else:
+            # Draw rounded rectangle path
+            self._rounded_rect_path(x, y, width, height, radius)
 
         # Fill background color
         self._set_color(data.get("background_color", "#FFFFFF"))
@@ -422,7 +436,8 @@ class CairoRenderer:
         # Stroke border
         self._set_color(border.get("color", "#000000"))
         ctx.set_line_width(border.get("width", 2))
-        self._set_dash_style(border.get("style", "solid"))
+        if not is_hand_drawn:
+            self._set_dash_style(border.get("style", "solid"))
         ctx.stroke()
 
     def _render_irregular_panel(
@@ -446,18 +461,12 @@ class CairoRenderer:
         if not clip_path:
             return
 
-        # Transform local polygon points to world coordinates and draw path
-        ctx.new_path()
-        first_point = True
-        for pt in clip_path:
-            world_x = pos[0] + pt[0]
-            world_y = pos[1] + pt[1]
-            if first_point:
-                ctx.move_to(world_x, world_y)
-                first_point = False
-            else:
-                ctx.line_to(world_x, world_y)
-        ctx.close_path()
+        # Transform local polygon points to world coordinates
+        world_points = [(pos[0] + pt[0], pos[1] + pt[1]) for pt in clip_path]
+        world_points = self._apply_hand_drawn_if_enabled(world_points, data)
+
+        # Draw path
+        self._polygon_path(world_points)
 
         # Fill background color
         self._set_color(data.get("background_color", "#FFFFFF"))
@@ -570,6 +579,7 @@ class CairoRenderer:
 
         # Points already include position from _get_transformed_points()
         translated_points = [(p[0], p[1]) for p in points]
+        translated_points = self._apply_hand_drawn_if_enabled(translated_points, data)
 
         border_width = data.get("border_width", 2)
         if emphasis:
@@ -602,6 +612,7 @@ class CairoRenderer:
         # Draw tail
         if tail_points and len(tail_points) >= 3:
             translated_tail = [(p[0] + pos[0], p[1] + pos[1]) for p in tail_points]
+            translated_tail = self._apply_hand_drawn_if_enabled(translated_tail, data)
 
             # Draw tail shadow if emphasis
             if emphasis:
@@ -717,7 +728,10 @@ class CairoRenderer:
         # Draw head (first 16 points form a circle-ish shape)
         head_points = points[:16]
         if head_points:
-            self._polygon_path(head_points)
+            head_pts_tuples = [(p[0], p[1]) for p in head_points]
+            jittered_head = self._apply_hand_drawn_if_enabled(head_pts_tuples, data)
+
+            self._polygon_path(jittered_head)
             self._set_color(color)
             ctx.set_line_width(stroke_width)
             ctx.stroke()
@@ -750,15 +764,31 @@ class CairoRenderer:
         # Draw body lines (remaining points as pairs)
         body_points = points[16:]
         if body_points:
+            style = data.get("style", {})
+            is_hand_drawn = isinstance(style, dict) and style.get("hand_drawn")
+
             for i in range(0, len(body_points) - 1, 2):
                 if i + 1 < len(body_points):
                     p1 = body_points[i]
                     p2 = body_points[i + 1]
-                    ctx.move_to(p1[0], p1[1])
-                    ctx.line_to(p2[0], p2[1])
-                    self._set_color(color)
-                    ctx.set_line_width(stroke_width)
-                    ctx.stroke()
+
+                    if is_hand_drawn:
+                        line_pts = [(p1[0], p1[1]), (p2[0], p2[1])]
+                        jittered_line = self._apply_hand_drawn_if_enabled(line_pts, data)
+                        if len(jittered_line) > 1:
+                            ctx.new_path()
+                            ctx.move_to(jittered_line[0][0], jittered_line[0][1])
+                            for pt in jittered_line[1:]:
+                                ctx.line_to(pt[0], pt[1])
+                            self._set_color(color)
+                            ctx.set_line_width(stroke_width)
+                            ctx.stroke()
+                    else:
+                        ctx.move_to(p1[0], p1[1])
+                        ctx.line_to(p2[0], p2[1])
+                        self._set_color(color)
+                        ctx.set_line_width(stroke_width)
+                        ctx.stroke()
 
     def _render_chubby_stickman(self, data: dict[str, Any], pos: list[float]) -> None:
         """Render a chubby stickman character.
@@ -1948,17 +1978,33 @@ class CairoRenderer:
         pos = data.get("position", [0, 0])
         radius = data.get("radius", 50)
 
-        ctx.arc(pos[0], pos[1], radius, 0, 2 * math.pi)
+        style = data.get("style", {})
+        is_hand_drawn = isinstance(style, dict) and style.get("hand_drawn")
 
-        # Fill
-        self._set_color(data.get("fill_color", "#FFFFFF"))
-        ctx.fill_preserve()
+        if is_hand_drawn:
+            from comix.utils.sketchy import circle_to_polygon
+            num_segments = 48 if radius > 30 else 32
+            circle_points = circle_to_polygon((pos[0], pos[1]), radius, num_segments)
+            jittered_points = self._apply_hand_drawn_if_enabled(circle_points, data)
 
-        # Stroke
-        self._set_color(data.get("stroke_color", "#000000"))
-        ctx.set_line_width(data.get("stroke_width", 2))
-        self._set_dash_style(data.get("stroke_style", "solid"))
-        ctx.stroke()
+            self._polygon_path(jittered_points)
+
+            self._set_color(data.get("fill_color", "#FFFFFF"))
+            ctx.fill_preserve()
+
+            self._set_color(data.get("stroke_color", "#000000"))
+            ctx.set_line_width(data.get("stroke_width", 2))
+            ctx.stroke()
+        else:
+            ctx.arc(pos[0], pos[1], radius, 0, 2 * math.pi)
+
+            self._set_color(data.get("fill_color", "#FFFFFF"))
+            ctx.fill_preserve()
+
+            self._set_color(data.get("stroke_color", "#000000"))
+            ctx.set_line_width(data.get("stroke_width", 2))
+            self._set_dash_style(data.get("stroke_style", "solid"))
+            ctx.stroke()
 
     def _render_line(self, data: dict[str, Any]) -> None:
         """Render a line."""
@@ -1969,13 +2015,33 @@ class CairoRenderer:
         start = data.get("start", [0, 0])
         end = data.get("end", [100, 0])
 
-        ctx.move_to(start[0] + pos[0], start[1] + pos[1])
-        ctx.line_to(end[0] + pos[0], end[1] + pos[1])
+        style = data.get("style", {})
+        is_hand_drawn = isinstance(style, dict) and style.get("hand_drawn")
 
-        self._set_color(data.get("stroke_color", "#000000"))
-        ctx.set_line_width(data.get("stroke_width", 2))
-        self._set_dash_style(data.get("stroke_style", "solid"))
-        ctx.stroke()
+        if is_hand_drawn:
+            line_points = [
+                (start[0] + pos[0], start[1] + pos[1]),
+                (end[0] + pos[0], end[1] + pos[1])
+            ]
+            jittered_points = self._apply_hand_drawn_if_enabled(line_points, data)
+
+            if len(jittered_points) > 1:
+                ctx.new_path()
+                ctx.move_to(jittered_points[0][0], jittered_points[0][1])
+                for pt in jittered_points[1:]:
+                    ctx.line_to(pt[0], pt[1])
+
+                self._set_color(data.get("stroke_color", "#000000"))
+                ctx.set_line_width(data.get("stroke_width", 2))
+                ctx.stroke()
+        else:
+            ctx.move_to(start[0] + pos[0], start[1] + pos[1])
+            ctx.line_to(end[0] + pos[0], end[1] + pos[1])
+
+            self._set_color(data.get("stroke_color", "#000000"))
+            ctx.set_line_width(data.get("stroke_width", 2))
+            self._set_dash_style(data.get("stroke_style", "solid"))
+            ctx.stroke()
 
     def _render_image(self, data: dict[str, Any]) -> None:
         """Render an image element."""
@@ -3436,3 +3502,25 @@ class CairoRenderer:
             self._set_color(outline_color)
             ctx.set_line_width(stroke_width)
             ctx.stroke()
+
+    def _apply_hand_drawn_if_enabled(
+        self,
+        points: list[tuple[float, float]],
+        data: dict[str, Any],
+    ) -> list[tuple[float, float]]:
+        """Check style and apply hand-drawn effect if enabled.
+
+        Args:
+            points: Original points
+            data: Render data containing style info
+
+        Returns:
+            Jittered points if hand_drawn is enabled, otherwise original points
+        """
+        style = data.get("style", {})
+        if isinstance(style, dict) and style.get("hand_drawn"):
+            from comix.utils.sketchy import apply_hand_drawn_effect
+            roughness = style.get("hand_drawn_roughness", 1.0)
+            seed = style.get("hand_drawn_seed")
+            return apply_hand_drawn_effect(points, roughness, seed=seed)
+        return points

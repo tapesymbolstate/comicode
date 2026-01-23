@@ -276,7 +276,7 @@ class Character(CObject):
         data.update(
             {
                 "character_name": self.name,
-                "style": self.style,
+                "character_style": self.style,  # Changed from "style" to "character_style"
                 "color": self.color,
                 "fill_color": self.fill_color,
                 "character_height": self.character_height,
@@ -587,6 +587,19 @@ class Stickman(Character):
         # Track whether articulation system is being used
         self._use_articulation: bool = False
 
+        # Curve settings for natural limb appearance
+        self._auto_curve: bool = False  # Automatically add curves based on pose
+        self._auto_curve_strength: float = 0.0  # Strength of auto curves
+        self._left_upper_arm_curve: float = 0.0
+        self._left_forearm_curve: float = 0.0
+        self._right_upper_arm_curve: float = 0.0
+        self._right_forearm_curve: float = 0.0
+        self._left_upper_leg_curve: float = 0.0
+        self._left_lower_leg_curve: float = 0.0
+        self._right_upper_leg_curve: float = 0.0
+        self._right_lower_leg_curve: float = 0.0
+        self._spine_curve: float = 0.0
+
         # Arm and leg controllers for preset convenience
         self.left_arm = ArmController(self, "left")
         self.right_arm = ArmController(self, "right")
@@ -764,6 +777,89 @@ class Stickman(Character):
             self._right_hand = right
             self._use_articulation = True
 
+        self.generate_points()
+        return self
+
+    def set_limb_curves(
+        self,
+        left_upper_arm: float | None = None,
+        left_forearm: float | None = None,
+        right_upper_arm: float | None = None,
+        right_forearm: float | None = None,
+        left_upper_leg: float | None = None,
+        left_lower_leg: float | None = None,
+        right_upper_leg: float | None = None,
+        right_lower_leg: float | None = None,
+        spine: float | None = None,
+    ) -> Self:
+        """Set manual curve amounts for limbs and spine.
+
+        Curves add natural organic appearance to limbs. Positive values curve
+        outward, negative values curve inward.
+
+        Args:
+            left_upper_arm: Curve amount for left upper arm (0.0-0.3 typical).
+            left_forearm: Curve amount for left forearm (0.0-0.3 typical).
+            right_upper_arm: Curve amount for right upper arm (0.0-0.3 typical).
+            right_forearm: Curve amount for right forearm (0.0-0.3 typical).
+            left_upper_leg: Curve amount for left upper leg (0.0-0.3 typical).
+            left_lower_leg: Curve amount for left lower leg (0.0-0.3 typical).
+            right_upper_leg: Curve amount for right upper leg (0.0-0.3 typical).
+            right_lower_leg: Curve amount for right lower leg (0.0-0.3 typical).
+            spine: Curve amount for spine/torso (0.0-0.3 typical).
+
+        Returns:
+            Self for method chaining.
+
+        Example:
+            >>> char = Stickman(height=150)
+            >>> # Slight natural curve
+            >>> char.set_limb_curves(right_upper_arm=0.1, right_forearm=0.1)
+            >>> # Bent spine
+            >>> char.set_limb_curves(spine=0.2)
+        """
+        if left_upper_arm is not None:
+            self._left_upper_arm_curve = left_upper_arm
+        if left_forearm is not None:
+            self._left_forearm_curve = left_forearm
+        if right_upper_arm is not None:
+            self._right_upper_arm_curve = right_upper_arm
+        if right_forearm is not None:
+            self._right_forearm_curve = right_forearm
+        if left_upper_leg is not None:
+            self._left_upper_leg_curve = left_upper_leg
+        if left_lower_leg is not None:
+            self._left_lower_leg_curve = left_lower_leg
+        if right_upper_leg is not None:
+            self._right_upper_leg_curve = right_upper_leg
+        if right_lower_leg is not None:
+            self._right_lower_leg_curve = right_lower_leg
+        if spine is not None:
+            self._spine_curve = spine
+
+        self.generate_points()
+        return self
+
+    def enable_auto_curves(self, enabled: bool = True, strength: float = 0.15) -> Self:
+        """Enable automatic natural curves based on limb angles.
+
+        When enabled, limbs will automatically curve based on their position
+        to create a more organic, cartoon-like appearance.
+
+        Args:
+            enabled: Whether to enable auto curves.
+            strength: Overall strength of auto curves (0.0-0.3 typical).
+
+        Returns:
+            Self for method chaining.
+
+        Example:
+            >>> char = Stickman(height=150)
+            >>> char.enable_auto_curves(True, strength=0.15)
+            >>> char.set_arm_angles(left_shoulder=135, right_shoulder=45)
+        """
+        self._auto_curve = enabled
+        self._auto_curve_strength = strength if enabled else 0.0
         self.generate_points()
         return self
 
@@ -1005,9 +1101,25 @@ class Stickman(Character):
                 head_center_y + head_radius_y * np.sin(angle)
             ])
 
-        # Torso line (neck to hips)
-        points.append([0, neck_y])
-        points.append([0, hip_y])
+        # Torso line (neck to hips) with optional curve
+        from comix.utils.sketchy import create_curved_segment
+        spine_curve = self._spine_curve
+        if self._auto_curve and spine_curve == 0.0:
+            # Auto curve based on overall posture
+            spine_curve = 0.0  # Default no auto curve for spine
+
+        if abs(spine_curve) > 0.001:
+            spine_pts = create_curved_segment(
+                (0, neck_y),
+                (0, hip_y),
+                curve_amount=spine_curve,
+                num_points=6
+            )
+            for pt in spine_pts:
+                points.append([pt[0], pt[1]])
+        else:
+            points.append([0, neck_y])
+            points.append([0, hip_y])
 
         # Arm attachment point
         arm_y = neck_y + torso_length * 0.1
@@ -1042,10 +1154,37 @@ class Stickman(Character):
             hand_left_x = elbow_left_x - forearm_length * np.cos(forearm_left_angle)
             hand_left_y = elbow_left_y - forearm_length * np.sin(forearm_left_angle)
 
-            points.append([0, arm_y])
-            points.append([elbow_left_x, elbow_left_y])
-            points.append([elbow_left_x, elbow_left_y])
-            points.append([hand_left_x, hand_left_y])
+            # Calculate curve amounts (auto or manual)
+            left_upper_curve = self._left_upper_arm_curve
+            left_fore_curve = self._left_forearm_curve
+            if self._auto_curve and (left_upper_curve == 0.0 or left_fore_curve == 0.0):
+                # Auto curve based on shoulder angle
+                # More extreme angles get more curve
+                angle_factor = abs(np.sin(upper_left_angle)) * self._auto_curve_strength
+                if left_upper_curve == 0.0:
+                    left_upper_curve = angle_factor
+                if left_fore_curve == 0.0:
+                    left_fore_curve = angle_factor * 0.7
+
+            # Generate curved segments
+            from comix.utils.sketchy import create_curved_segment
+            upper_arm_pts = create_curved_segment(
+                (0, arm_y),
+                (elbow_left_x, elbow_left_y),
+                curve_amount=left_upper_curve,
+                num_points=8
+            )
+            for pt in upper_arm_pts:
+                points.append([pt[0], pt[1]])
+
+            forearm_pts = create_curved_segment(
+                (elbow_left_x, elbow_left_y),
+                (hand_left_x, hand_left_y),
+                curve_amount=left_fore_curve,
+                num_points=8
+            )
+            for pt in forearm_pts[1:]:  # Skip first to avoid duplicate
+                points.append([pt[0], pt[1]])
 
             left_hand_pos = (hand_left_x, hand_left_y)
             left_arm_angle_rad = forearm_left_angle
@@ -1068,10 +1207,34 @@ class Stickman(Character):
             hand_right_x = elbow_right_x + forearm_length * np.cos(forearm_right_angle)
             hand_right_y = elbow_right_y - forearm_length * np.sin(forearm_right_angle)
 
-            points.append([0, arm_y])
-            points.append([elbow_right_x, elbow_right_y])
-            points.append([elbow_right_x, elbow_right_y])
-            points.append([hand_right_x, hand_right_y])
+            # Calculate curve amounts (auto or manual)
+            right_upper_curve = self._right_upper_arm_curve
+            right_fore_curve = self._right_forearm_curve
+            if self._auto_curve and (right_upper_curve == 0.0 or right_fore_curve == 0.0):
+                angle_factor = abs(np.sin(upper_right_angle)) * self._auto_curve_strength
+                if right_upper_curve == 0.0:
+                    right_upper_curve = -angle_factor  # Negative for right side
+                if right_fore_curve == 0.0:
+                    right_fore_curve = -angle_factor * 0.7
+
+            # Generate curved segments
+            upper_arm_pts = create_curved_segment(
+                (0, arm_y),
+                (elbow_right_x, elbow_right_y),
+                curve_amount=right_upper_curve,
+                num_points=8
+            )
+            for pt in upper_arm_pts:
+                points.append([pt[0], pt[1]])
+
+            forearm_pts = create_curved_segment(
+                (elbow_right_x, elbow_right_y),
+                (hand_right_x, hand_right_y),
+                curve_amount=right_fore_curve,
+                num_points=8
+            )
+            for pt in forearm_pts[1:]:
+                points.append([pt[0], pt[1]])
 
             right_hand_pos = (hand_right_x, hand_right_y)
             right_arm_angle_rad = forearm_right_angle
@@ -1095,10 +1258,34 @@ class Stickman(Character):
             foot_left_x = knee_left_x - lower_leg_length * np.cos(lower_left_leg_angle)
             foot_left_y = knee_left_y + lower_leg_length * np.sin(lower_left_leg_angle)
 
-            points.append([0, hip_y])
-            points.append([knee_left_x, knee_left_y])
-            points.append([knee_left_x, knee_left_y])
-            points.append([foot_left_x, foot_left_y])
+            # Calculate curve amounts (auto or manual)
+            left_upper_leg_curve = self._left_upper_leg_curve
+            left_lower_leg_curve = self._left_lower_leg_curve
+            if self._auto_curve and (left_upper_leg_curve == 0.0 or left_lower_leg_curve == 0.0):
+                angle_factor = abs(np.sin(upper_left_leg_angle - np.pi/2)) * self._auto_curve_strength
+                if left_upper_leg_curve == 0.0:
+                    left_upper_leg_curve = angle_factor * 0.6
+                if left_lower_leg_curve == 0.0:
+                    left_lower_leg_curve = angle_factor * 0.5
+
+            # Generate curved segments
+            upper_leg_pts = create_curved_segment(
+                (0, hip_y),
+                (knee_left_x, knee_left_y),
+                curve_amount=left_upper_leg_curve,
+                num_points=8
+            )
+            for pt in upper_leg_pts:
+                points.append([pt[0], pt[1]])
+
+            lower_leg_pts = create_curved_segment(
+                (knee_left_x, knee_left_y),
+                (foot_left_x, foot_left_y),
+                curve_amount=left_lower_leg_curve,
+                num_points=8
+            )
+            for pt in lower_leg_pts[1:]:
+                points.append([pt[0], pt[1]])
 
             # Right leg with hip and knee angles
             right_hip_rad = np.radians(self._right_hip_angle)
@@ -1118,10 +1305,34 @@ class Stickman(Character):
             foot_right_x = knee_right_x + lower_leg_length * np.cos(lower_right_leg_angle)
             foot_right_y = knee_right_y + lower_leg_length * np.sin(lower_right_leg_angle)
 
-            points.append([0, hip_y])
-            points.append([knee_right_x, knee_right_y])
-            points.append([knee_right_x, knee_right_y])
-            points.append([foot_right_x, foot_right_y])
+            # Calculate curve amounts (auto or manual)
+            right_upper_leg_curve = self._right_upper_leg_curve
+            right_lower_leg_curve = self._right_lower_leg_curve
+            if self._auto_curve and (right_upper_leg_curve == 0.0 or right_lower_leg_curve == 0.0):
+                angle_factor = abs(np.sin(upper_right_leg_angle - np.pi/2)) * self._auto_curve_strength
+                if right_upper_leg_curve == 0.0:
+                    right_upper_leg_curve = -angle_factor * 0.6
+                if right_lower_leg_curve == 0.0:
+                    right_lower_leg_curve = -angle_factor * 0.5
+
+            # Generate curved segments
+            upper_leg_pts = create_curved_segment(
+                (0, hip_y),
+                (knee_right_x, knee_right_y),
+                curve_amount=right_upper_leg_curve,
+                num_points=8
+            )
+            for pt in upper_leg_pts:
+                points.append([pt[0], pt[1]])
+
+            lower_leg_pts = create_curved_segment(
+                (knee_right_x, knee_right_y),
+                (foot_right_x, foot_right_y),
+                curve_amount=right_lower_leg_curve,
+                num_points=8
+            )
+            for pt in lower_leg_pts[1:]:
+                points.append([pt[0], pt[1]])
 
         else:
             # Use pose-based system (backward compatibility)

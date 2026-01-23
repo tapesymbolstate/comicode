@@ -686,23 +686,23 @@ class CairoRenderer:
     def _render_character(self, data: dict[str, Any]) -> None:
         """Render a character."""
         pos = data.get("position", [0, 0])
-        style = data.get("style", "stickman")
+        character_style = data.get("character_style", "stickman")
 
-        if style == "stickman":
+        if character_style == "stickman":
             self._render_stickman(data, pos)
-        elif style == "simple":
+        elif character_style == "simple":
             self._render_simple_face(data, pos)
-        elif style == "chubby":
+        elif character_style == "chubby":
             self._render_chubby_stickman(data, pos)
-        elif style == "robot":
+        elif character_style == "robot":
             self._render_robot(data, pos)
-        elif style == "chibi":
+        elif character_style == "chibi":
             self._render_chibi(data, pos)
-        elif style == "anime":
+        elif character_style == "anime":
             self._render_anime(data, pos)
-        elif style == "superhero":
+        elif character_style == "superhero":
             self._render_superhero(data, pos)
-        elif style == "cartoon":
+        elif character_style == "cartoon":
             self._render_cartoon(data, pos)
         else:
             self._render_generic(data)

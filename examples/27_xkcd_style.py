@@ -40,7 +40,9 @@ def create_comparison_demo() -> Page:
     char2.move_to((670, 270))
     char2.set_expression("happy")
     char2.set_arm_angles(left_shoulder=135, right_shoulder=135)
+    char2.set_style(Style(hand_drawn=True, hand_drawn_roughness=2.5, hand_drawn_seed=42))
     bubble2 = char2.say("Hand-drawn style!\n(xkcd-like)", width=180, height=70)
+    bubble2.set_style(Style(hand_drawn=True, hand_drawn_roughness=2.5, hand_drawn_seed=42))
 
     panel2.add_content(char2, bubble2)
     page.add(panel2)

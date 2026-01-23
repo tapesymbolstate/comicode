@@ -162,3 +162,65 @@ def circle_to_polygon(
     ]
     points.append(points[0])
     return points
+
+
+def create_curved_segment(
+    start: tuple[float, float],
+    end: tuple[float, float],
+    curve_amount: float = 0.0,
+    num_points: int = 8,
+) -> list[tuple[float, float]]:
+    """Create a curved segment between two points using quadratic bezier.
+
+    Args:
+        start: Start point (x, y)
+        end: End point (x, y)
+        curve_amount: How much to curve (0.0-0.3 typical for natural look).
+                      Positive curves left, negative curves right.
+        num_points: Number of points in the curve
+
+    Returns:
+        List of points forming a smooth curve
+
+    Example:
+        >>> # Natural arm curve
+        >>> shoulder = (100, 100)
+        >>> elbow = (150, 150)
+        >>> curved_arm = create_curved_segment(shoulder, elbow, curve_amount=0.15)
+    """
+    if abs(curve_amount) < 0.001 or num_points < 2:
+        return [start, end]
+
+    start_arr = np.array(start, dtype=np.float64)
+    end_arr = np.array(end, dtype=np.float64)
+
+    # Vector from start to end
+    direction = end_arr - start_arr
+    length = np.linalg.norm(direction)
+
+    if length < 1.0:
+        return [start, end]
+
+    # Perpendicular vector (rotate 90 degrees)
+    perp = np.array([-direction[1], direction[0]], dtype=np.float64)
+    perp = perp / np.linalg.norm(perp)
+
+    # Control point at midpoint with perpendicular offset
+    midpoint = (start_arr + end_arr) / 2
+    control_offset = curve_amount * length
+    control = midpoint + perp * control_offset
+
+    # Generate points along quadratic bezier curve
+    points = []
+    for i in range(num_points + 1):
+        t = i / num_points
+
+        # Quadratic bezier formula: (1-t)^2*P0 + 2*(1-t)*t*P1 + t^2*P2
+        point = (
+            (1 - t) ** 2 * start_arr
+            + 2 * (1 - t) * t * control
+            + t**2 * end_arr
+        )
+        points.append((float(point[0]), float(point[1])))
+
+    return points

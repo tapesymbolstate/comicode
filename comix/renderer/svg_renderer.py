@@ -551,23 +551,23 @@ class SVGRenderer:
         """Render a character."""
         pos = data.get("position", [0, 0])
         points = data.get("points", [])
-        style = data.get("style", "stickman")
+        character_style = data.get("character_style", "stickman")
 
-        if style == "stickman":
+        if character_style == "stickman":
             self._render_stickman(data, group, pos, points)
-        elif style == "simple":
+        elif character_style == "simple":
             self._render_simple_face(data, group, pos)
-        elif style == "chubby":
+        elif character_style == "chubby":
             self._render_chubby_stickman(data, group, pos, points)
-        elif style == "robot":
+        elif character_style == "robot":
             self._render_robot(data, group, pos, points)
-        elif style == "chibi":
+        elif character_style == "chibi":
             self._render_chibi(data, group, pos, points)
-        elif style == "anime":
+        elif character_style == "anime":
             self._render_anime(data, group, pos, points)
-        elif style == "superhero":
+        elif character_style == "superhero":
             self._render_superhero(data, group, pos, points)
-        elif style == "cartoon":
+        elif character_style == "cartoon":
             self._render_cartoon(data, group, pos, points)
         else:
             self._render_generic(data, group)

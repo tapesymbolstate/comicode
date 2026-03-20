@@ -1,5 +1,18 @@
 # Comicode
 
+> [!CAUTION]
+> **This project is a failed experiment.**
+>
+> ![Action Poses Example](examples/output/28_action_poses.png)
+>
+> Comicode aimed to be a markup language that could generate at least simple stickman-based comics through the Ralph loop — an iterative AI-driven development cycle. The vision was straightforward: if we constrain the drawing to stick figures and simple shapes, AI should be able to handle SVG generation reliably.
+>
+> **It couldn't.**
+>
+> After hundreds of iteration loops over just a few days, it became clear that AI fundamentally struggles to understand human curves and organic motion when composing SVGs programmatically. What looks trivial to a human — the arc of a waving arm, the bend of a knee while running, the subtle tilt of a head — turns out to be an almost infinite combinatorial space. Even "simple" stickmen have countless pose variations, expression nuances, and spatial relationships that defy hardcoded enumeration.
+>
+> The core realization: **the number of cases for even the simplest character drawings approaches infinity.** You can't enumerate your way to natural-looking comics. This project remains here as an honest record of that lesson.
+
 A code-based comic creation framework inspired by [Manim](https://www.manim.community/). Create comics, manga, and webtoons using Python with a fluent, chainable API.
 
 ## Features

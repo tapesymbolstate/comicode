@@ -12,6 +12,8 @@
 > After hundreds of iteration loops over just a few days, it became clear that AI fundamentally struggles to understand human curves and organic motion when composing SVGs programmatically. What looks trivial to a human — the arc of a waving arm, the bend of a knee while running, the subtle tilt of a head — turns out to be an almost infinite combinatorial space. Even "simple" stickmen have countless pose variations, expression nuances, and spatial relationships that defy hardcoded enumeration.
 >
 > The core realization: **the number of cases for even the simplest character drawings approaches infinity.** You can't enumerate your way to natural-looking comics. This project remains here as an honest record of that lesson.
+>
+> You can browse the numerous failed output samples [here](https://github.com/tapesymbolstate/comicode/tree/main/examples/output).
 
 A code-based comic creation framework inspired by [Manim](https://www.manim.community/). Create comics, manga, and webtoons using Python with a fluent, chainable API.
 
